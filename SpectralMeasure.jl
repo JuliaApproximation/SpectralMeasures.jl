@@ -4,34 +4,43 @@ using ApproxFun
 joukowsky(z)=.5*(z+1./z)
 
 function spectralmeasure(a,b)
+    # a is the first n diagonal elements of J (0 thereafter)
+    # b is the first n-1 off-diagonal elements of J (.5 thereafter)
+
+    # Finds T,K such that L = T+K, where L takes LJL^{-1} = Toeplitz([0,1])
     T,K=tkoperators(a,b)
+
+    # We still have no idea why this finds the discrete eigenvalues of L
     Tfun = Fun([T[1,1];T.negative],Taylor)
     eigs=sort!(real(map!(joukowsky,filter!(z->abs(z)<1 && isreal(z),complexroots(Tfun)))))
 
+    # If there are no discrete eigenvalues, produce the measure using the L we already have
     if isempty(eigs)
         L=T+K
         coeffs = L\[1]
         Fun(coeffs,JacobiWeight(.5,.5,Ultraspherical{1}()))
+    # If there are discrete eigenvalues then we must deflate using QL iteration
     else
         Q=Array(BandedOperator{Float64},0)
-
         for k=1:length(eigs)
             t1,t0=0.5,eigs[k]
-
+            # TODO replace this 1-step QL iteration with iteration until LQ[1,2]<ϵ
             Q1,L1=ql(a-t0,b,-t0,t1)
             push!(Q,Q1)
-
             LQ=L1*Q1
+
             a=Float64[LQ[k,k] for k=2:length(a)+1]+t0;
             b=Float64[LQ[k,k+1] for k=2:length(a)];
-            @assert abs(LQ[1,2]) ≤ 10eps()
+            # for testing purposes: @assert abs(LQ[1,2]) ≤ 10eps()
             eigs[k]=LQ[1,1]+t0
         end
 
-        L2=contspectraltransform(a,b)
+        # note that a and b have been changed after deflation
+        T,K = tkoperators(a,b)
+        L2 = T+K
 
         q0=[1.0]
-        m=length(Q) #number of discrete
+        m=length(Q) #number of discrete eigenvalues
         for k=1:m
             q0=[q0[1:k-1];Q[k]'*q0[k:end]]
         end
@@ -39,17 +48,6 @@ function spectralmeasure(a,b)
         c=q0[m+1]
         Fun([q0[1:m].^2;(2c/π)*coeffs],DiracSpace(JacobiWeight(0.5,0.5,Ultraspherical{1}()),eigs))
     end
-end
-
-function contspectraltransform(a,b)
-    T,K=tkoperators(a,b)
-    T+K
-end
-
-function contspectralmeasure(a,b)
-    L=contspectraltransform(a,b)
-    coeffs = L\[1]
-    Fun(coeffs,JacobiWeight(.5,.5,Ultraspherical{1}())),L
 end
 
 function tkoperators(a,b)
@@ -68,7 +66,7 @@ function tkoperators(a,b)
     T,K
 end
 
-
+# This is for Chebyshev U
 function Lmatrix(a,b,N)
     n = length(a)
     @assert n-length(b)==1
@@ -96,7 +94,7 @@ function Lmatrix(a,b,N)
     L
 end
 
-function jacobimatrix(a,b,N)
+function jacobimatrix(a,b,t0,t1,N)
     J = zeros(N,N)
     J[1,1]=a[1]
     n=length(a)
@@ -106,8 +104,9 @@ function jacobimatrix(a,b,N)
         J[i+1,i] = b[i]
     end
     for i = n:N-1
-        J[i,i+1] = .5
-        J[i+1,i] = .5
+        J[i,i+1] = t1
+        J[i+1,i+1] = t0
+        J[i+1,i] = t1
     end
     J
 end
@@ -160,6 +159,7 @@ end
 
 addentries!(T::ToeplitzGivens,A,kr::Range)=addentries!(ToeplitzOperator(T),A,kr)
 
+# This produces an orthogonal operator that is Toeplitz + compact (input is c and s)
 function partialgivens(TG::ToeplitzGivens,m)
     T=ToeplitzOperator(TG)
     K=zeros(Float64,m-bandinds(T,1),m)
@@ -222,6 +222,7 @@ function ql(a,b,t0,t1)
     partialgivens(TQ,n+1)*(I+CompactOperator(Q)),TL+CompactOperator(L)
 end
 
+# This is for Chebyshev T
 function Lmatrix2(a,b,N)
     n = length(a)
     @assert n-length(b)==1
@@ -252,6 +253,10 @@ function Lmatrix2(a,b,N)
     end
     L
 end
+
+############
+### Tests
+############
 
 sum(μ)
 
