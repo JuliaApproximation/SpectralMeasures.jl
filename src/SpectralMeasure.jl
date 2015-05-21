@@ -7,7 +7,7 @@ export spectralmeasure
 
 joukowsky(z)=.5*(z+1./z)
 
-function spectralmeasure(a,b)
+function spectralmeasure(a,b;maxlength::Int=10000)
     # a is the first n diagonal elements of J (0 thereafter)
     # b is the first n-1 off-diagonal elements of J (.5 thereafter)
 
@@ -48,7 +48,7 @@ function spectralmeasure(a,b)
         for k=1:m
             q0=[q0[1:k-1];Q[k]'*q0[k:end]]
         end
-        coeffs=L2\q0[m+1:end]
+        coeffs=linsolve(L2,q0[m+1:end];maxlength=maxlength)
         c=q0[m+1]
         Fun([q0[1:m].^2;(2c/π)*coeffs],DiracSpace(JacobiWeight(0.5,0.5,Ultraspherical{1}()),eigs))
     end
