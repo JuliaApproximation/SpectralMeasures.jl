@@ -1,5 +1,9 @@
-using ApproxFun
-    import ApproxFun:BandedOperator,ToeplitzOperator,tridql!,bandinds,DiracSpace, plot
+module SpectralMeasure
+    using Base, Compat, ApproxFun
+
+import ApproxFun:BandedOperator,ToeplitzOperator,tridql!,bandinds,DiracSpace, plot
+
+export spectralmeasure
 
 joukowsky(z)=.5*(z+1./z)
 
@@ -113,7 +117,7 @@ end
 
 function jacobioperator(a,b,t0,t1)
     Δ=ToeplitzOperator([t1],[t0,t1])
-    B=jacobimatrix(a-t0,b-t1,length(a))
+    B=jacobimatrix(a-t0,b-t1,t0,t1,length(a))
     Δ+CompactOperator(B)
 end
 
@@ -198,7 +202,7 @@ function ql(a,b,t0,t1)
 
     # Here we construct this matrix as L
     n = length(a)
-    L = jacobimatrix(a,b,n+1)
+    L = jacobimatrix(a,b,t0,t1,n+1)
     L[n,n+1] = t1
     #    L[n+1,n+2] = 0
     L[n+1,n+1]=β
@@ -254,57 +258,6 @@ function Lmatrix2(a,b,N)
     L
 end
 
-############
-### Tests
-############
-
-sum(μ)
-
-μ.coefficients[1:4]
-
-n=20;a=zeros(n);b=sqrt(1:(n-1))/sqrt(n)*0.5
-    μ=spectralmeasure(a,b)
-    ApproxFun.plot(μ)
 
 
-n=5;a=1./([1:n;]);b=sqrt(1:(n-1))/sqrt(n)*0.5
-    μ=spectralmeasure(a,b)
-    ApproxFun.plot(μ)
-
-
-
-n=51;a=zeros(n);b=sqrt(1:(n-1))/sqrt(n)*0.5
-    μ=spectralmeasure(a,b)
-    ApproxFun.plot(μ)
-
-
-n=11;a=0.2rand(n);b=rand(n-1)
-    μ=spectralmeasure(a,b)
-    ApproxFun.plot(μ)
-
-
-
-
-n=14;a=(rand(n)-0.5);b=fill(0.5,n-1)
-    μ=spectralmeasure(a,b)
-    ApproxFun.plot(μ)
-
-
-
-n=20;a=0.5cos([1:n]);b=fill(0.5,n-1)
-    μ=spectralmeasure(a,b)
-    ApproxFun.plot(μ)
-
-
-α=44;β=44;a=[α/50+0.02145238,0.];b=[β/20+0.012412];
-    μ=spectralmeasure(a,b)
-    ApproxFun.plot(μ)
-
-values(μ)
-
-ApproxFun.plot(μ)
-μ
-T,K = tkoperators(a,b)
-T[1:10,1:10]
-K[1:10,1:10]
-
+end  #Module
