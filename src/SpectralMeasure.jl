@@ -11,7 +11,7 @@ function spectralmeasure(a,b;maxlength::Int=10000)
     # a is the first n diagonal elements of J (0 thereafter)
     # b is the first n-1 off-diagonal elements of J (.5 thereafter)
 
-    # Finds T,K such that L = T+K, where L takes LJL^{-1} = Toeplitz([0,1])
+    # Finds T,K such that L = T+K, where L takes LJL^{-1} = Toeplitz([0,1/2])
     T,K=tkoperators(a,b)
 
     # We still have no idea why this finds the discrete eigenvalues of L
@@ -22,7 +22,7 @@ function spectralmeasure(a,b;maxlength::Int=10000)
     if isempty(eigs)
         L=T+K
         coeffs = L\[1]
-        Fun(coeffs,JacobiWeight(.5,.5,Ultraspherical{1}()))
+        Fun((2/π)*coeffs,JacobiWeight(.5,.5,Ultraspherical{1}()))
     # If there are discrete eigenvalues then we must deflate using QL iteration
     else
         Q=Array(BandedOperator{Float64},0)
