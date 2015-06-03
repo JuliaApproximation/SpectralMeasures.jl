@@ -36,6 +36,9 @@ function spectralmeasure(a,b;maxlength::Int=10000)
             a=Float64[LQ[k,k] for k=2:length(a)+1]+t0;
             b=Float64[LQ[k,k+1] for k=2:length(a)];
             # for testing purposes: @assert abs(LQ[1,2]) ≤ 10eps()
+            if abs(LQ[1,2]) > 10eps()
+                println("QL not converged after 1 step.")
+            end
             eigs[k]=LQ[1,1]+t0
         end
 
