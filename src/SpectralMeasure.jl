@@ -1,7 +1,7 @@
 module SpectralMeasure
     using Base, Compat, ApproxFun
 
-import ApproxFun:BandedOperator,ToeplitzOperator,tridql!,bandinds,DiracSpace, plot
+import ApproxFun:BandedOperator,ToeplitzOperator,tridql!,bandinds,DiracSpace, plot, IdentityOperator
 
 export spectralmeasure
 
@@ -20,47 +20,53 @@ function spectralmeasure(a,b;maxlength::Int=10000)
     if isempty(eigs)
       #####
       # Old style that just used the L matrix we already have from above
-      #L=T+K
-      #coeffs = L\[1]
-      #Fun((2/π)*coeffs,JacobiWeight(.5,.5,Ultraspherical{1}()))
+      L=T+K
+      coeffs = linsolve(L,[1];maxlength=maxlength)
+      Fun((2/π)*coeffs,JacobiWeight(.5,.5,Ultraspherical{1}()))
       #####
 
       #THIS IS REALLY INEFFICIENT. I'M WORKING ON A FAST VERSION (MW)
-      L = conversionLmatrix([0,0,0],[1/sqrt(2),.5],a,b,maxlength)
-      coeffs = chop(L[1:maxlength,1],10eps())
-      Fun((1/π)*[coeffs[1];sqrt(2)*coeffs[2:end]],JacobiWeight(-.5,-.5,Ultraspherical{0}()))
+      #L = conversionLmatrix([0,0,0],[1/sqrt(2),.5],a,b,maxlength)
+      #coeffs = chop(L[1:maxlength,1],10eps())
+      #Fun((1/π)*[coeffs[1];sqrt(2)*coeffs[2:end]],JacobiWeight(-.5,-.5,Ultraspherical{0}()))
 
     # If there are discrete eigenvalues then we must deflate using QL iteration
     else
         numeigs = length(eigs)
-        Q=Array(BandedOperator{Float64},0)
+        Q=IdentityOperator()
         for k=1:numeigs
             t1,t0=0.5,eigs[k]
-            # TODO replace this 1-step QL iteration with iteration until LQ[1,2]<ϵ
-            Q1,L1=ql(a-t0,b,-t0,t1)
-            push!(Q,Q1)
-            LQ=L1*Q1
-
-            a=Float64[LQ[k,k] for k=2:length(a)+1]+t0;
-            b=Float64[LQ[k,k+1] for k=2:length(a)];
-            # for testing purposes: @assert abs(LQ[1,2]) ≤ 10eps()
-            if abs(LQ[1,2]) > 10eps()
-                println("QL not converged after 1 step.")
+            counter = 0
+            while b[1]>10eps()
+              Qtmp,Ltmp=ql(a-t0,b,-t0,t1)
+              LQ=Ltmp*Qtmp
+              # Each QL step increases the size of the compact perturbation by 1, hence the +1 below
+              a=Float64[LQ[k,k] for k=1:length(a)+1]+t0
+              b=Float64[LQ[k,k+1] for k=1:length(b)+1]
+              Q = Q*Qtmp
+              counter += 1
+              print(counter)
             end
-            eigs[k]=LQ[1,1]+t0
+            # Note down the improved value of the eigenvalue and deflate
+            eigs[k]=a[1]
+            a=a[2:end]
+            b=b[2:end]
         end
 
+        # q0 is the first row of Q where Jnew = Q'*Jold*Q
+        # for the spectral measure this is all we need from Q
+        q0 = Q[1,1:bandinds(Q,2)+1]
+
+        # Now let us find the change of basis operator L2 for the continuous part after deflation
         # note that a and b have been changed (within this function call) after deflation
         T,K = tkoperators(a,b)
         L2 = T+K
 
-        q0=[1.0]
-        for k=1:numeigs
-            q0=[q0[1:k-1];Q[k]'*q0[k:end]]
-        end
-        coeffs=linsolve(L2,q0[numeigs+1:end];maxlength=maxlength)
-        c=q0[numeigs+1]
-        Fun([q0[1:numeigs].^2;(2c/π)*coeffs],DiracSpace(JacobiWeight(0.5,0.5,Ultraspherical{1}()),eigs))
+        ctsfactor1 = Fun((2/π)*L2'*q0[numeigs+1:end],Ultraspherical{1}())
+        ctsfactor2 = Fun((2/π)*linsolve(L2,q0[numeigs+1:end];maxlength=maxlength),Ultraspherical{1}())
+        ctscoeffs = (ctsfactor1*ctsfactor2).coefficients
+
+        Fun([q0[1:numeigs].^2;ctscoeffs],DiracSpace(JacobiWeight(.5,.5,Ultraspherical{1}()),eigs))
     end
 end
 
