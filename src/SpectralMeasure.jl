@@ -7,7 +7,7 @@ export spectralmeasure
 
 joukowsky(z)=.5*(z+1./z)
 
-function spectralmeasure(a,b;maxlength::Int=10000)
+function spectralmeasure(a,b;maxlength::Int=100000)
     # a is the first n diagonal elements of J (0 thereafter)
     # b is the first n-1 off-diagonal elements of J (.5 thereafter)
 
@@ -36,7 +36,6 @@ function spectralmeasure(a,b;maxlength::Int=10000)
         Q=IdentityOperator()
         for k=1:numeigs
             t1,t0=0.5,eigs[k]
-            counter = 0
             while b[1]>10eps()
               Qtmp,Ltmp=ql(a-t0,b,-t0,t1)
               LQ=Ltmp*Qtmp
@@ -44,8 +43,6 @@ function spectralmeasure(a,b;maxlength::Int=10000)
               a=Float64[LQ[k,k] for k=1:length(a)+1]+t0
               b=Float64[LQ[k,k+1] for k=1:length(b)+1]
               Q = Q*Qtmp
-              counter += 1
-              print(counter)
             end
             # Note down the improved value of the eigenvalue and deflate
             eigs[k]=a[1]
@@ -62,11 +59,11 @@ function spectralmeasure(a,b;maxlength::Int=10000)
         T,K = tkoperators(a,b)
         L2 = T+K
 
-        ctsfactor1 = Fun((2/π)*L2'*q0[numeigs+1:end],Ultraspherical{1}())
-        ctsfactor2 = Fun((2/π)*linsolve(L2,q0[numeigs+1:end];maxlength=maxlength),Ultraspherical{1}())
+        ctsfactor1 = Fun(L2'*q0[numeigs+1:end],Ultraspherical{1}())
+        ctsfactor2 = Fun(linsolve(L2,q0[numeigs+1:end];maxlength=maxlength),Ultraspherical{1}())
         ctscoeffs = (ctsfactor1*ctsfactor2).coefficients
 
-        Fun([q0[1:numeigs].^2;ctscoeffs],DiracSpace(JacobiWeight(.5,.5,Ultraspherical{1}()),eigs))
+        Fun([q0[1:numeigs].^2;(2/pi)*ctscoeffs],DiracSpace(JacobiWeight(.5,.5,Ultraspherical{1}()),eigs))
     end
 end
 
