@@ -31,6 +31,8 @@ immutable SymTriToeplitz{T} <: TridiagonalOperator{T}
     b::T
 end
 
+SymTriToeplitz(dv::Vector,ev::Vector,a,b)=SymTriOperator{promote_type(eltype(dv),eltype(dv),typeof(a),typeof(b))}(dv,ev,a,b)
+
 function SymTriToeplitz(T::ToeplitzOperator,K::SymTriOperator)
     @assert bandinds(T)==(-1,1) && issym(T)
     SymTriToeplitz(K.dv,K.ev,T.nonnegative...)
@@ -81,6 +83,7 @@ end
 -(c::UniformScaling,A::SymTriToeplitz)=SymTriToeplitz(-A.dv,-A.ev,c.λ-A.a,-A.b)
 
 *(c::Number,A::SymTriToeplitz)=SymTriToeplitz(c*A.dv,c*A.ev,c*A.a,c*A.b)
+/(A::SymTriToeplitz,c::Number)=(1/c)*A
 
 
 
@@ -90,7 +93,14 @@ ql(A::SymTriToeplitz)=ql(A.dv+A.a,A.ev+A.b,A.a,A.b)
 function Base.eigvals(A::SymTriToeplitz)
     if isapprox(A.a,0.) && isapprox(A.b,0.5)
         spectralmeasure(A.dv+A.a,A.ev+A.b)
+    elseif isapprox(A.a,0.)
+        c=2*A.b
+        μ=eigvals(A/c)
+        sp=space(μ)
+        np=length(sp.points)  # number of points
+        Fun([μ.coefficients[1:np];μ.coefficients[np+1:end]/c],setdomain(space(μ),c*domain(μ)))
     else
-        error("Implement")
+        μ=eigvals(A-A.a*I)
+        setdomain(μ,domain(μ)+A.a)
     end
 end

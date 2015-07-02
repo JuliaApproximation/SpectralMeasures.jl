@@ -2,7 +2,7 @@ module SpectralMeasure
     using Base, Compat, ApproxFun
 
 import ApproxFun:BandedOperator,ToeplitzOperator,tridql!,bandinds,DiracSpace, plot, IdentityOperator,
-                    TridiagonalOperator,addentries!
+                    TridiagonalOperator,addentries!,setdomain
 
 export spectralmeasure,ql,SymTriOperator
 
