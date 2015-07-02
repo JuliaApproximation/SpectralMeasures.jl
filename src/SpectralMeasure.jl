@@ -1,15 +1,26 @@
 module SpectralMeasure
     using Base, Compat, ApproxFun
 
-import ApproxFun:BandedOperator,ToeplitzOperator,tridql!,bandinds,DiracSpace, plot, IdentityOperator
+import ApproxFun:BandedOperator,ToeplitzOperator,tridql!,bandinds,DiracSpace, plot, IdentityOperator,
+                    TridiagonalOperator,addentries!
 
-export spectralmeasure
+export spectralmeasure,ql,SymTriOperator
 
 joukowsky(z)=.5*(z+1./z)
 
 function spectralmeasure(a,b;maxlength::Int=100000)
     # a is the first n diagonal elements of J (0 thereafter)
     # b is the first n-1 off-diagonal elements of J (.5 thereafter)
+    # pad to be correct lengths
+    if length(b)+1!= length(a)
+        n=max(length(b)+1,length(a))
+        newb=pad(b,n-1)
+        for k=length(b)+1:n-1
+            newb[k]=0.5  # pad with toeplitz party
+        end
+        b=newb
+        a=pad(a,n)
+    end
 
     # Finds T,K such that L = T+K, where L takes LJL^{-1} = Toeplitz([0,1/2])
     # This is purely for determining discrete eigenvalues
@@ -233,4 +244,10 @@ function ql(a,b,t0,t1)
     partialgivens(TQ,n+1)*(I+CompactOperator(Q)),TL+CompactOperator(L)
 end
 
+
+include("PertToeplitz.jl")
+
 end  #Module
+
+
+
