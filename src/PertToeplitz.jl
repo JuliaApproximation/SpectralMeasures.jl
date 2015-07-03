@@ -68,6 +68,9 @@ end
 
 Base.issym(T::ToeplitzOperator)=length(T.negative)==length(T.nonnegative)-1&&T.negative==T.nonnegative[2:end]
 
+# slcie of a PertToeplitz is a PertToeplitz
+Base.slice(P::PertToeplitz,kr::FloatRange,jr::FloatRange)=slice(P.T,kr,jr)+slice(P.K,kr,jr)
+
 
 +(T::ToeplitzOperator,K::CompactOperator)=PertToeplitz(T,K)
 +(T::ToeplitzOperator,K::SymTriOperator)=SymTriToeplitz(T,K)
@@ -84,6 +87,8 @@ end
 
 *(c::Number,A::SymTriToeplitz)=SymTriToeplitz(c*A.dv,c*A.ev,c*A.a,c*A.b)
 /(A::SymTriToeplitz,c::Number)=(1/c)*A
+
+
 
 
 

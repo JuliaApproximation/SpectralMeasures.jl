@@ -6,6 +6,9 @@ import ApproxFun:BandedOperator,ToeplitzOperator,tridql!,bandinds,DiracSpace, pl
 
 export spectralmeasure,ql,SymTriOperator
 
+
+include("helper.jl")
+
 joukowsky(z)=.5*(z+1./z)
 
 function spectralmeasure(a,b;maxlength::Int=100000)
