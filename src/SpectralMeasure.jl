@@ -14,18 +14,8 @@ joukowsky(z)=.5*(z+1./z)
 function spectralmeasure(a,b;maxlength::Int=100000)
     # a is the first n diagonal elements of J (0 thereafter)
     # b is the first n-1 off-diagonal elements of J (.5 thereafter)
-    # pad to be correct lengths
-    if length(b)+1!= length(a)
-        n=max(length(b)+1,length(a))
-        newb=pad(b,n-1)
-        for k=length(b)+1:n-1
-            newb[k]=0.5  # pad with toeplitz party
-        end
-        b=newb
-        a=pad(a,n)
-    end
 
-    # Finds T,K such that L = T+K, where L takes LJL^{-1} = Toeplitz([0,1/2])
+  # Finds T,K such that L = T+K, where L takes LJL^{-1} = Toeplitz([0,1/2])
     # This is purely for determining discrete eigenvalues
     T,K=tkoperators(a,b)
     Tfun = Fun([T[1,1];T.negative],Taylor)
@@ -47,17 +37,21 @@ function spectralmeasure(a,b;maxlength::Int=100000)
     # If there are discrete eigenvalues then we must deflate using QL iteration
     else
         numeigs = length(eigs)
-        Q=IdentityOperator()
+        Q=Array(BandedOperator{Float64},0)
+        Qbndwdth = 0
         for k=1:numeigs
             t1,t0=0.5,eigs[k]
+            thisQ = IdentityOperator()
             while b[1]>10eps()
               Qtmp,Ltmp=ql(a-t0,b,-t0,t1)
               LQ=Ltmp*Qtmp
               # Each QL step increases the size of the compact perturbation by 1, hence the +1 below
               a=Float64[LQ[k,k] for k=1:length(a)+1]+t0
               b=Float64[LQ[k,k+1] for k=1:length(b)+1]
-              Q = Q*Qtmp
+              Qbndwdth += 1
+              thisQ = thisQ*Qtmp
             end
+            push!(Q,thisQ)
             # Note down the improved value of the eigenvalue and deflate
             eigs[k]=a[1]
             a=a[2:end]
@@ -66,7 +60,10 @@ function spectralmeasure(a,b;maxlength::Int=100000)
 
         # q0 is the first row of Q where Jnew = Q'*Jold*Q
         # for the spectral measure this is all we need from Q
-        q0 = Q[1,1:bandinds(Q,2)+1]
+        q0=[1.0;zeros(Qbndwdth,1)]
+        for k=1:numeigs
+          q0=[q0[1:k-1];Q[k]'*q0[k:end]]
+        end
 
         # Now let us find the change of basis operator L2 for the continuous part after deflation
         # note that a and b have been changed (within this function call) after deflation
@@ -82,8 +79,7 @@ function spectralmeasure(a,b;maxlength::Int=100000)
 end
 
 function tkoperators(a,b)
-    @assert length(a)-length(b)==1
-    n = length(a)
+    n = max(length(a),length(b)+1)
     L = conversionLmatrix(a,b,2n)
 
     T=ToeplitzOperator(vec(L[2*n,2*n-1:-1:1]),[L[2*n,2*n]])
@@ -121,9 +117,9 @@ conversionLmatrix(a,b,N) = conversionLmatrix(a,b,[],[],N)
 
 function jacobimatrix(a,b,t0,t1,N)
     J = zeros(N,N)
-    J[1,1]=a[1]
     a = [a;t0*ones(N-length(a))]
     b = [b;t1*ones(N-length(b))]
+    J[1,1]=a[1]
     for i = 1:N-1
         J[i+1,i+1] = a[i+1]
         J[i,i+1] = b[i]
@@ -222,7 +218,7 @@ function ql(a,b,t0,t1)
     TQ,TL,α,β=givenstail(t0,t1)
 
     # Here we construct this matrix as L
-    n = length(a)
+    n = max(length(a),length(b)+1)
     L = jacobimatrix(a,b,t0,t1,n+1)
     L[n,n+1] = t1
     #    L[n+1,n+2] = 0
