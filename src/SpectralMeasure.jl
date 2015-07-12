@@ -11,7 +11,7 @@ include("helper.jl")
 
 joukowsky(z)=.5*(z+1./z)
 
-function spectralmeasure(a,b;maxlength::Int=100000)
+function spectralmeasure(a,b;maxlength::Int=10000)
     # a is the first n diagonal elements of J (0 thereafter)
     # b is the first n-1 off-diagonal elements of J (.5 thereafter)
 
