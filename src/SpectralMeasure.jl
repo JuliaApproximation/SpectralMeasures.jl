@@ -14,25 +14,25 @@ joukowsky(z)=.5*(z+1./z)
 function spectralmeasure(a,b;maxlength::Int=10000)
     # a is the first n diagonal elements of J (0 thereafter)
     # b is the first n-1 off-diagonal elements of J (.5 thereafter)
+    n = max(length(a),length(b)+1)
 
-  # Finds T,K such that L = T+K, where L takes LJL^{-1} = Toeplitz([0,1/2])
+    # Finds T,K such that L = T+K, where L takes LJL^{-1} = Toeplitz([0,1/2])
     # This is purely for determining discrete eigenvalues
     T,K=tkoperators(a,b)
     Tfun = Fun([T[1,1];T.negative],Taylor)
+    # The magic step:
     eigs=sort!(real(map!(joukowsky,filter!(z->abs(z)<1 && isreal(z),complexroots(Tfun)))))
 
     if isempty(eigs)
       #####
-      # Old style that just used the L matrix we already have from above
-      L=T+K
-      coeffs = linsolve(L,[1];maxlength=maxlength)
-      Fun((2/π)*coeffs,JacobiWeight(.5,.5,Ultraspherical{1}()))
+      # Old style that produces Chebyshev U series
+      # L=T+K
+      # coeffs = linsolve(L,[1];maxlength=maxlength)
+      # Fun((2/π)*coeffs,JacobiWeight(.5,.5,Ultraspherical{1}()))
       #####
-
-      #THIS IS REALLY INEFFICIENT. I'M WORKING ON A FAST VERSION (MW)
-      #L = conversionLmatrix([0,0,0],[1/sqrt(2),.5],a,b,maxlength)
-      #coeffs = chop(L[1:maxlength,1],10eps())
-      #Fun((1/π)*[coeffs[1];sqrt(2)*coeffs[2:end]],JacobiWeight(-.5,-.5,Ultraspherical{0}()))
+      L=T+K
+      coeffs = forwardSubChebyshevT(L,2*n,[1],1e-15,maxlength)
+      Fun((1/π)*[coeffs[1];sqrt(2)*coeffs[2:end]],JacobiWeight(-.5,-.5,Ultraspherical{0}()))
 
     # If there are discrete eigenvalues then we must deflate using QL iteration
     else
@@ -68,14 +68,80 @@ function spectralmeasure(a,b;maxlength::Int=10000)
         # Now let us find the change of basis operator L2 for the continuous part after deflation
         # note that a and b have been changed (within this function call) after deflation
         T,K = tkoperators(a,b)
+        n = max(length(a),length(b)+1)
         L2 = T+K
 
-        ctsfactor1 = Fun(L2'*q0[numeigs+1:end],Ultraspherical{1}())
-        ctsfactor2 = Fun(linsolve(L2,q0[numeigs+1:end];maxlength=maxlength),Ultraspherical{1}())
-        ctscoeffs = (ctsfactor1*ctsfactor2).coefficients
+        ### Old style that produces Chebyshev U series
+        # ctsfactor1 = Fun(L2'*q0[numeigs+1:end],Ultraspherical{1}())
+        # ctsfactor2 = Fun(linsolve(L2,q0[numeigs+1:end];maxlength=maxlength),Ultraspherical{1}())
+        # ctscoeffs = (ctsfactor1*ctsfactor2).coefficients
+        # Fun([q0[1:numeigs].^2;(2/pi)*ctscoeffs],DiracSpace(JacobiWeight(.5,.5,Ultraspherical{1}()),eigs))
+        ###
 
-        Fun([q0[1:numeigs].^2;(2/pi)*ctscoeffs],DiracSpace(JacobiWeight(.5,.5,Ultraspherical{1}()),eigs))
+        STransCropped = CompactOperator((1-sqrt(2))*ones(1,1))+ToeplitzOperator([0.],sqrt(2)*onesAndZeros(length(q0)-numeigs))
+
+        factor1coeffs = STransCropped*L2'*q0[numeigs+1:end]
+        factor1 = Fun([factor1coeffs[1];sqrt(2)*factor1coeffs[2:end]],Ultraspherical{0})
+        factor2coeffs = forwardSubChebyshevT(L2,2*n,q0[numeigs+1:end],1e-15,maxlength)
+        factor2 = Fun([factor2coeffs[1];sqrt(2)*factor2coeffs[2:end]],Ultraspherical{0})
+        ctscoeffs = (factor1*factor2).coefficients
+
+        Fun([q0[1:numeigs].^2;(1/π)*ctscoeffs],DiracSpace(JacobiWeight(-.5,-.5,Ultraspherical{0}()),eigs))
+
     end
+end
+
+function onesAndZeros(n)
+  v = ones(n)
+  for i = 1:floor(n/2)
+    v[2*i] = 0
+  end
+  v
+end
+
+# Adaptively solves LSx=f by forward substitution, where L is lower triangular
+# and S is the (unbounded lower triangular) change of basic matrix from Chebyshev T to Chebyshev U
+function forwardSubChebyshevT(L,bandwidth,f,tol,maxlength)
+  # I want to make this a functional. No time to work out how to.
+  # f = CompactFunctional(f,)
+  g = [f;0]
+  m = length(g)
+
+  # I also want x and y to be functionals
+  y = zeros(2)
+  x = zeros(2)
+  y[1] = g[1]/L[1,1]
+  x[1] = g[1]/L[1,1]
+  y[2] = (g[2]-L[2,1]*g[1])/L[2,2]
+  x[2] = y[2]/sqrt(2)
+
+  k = 3
+  cvg = false
+  while cvg == false
+    if k > m
+      push!(g,0)
+    end
+    #There appears to be some issue with returning submatrices of L that sometimes gives Vectors and sometimes Matrix-es.
+    tmp = 0
+    for i = max(1,k-bandwidth):k-1
+      tmp += L[k,i]*y[i]
+    end
+    yk = (g[k]-tmp)/L[k,k]
+    xk = (yk-y[k-2])/sqrt(2)
+    push!(y,yk)
+    push!(x,xk)
+    if k > 8
+      if norm(x[k-8:k]) < tol
+        cvg = true
+      end
+      if k == maxlength
+        cvg = true
+      end
+    end
+    k = k+1
+  end
+  # Would like to "crop" the vector but don't know name of function
+  x
 end
 
 function tkoperators(a,b)
