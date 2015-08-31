@@ -102,7 +102,9 @@ function Base.eigvals(A::SymTriToeplitz)
         c=2*A.b
         μ=eigvals(A/c)
         sp=space(μ)
-        np=length(sp.points)  # number of points
+
+        np=isa(sp,DiracSpace)?length(sp.points):0  # number of points
+
         Fun([μ.coefficients[1:np];μ.coefficients[np+1:end]/c],setdomain(space(μ),c*domain(μ)))
     else
         μ=eigvals(A-A.a*I)
