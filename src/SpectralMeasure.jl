@@ -11,6 +11,7 @@ include("helper.jl")
 joukowsky(z)=.5*(z+1./z)
 
 function discreteEigs(a,b)
+  a = chop!(a); b = .5+chop!(b-.5)
   n = max(length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
   # Finds C such that J*C = C*Toeplitz([0,1/2])
@@ -23,6 +24,7 @@ end
 function spectralmeasureU(a,b;maxlength::Int=10000)
   # a is the first n diagonal elements of J (0 thereafter)
   # b is the first n-1 off-diagonal elements of J (.5 thereafter)
+  a = chop!(a); b = .5+chop!(b-.5)
   n = max(length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
   # Finds C such that J*C = C*Toeplitz([0,1/2])
@@ -60,6 +62,7 @@ end
 function spectralmeasureT(a,b;maxlength::Int=10000)
   # a is the first n diagonal elements of J (0 thereafter)
   # b is the first n-1 off-diagonal elements of J (.5 thereafter)
+  a = chop!(a); b = .5+chop!(b-.5)
   n = max(length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
   # Finds C such that J*C = C*Toeplitz([0,1/2])
@@ -249,7 +252,7 @@ function connectionCoeffsOperator(a,b)
     ToeCol[k] = K[i-1,N+2-i]
     ToeCol[k+1] = K[i,N+2-i]
   end
-  T = ToeplitzOperator(ToeCol[2:N],[ToeCol[1]])
+  T = ToeplitzOperator(chop!(ToeCol[2:N]),[ToeCol[1]])
   for i = 1:N
     for j = 1:min(i,N+2-i)
       K[i,j]-=T[i,j]

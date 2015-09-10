@@ -1,53 +1,53 @@
+using ApproxFun
+using SpectralMeasure
+using Gadfly
+set_default_plot_format(:svg)
+
 ############
 ### Tests
 ############
 
-sum(μ)
+# Chebyshev U
+a = []; b=[]
+  μ=spectralmeasureU(a,b)
+  ν=spectralmeasureT(a,b)
+  maximum(evaluate(μ,[-.99:.01:.99])-evaluate(ν,[-.99:.01:.99]))
 
-μ.coefficients[1:4]
+# Chebyshev T
+a = [0.]; b=[1/sqrt(2),.5]
+  μ=spectralmeasureU(a,b,maxlength=1000000)
+  ν=spectralmeasureT(a,b)
+  maximum(evaluate(μ,[-.99:.01:.99])-evaluate(ν,[-.99:.01:.99]))
 
-n=20;a=zeros(n);b=sqrt(1:(n-1))/sqrt(n)*0.5
-    μ=spectralmeasure(a,b)
-    ApproxFun.plot(μ)
+# Legendre
+n=100;a=zeros(n); b=[1:n-1]./sqrt(4*[1:n-1].^2-1)
+  μ=spectralmeasureU(a,b)
+  ν=spectralmeasureT(a,b)
+  maximum(evaluate(μ,[-.99:.01:.99])-evaluate(ν,[-.99:.01:.99]))
 
+# A strange hump
+n=35;a=zeros(n); b=sqrt(1:(n-1))/sqrt(n)*0.5
+  μ=spectralmeasureU(a,b)
+  ν=spectralmeasureT(a,b)
+  maximum(evaluate(μ,[-.99:.01:.99])-evaluate(ν,[-.99:.01:.99]))
 
-n=5;a=1./([1:n;]);b=sqrt(1:(n-1))/sqrt(n)*0.5
-    μ=spectralmeasure(a,b)
-    ApproxFun.plot(μ)
-
-
-
-n=51;a=zeros(n);b=sqrt(1:(n-1))/sqrt(n)*0.5
-    μ=spectralmeasure(a,b)
-    ApproxFun.plot(μ)
-
-
-n=11;a=0.2rand(n);b=rand(n-1)
-    μ=spectralmeasure(a,b)
-    ApproxFun.plot(μ)
-
-
-
-
-n=14;a=(rand(n)-0.5);b=fill(0.5,n-1)
-    μ=spectralmeasure(a,b)
-    ApproxFun.plot(μ)
-
-
-
-n=20;a=0.5cos([1:n]);b=fill(0.5,n-1)
-    μ=spectralmeasure(a,b)
-    ApproxFun.plot(μ)
-
-
-α=44;β=44;a=[α/50+0.02145238,0.];b=[β/20+0.012412];
-    μ=spectralmeasure(a,b)
-    ApproxFun.plot(μ)
-
-values(μ)
+# Jacobi polynomials
+α = 1.2; β = 1.1
+  n=107;a = (β.^2-α.^2)./((2.*[0:n]+α+β).*(2.*[1:n+1]+α+β))
+  b = 2*sqrt(([1:n].*(α+[1:n]).*(β+[1:n]).*(α+β+[1:n]))./((2.*[1:n]+α+β-1).*((2.*[1:n]+α+β).^2).*(2.*[1:n]+α+β+1)))
+  μ=spectralmeasureU(a,b)
+  ν=spectralmeasureT(a,b)
+  maximum(evaluate(μ,[-.99:.01:.99])-evaluate(ν,[-.99:.01:.99]))
 
 ApproxFun.plot(μ)
-μ
-T,K = tkoperators(a,b)
-T[1:10,1:10]
-K[1:10,1:10]
+ApproxFun.plot(ν)
+
+sum(μ)
+sum(ν)
+
+length(μ)
+length(ν)
+
+# Can you make this work, Sheehan? MW
+ApproxFun.plot(μ-ν)
+
