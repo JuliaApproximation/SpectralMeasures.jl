@@ -15,7 +15,7 @@ a = []; b=[]
 
 # Chebyshev T
 a = [0.]; b=[1/sqrt(2),.5]
-  μ=spectralmeasureU(a,b,maxlength=1000000)
+  μ=spectralmeasureU(a,b,maxlength=100000)
   ν=spectralmeasureT(a,b)
   maximum(evaluate(μ,[-.99:.01:.99])-evaluate(ν,[-.99:.01:.99]))
 
@@ -38,6 +38,16 @@ n=35;a=zeros(n); b=sqrt(1:(n-1))/sqrt(n)*0.5
   μ=spectralmeasureU(a,b)
   ν=spectralmeasureT(a,b)
   maximum(evaluate(μ,[-.99:.01:.99])-evaluate(ν,[-.99:.01:.99]))
+
+# Simplest perturbation
+k = 17
+  a = [k/20];b=[]
+  μ=spectralmeasureU(a,b)
+  ApproxFun.plot(μ)
+k = -19
+  a = [k/20];b=[]
+  ν=spectralmeasureT(a,b)
+  ApproxFun.plot(ν)
 
 ApproxFun.plot(μ)
 ApproxFun.plot(ν)
