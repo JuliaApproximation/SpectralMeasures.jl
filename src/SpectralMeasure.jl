@@ -4,7 +4,7 @@ module SpectralMeasure
 import ApproxFun:BandedOperator,ToeplitzOperator,tridql!,bandinds,DiracSpace, plot, IdentityOperator,
                     TridiagonalOperator,addentries!,setdomain
 
-export spectralmeasureU, spectralmeasureT, ql,SymTriOperator, discreteEigs
+export spectralmeasure, spectralmeasureU, spectralmeasureT, ql,SymTriOperator, discreteEigs
 
 include("helper.jl")
 
@@ -100,6 +100,10 @@ function spectralmeasureT(a,b;maxlength::Int=10000)
     Fun([q0[1:numeigs].^2;(1/π)*ctscoeffs],DiracSpace(JacobiWeight(-.5,-.5,Ultraspherical{0}()),eigs))
   end
 end
+
+
+spectralmeasure(a...;opts...)=spectralmeasureT(a...;opts...) # default to T
+
 
 # Note that output Q is an array of orthogonal operators
 # Q[k] is to be interpretted as having an added kbyk identity in the top left
