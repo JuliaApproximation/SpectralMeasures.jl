@@ -1,4 +1,4 @@
-module SpectralMeasure
+module SpectralMeasures
     using Base, Compat, ApproxFun
 
 import ApproxFun:BandedOperator,ToeplitzOperator,tridql!,bandinds,DiracSpace, plot, IdentityOperator,

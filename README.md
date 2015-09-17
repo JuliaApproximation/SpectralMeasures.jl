@@ -1,1 +1,1 @@
-# SpectralMeasure.jl
+# SpectralMeasures.jl
