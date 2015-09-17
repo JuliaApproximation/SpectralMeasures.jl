@@ -1,6 +1,8 @@
 module SpectralMeasures
     using Base, Compat, ApproxFun
 
+import Base: +,-,*,/
+
 import ApproxFun:BandedOperator,ToeplitzOperator,tridql!,bandinds,DiracSpace, plot, IdentityOperator,
                     TridiagonalOperator,addentries!,setdomain, SavedBandedOperator, resizedata!
 
@@ -134,7 +136,7 @@ end
 
 function onesAndZeros(n)
   v = ones(n)
-  for i = 1:floor(n/2)
+  for i = 1:div(n,2)
     v[2*i] = 0
   end
   v
