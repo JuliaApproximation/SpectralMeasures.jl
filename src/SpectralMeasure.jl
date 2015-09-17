@@ -2,7 +2,7 @@ module SpectralMeasure
     using Base, Compat, ApproxFun
 
 import ApproxFun:BandedOperator,ToeplitzOperator,tridql!,bandinds,DiracSpace, plot, IdentityOperator,
-                    TridiagonalOperator,addentries!,setdomain
+                    TridiagonalOperator,addentries!,setdomain, SavedBandedOperator, resizedata!
 
 export spectralmeasure, spectralmeasureU, spectralmeasureT, ql,SymTriOperator, discreteEigs
 
@@ -183,7 +183,13 @@ end
 
 # Adaptively solves CSx=f by forward substitution, where C is lower triangular
 # and S is the (unbounded lower triangular) change of basic matrix from Chebyshev T to Chebyshev U
-function forwardSubChebyshevT(C,bandwidth,f,tol,maxlength)
+function forwardSubChebyshevT(Cin,bandwidth,f,tol,maxlength)
+    C=SavedBandedOperator(Cin)  # This avoids recalculating C from scrate.
+    datalength=300    
+    resizedata!(C,300)
+
+
+
   # I want to make this a functional. No time to work out how to.
   # f = CompactFunctional(f,)
   g = [f;0]
@@ -203,6 +209,12 @@ function forwardSubChebyshevT(C,bandwidth,f,tol,maxlength)
     if k > m
       push!(g,0)
     end
+    
+    if k > datalength
+        datalength*=2
+        resizedata!(C,datalength)
+    end
+    
     #There appears to be some issue with returning submatrices of L that sometimes gives Vectors and sometimes Matrix-es.
     tmp = 0
     for i = max(1,k-bandwidth):k-1
