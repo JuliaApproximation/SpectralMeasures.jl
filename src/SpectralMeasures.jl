@@ -92,7 +92,7 @@ function spectralmeasureT(a,b;maxlength::Int=10000)
     # note that a and b have been changed (within this function call) after deflation
     n = max(length(a),length(b)+1)
 
-    STransCropped = CompactOperator((1-sqrt(2))*ones(1,1))+ToeplitzOperator([0.],sqrt(2)*onesAndZeros(length(q0)-numeigs))
+    STransCropped = FiniteOperator((1-sqrt(2))*ones(1,1))+ToeplitzOperator([0.],sqrt(2)*onesAndZeros(length(q0)-numeigs))
     factor1coeffs = STransCropped*(C2'*q0[numeigs+1:end])
     factor1 = Fun([factor1coeffs[1];sqrt(2)*factor1coeffs[2:end]],Ultraspherical{0})
     factor2coeffs = forwardSubChebyshevT(C2,2*n,q0[numeigs+1:end],1e-15,maxlength)
@@ -187,7 +187,7 @@ end
 # and S is the (unbounded lower triangular) change of basic matrix from Chebyshev T to Chebyshev U
 function forwardSubChebyshevT(Cin,bandwidth,f,tol,maxlength)
     C=SavedBandedOperator(Cin)  # This avoids recalculating C from scrate.
-    datalength=300    
+    datalength=300
     resizedata!(C,300)
 
 
@@ -211,12 +211,12 @@ function forwardSubChebyshevT(Cin,bandwidth,f,tol,maxlength)
     if k > m
       push!(g,0)
     end
-    
+
     if k > datalength
         datalength*=2
         resizedata!(C,datalength)
     end
-    
+
     #There appears to be some issue with returning submatrices of L that sometimes gives Vectors and sometimes Matrix-es.
     tmp = 0
     for i = max(1,k-bandwidth):k-1
@@ -276,7 +276,7 @@ function connectionCoeffsOperator(a,b)
       K[i,j]-=T[i,j]
     end
   end
-  T+CompactOperator(K)
+  T+FiniteOperator(K)
 end
 
 function connectionCoeffsMatrix(a,b,c,d,N)
@@ -364,7 +364,7 @@ function ToeplitzOperator(T::ToeplitzGivens)
     ToeplitzOperator(neg,nonneg)
 end
 
-addentries!(T::ToeplitzGivens,A,kr::Range)=addentries!(ToeplitzOperator(T),A,kr)
+addentries!(T::ToeplitzGivens,A,kr::Range,::Colon)=addentries!(ToeplitzOperator(T),A,kr,:)
 
 # This produces an orthogonal operator that is Toeplitz + compact (input is c and s)
 function partialgivens(TG::ToeplitzGivens,m)
@@ -389,7 +389,7 @@ function partialgivens(TG::ToeplitzGivens,m)
         ret*=-s
         K[k+m,m]=ret-neg[k]
     end
-    T+CompactOperator(K)
+    T+FiniteOperator(K)
 end
 
 function ql(a,b,t0,t1)
@@ -426,13 +426,10 @@ function ql(a,b,t0,t1)
         end
     end
 
-    partialgivens(TQ,n+1)*(I+CompactOperator(Q)),TL+CompactOperator(L)
+    partialgivens(TQ,n+1)*(I+FiniteOperator(Q)),TL+FiniteOperator(L)
 end
 
 
 include("PertToeplitz.jl")
 
 end  #Module
-
-
-

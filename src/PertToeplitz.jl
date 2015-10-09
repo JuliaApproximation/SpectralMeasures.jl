@@ -8,7 +8,7 @@ end
 SymTriOperator(A::Vector,B::Vector)=SymTriOperator{promote_type(eltype(A),eltype(B))}(A,B)
 
 
-function addentries!(S::SymTriOperator,A,kr::Range)
+function addentries!(S::SymTriOperator,A,kr::Range,::Colon)
    for k=kr
         if k ≤ length(S.dv)
             A[k,k]+=S.dv[k]
@@ -39,8 +39,8 @@ function SymTriToeplitz(T::ToeplitzOperator,K::SymTriOperator)
 end
 
 
-function addentries!(S::SymTriToeplitz,A,kr::Range)
-    addentries!(SymTriOperator(S.dv,S.ev),A,kr)
+function addentries!(S::SymTriToeplitz,A,kr::Range,::Colon)
+    addentries!(SymTriOperator(S.dv,S.ev),A,kr,:)
 
    for k=kr
         if 2 ≤ k
@@ -55,14 +55,14 @@ end
 
 immutable PertToeplitz{T} <: BandedOperator{T}
     T::ToeplitzOperator{T}
-    K::CompactOperator{T}
+    K::FiniteOperator{T}
 end
 
 bandinds(P::PertToeplitz)=min(bandinds(P.T,1),bandinds(P.K,1)),max(bandinds(P.T,2),bandinds(P.K,2))
 
-function addentries!(P::PertToeplitz,A,kr::Range)
-    addentries!(P.T,A,kr)
-    addentries!(P.K,A,kr)
+function addentries!(P::PertToeplitz,A,kr::Range,::Colon)
+    addentries!(P.T,A,kr,:)
+    addentries!(P.K,A,kr,:)
 end
 
 
@@ -72,9 +72,9 @@ Base.issym(T::ToeplitzOperator)=length(T.negative)==length(T.nonnegative)-1&&T.n
 Base.slice(P::PertToeplitz,kr::FloatRange,jr::FloatRange)=slice(P.T,kr,jr)+slice(P.K,kr,jr)
 
 
-+(T::ToeplitzOperator,K::CompactOperator)=PertToeplitz(T,K)
++(T::ToeplitzOperator,K::FiniteOperator)=PertToeplitz(T,K)
 +(T::ToeplitzOperator,K::SymTriOperator)=SymTriToeplitz(T,K)
-+(K::Union(CompactOperator,SymTriOperator),T::ToeplitzOperator)=T+K
++(K::Union{FiniteOperator,SymTriOperator},T::ToeplitzOperator)=T+K
 
 for OP in (:+,:-)
     @eval begin
