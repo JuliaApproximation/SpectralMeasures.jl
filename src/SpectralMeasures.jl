@@ -57,7 +57,9 @@ function spectralmeasureU(a,b;maxlength::Int=10000)
     ctsfactor2 = Fun(forwardSubChebyshevU(C2,2*n,q0[numeigs+1:end],1e-15,maxlength),Ultraspherical{1}())
     #ctsfactor2 = Fun(linsolve(C2,q0[numeigs+1:end];maxlength=maxlength),Ultraspherical{1}())
     ctscoeffs = (ctsfactor1*ctsfactor2).coefficients
-    Fun([q0[1:numeigs].^2;(2/pi)*ctscoeffs],DiracSpace(JacobiWeight(.5,.5,Ultraspherical{1}()),eigs))
+
+    Fun((2/pi)*ctscoeffs,JacobiWeight(.5,.5,Ultraspherical{1}()))+
+                    Fun(q0[1:numeigs].^2,DiracSpace(eigs))
   end
 end
 
@@ -99,7 +101,7 @@ function spectralmeasureT(a,b;maxlength::Int=10000)
     factor2 = Fun([factor2coeffs[1];sqrt(2)*factor2coeffs[2:end]],Ultraspherical{0})
     ctscoeffs = (factor1*factor2).coefficients
 
-    Fun([q0[1:numeigs].^2;(1/π)*ctscoeffs],DiracSpace(JacobiWeight(-.5,-.5,Ultraspherical{0}()),eigs))
+    Fun((1/π)*ctscoeffs,JacobiWeight(-.5,-.5,Ultraspherical{0}()))+Fun(q0[1:numeigs].^2,DiracSpace(eigs))
   end
 end
 
