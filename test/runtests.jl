@@ -1,7 +1,5 @@
 using ApproxFun
-using SpectralMeasure
-using Gadfly
-set_default_plot_format(:svg)
+using SpectralMeasures
 
 ############
 ### Tests
