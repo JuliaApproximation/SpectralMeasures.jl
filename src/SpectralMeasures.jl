@@ -34,8 +34,8 @@ function spectralmeasure(a,b)
   f = Fun(C'*(C*[1]),Ultraspherical{1}())
   z = sort(real(filter!(z->abs(z)<1 && isreal(z),complexroots(c))))
   eigs=real(map(joukowsky,z))
-  weights = (z-1./z).^2./(z.*real(evaluate(cprime,z)).*real(evaluate(c,1./z)))
-  Fun([weights;(2/pi)*(1./f).coefficients],DiracSpace(JacobiWeight(.5,.5,Ultraspherical{1}()),eigs))
+  weights = (z-1./z).^2./(z.*real(cprime(z)).*real(c(1./z)))
+  Fun((2/pi)*(1./f).coefficients, JacobiWeight(.5,.5,Ultraspherical{1}())) + Fun(weights,DiracSpace(eigs))
 end
 
 function spectralmeasureU(a,b;maxlength::Int=10000)
