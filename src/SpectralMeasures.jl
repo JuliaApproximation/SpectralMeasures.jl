@@ -1,5 +1,5 @@
 module SpectralMeasures
-    using Base, Compat, ApproxFun
+    using Base, Compat, ApproxFun, ComplexPhasePortrait, ImageView, ImageMagick
 
 import Base: +,-,*,/
 
@@ -19,9 +19,34 @@ function discreteEigs(a,b)
   # Finds C such that J*C = C*Toeplitz([0,1/2])
   C = connectionCoeffsOperator(a,b)
   Tfun = Fun([C.T[1,1];C.T.negative],Taylor)
-  eigs=sort!(real(map!(joukowsky,filter!(z->abs(z)<1 && isreal(z),complexroots(Tfun)))))
+  eigs=sort(real(map(joukowsky,filter!(z->abs(z)<1 && isreal(z),complexroots(Tfun)))))
   eigs,C
 end
+
+function plotdiscresolvent(a,b)
+  C = SpectralMeasures.connectionCoeffsOperator(a,b)
+  Cmu = SpectralMeasures.connectionCoeffsOperator(a[2:end]/b[1],b[2:end]/b[1])
+  c = Fun([C.T[1,1];C.T.negative],Taylor)
+  cmu = Fun([Cmu.T[1,1];Cmu.T.negative],Taylor)
+  nx = 1000
+  x = linspace(-2, 2, nx)
+  Z = x' .+ flipdim(x, 1)*im
+  img = portrait(-cmu(Z)./c(Z),PTstepmod)
+  view(img, pixelspacing = [1,1])
+end
+
+function plotsplitplaneresolvent(a,b)
+  C = SpectralMeasures.connectionCoeffsOperator(a,b)
+  Cmu = SpectralMeasures.connectionCoeffsOperator(a[2:end]/b[1],b[2:end]/b[1])
+  f = Fun(C'*(C*[1]),Ultraspherical{1}())
+  fmu = Fun(Cmu'*((C*[1])[2:end]),Ultraspherical{1}())
+  nx = 1000
+  x = linspace(-2, 2, nx)
+  Z = x' .+ flipdim(x, 1)*im
+  img = portrait((2*sqrt(Z-1).*sqrt(Z+1)-2*Z-fmu(Z))./f(Z),PTstepmod)
+  view(img, pixelspacing = [1,1])
+end
+
 
 function spectralmeasure(a,b)
   a = chop!(a); b = .5+chop!(b-.5)
@@ -29,14 +54,14 @@ function spectralmeasure(a,b)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
   # Finds C such that J*C = C*Toeplitz([0,1/2])
   C = connectionCoeffsOperator(a,b)
-  c = Fun([C.T[1,1];C.T.negative],Taylor)
-  cprime = differentiate(c)
-  f = Fun(C'*(C*[1]),Ultraspherical{1}())
+  c = Fun(chop([C.T[1,1];C.T.negative]),Taylor)
+  f = Fun(chop(C'*(C*[1])),Ultraspherical{1}())
   z = sort(real(filter!(z->abs(z)<1 && isreal(z),complexroots(c))))
-  eigs=real(map(joukowsky,z))
-  weights = (z-1./z).^2./(z.*real(cprime(z)).*real(c(1./z)))
   μ1 = Fun((2/pi)*(1./f).coefficients, JacobiWeight(.5,.5,Ultraspherical{1}()))
-  if length(eigs) > 0
+  if length(z) > 0
+    cprime = differentiate(c)
+    eigs=real(map(joukowsky,z))
+    weights = (z-1./z).^2./(z.*real(cprime(z)).*real(c(1./z)))
     μ1 + Fun(weights,DiracSpace(eigs))
   else
     μ1
