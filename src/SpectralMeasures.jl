@@ -23,6 +23,21 @@ function discreteEigs(a,b)
   eigs,C
 end
 
+function spectralmeasure(a,b)
+  a = chop!(a); b = .5+chop!(b-.5)
+  n = max(length(a),length(b)+1)
+  a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
+  # Finds C such that J*C = C*Toeplitz([0,1/2])
+  C = connectionCoeffsOperator(a,b)
+  c = Fun([C.T[1,1];C.T.negative],Taylor)
+  cprime = differentiate(c)
+  f = Fun(C'*(C*[1]),Ultraspherical{1}())
+  z = sort(real(filter!(z->abs(z)<1 && isreal(z),complexroots(c))))
+  eigs=real(map(joukowsky,z))
+  weights = (z-1./z).^2./(z.*real(evaluate(cprime,z)).*real(evaluate(c,1./z)))
+  Fun([weights;(2/pi)*(1./f).coefficients],DiracSpace(JacobiWeight(.5,.5,Ultraspherical{1}()),eigs))
+end
+
 function spectralmeasureU(a,b;maxlength::Int=10000)
   # a is the first n diagonal elements of J (0 thereafter)
   # b is the first n-1 off-diagonal elements of J (.5 thereafter)
