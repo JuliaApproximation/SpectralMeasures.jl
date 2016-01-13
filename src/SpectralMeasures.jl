@@ -24,10 +24,13 @@ function discreteEigs(a,b)
 end
 
 function plotdiscresolvent(a,b)
+  a = chop!(a); b = .5+chop!(b-.5)
+  n = max(length(a),length(b)+1)
+  a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
   C = SpectralMeasures.connectionCoeffsOperator(a,b)
-  Cmu = SpectralMeasures.connectionCoeffsOperator(a[2:end]/b[1],b[2:end]/b[1])
+  Cmu = SpectralMeasures.connectionCoeffsOperator(a[2:end],b[2:end])
   c = Fun([C.T[1,1];C.T.negative],Taylor)
-  cmu = Fun([Cmu.T[1,1];Cmu.T.negative],Taylor)
+  cmu = Fun([0;Cmu.T[1,1];Cmu.T.negative]/b[1],Taylor)
   nx = 1000
   x = linspace(-2, 2, nx)
   Z = x' .+ flipdim(x, 1)*im
@@ -36,10 +39,13 @@ function plotdiscresolvent(a,b)
 end
 
 function plotsplitplaneresolvent(a,b)
+  a = chop!(a); b = .5+chop!(b-.5)
+  n = max(length(a),length(b)+1)
+  a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
   C = SpectralMeasures.connectionCoeffsOperator(a,b)
-  Cmu = SpectralMeasures.connectionCoeffsOperator(a[2:end]/b[1],b[2:end]/b[1])
+  Cmu = SpectralMeasures.connectionCoeffsOperator(a[2:end],b[2:end])
   f = Fun(C'*(C*[1]),Ultraspherical{1}())
-  fmu = Fun(Cmu'*((C*[1])[2:end]),Ultraspherical{1}())
+  fmu = Fun(Cmu'*((C*[1])[2:end])/b[1],Ultraspherical{1}())
   nx = 1000
   x = linspace(-2, 2, nx)
   Z = x' .+ flipdim(x, 1)*im
@@ -54,8 +60,8 @@ function spectralmeasure(a,b)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
   # Finds C such that J*C = C*Toeplitz([0,1/2])
   C = connectionCoeffsOperator(a,b)
-  c = Fun(chop([C.T[1,1];C.T.negative]),Taylor)
-  f = Fun(chop(C'*(C*[1])),Ultraspherical{1}())
+  c = Fun([C.T[1,1];C.T.negative],Taylor)
+  f = Fun(C'*(C*[1]),Ultraspherical{1}())
   z = sort(real(filter!(z->abs(z)<1 && isreal(z),complexroots(c))))
   μ1 = Fun((2/pi)*(1./f).coefficients, JacobiWeight(.5,.5,Ultraspherical{1}()))
   if length(z) > 0
