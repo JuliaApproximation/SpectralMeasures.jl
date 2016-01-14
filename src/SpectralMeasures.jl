@@ -34,8 +34,7 @@ function plotdiscresolvent(a,b)
   nx = 1000
   x = linspace(-2, 2, nx)
   Z = x' .+ flipdim(x, 1)*im
-  img = portrait(-cmu(Z)./c(Z),PTstepmod)
-  view(img, pixelspacing = [1,1])
+  portrait(-cmu(Z)./c(Z),PTstepmod)
 end
 
 function plotsplitplaneresolvent(a,b)
@@ -49,8 +48,7 @@ function plotsplitplaneresolvent(a,b)
   nx = 1000
   x = linspace(-2, 2, nx)
   Z = x' .+ flipdim(x, 1)*im
-  img = portrait((2*sqrt(Z-1).*sqrt(Z+1)-2*Z-fmu(Z))./f(Z),PTstepmod)
-  view(img, pixelspacing = [1,1])
+  portrait((2*sqrt(Z-1).*sqrt(Z+1)-2*Z-fmu(Z))./f(Z),PTstepmod)
 end
 
 
