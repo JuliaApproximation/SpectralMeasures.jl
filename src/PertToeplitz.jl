@@ -1,4 +1,4 @@
-
+import ApproFun.bandinds
 
 
 immutable SymTriOperator{T} <: TridiagonalOperator{T}
