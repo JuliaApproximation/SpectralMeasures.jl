@@ -8,6 +8,8 @@ TridiagonalOperator,addentries!,setdomain, SavedBandedOperator, resizedata!
 
 export spectralmeasure, spectralmeasureRat, spectralmeasureT, discreteEigs, connectionCoeffsOperator
 
+export DiscreteLaplacian
+
 include("helper.jl")
 include("ql.jl")
 include("PertToeplitz.jl")
