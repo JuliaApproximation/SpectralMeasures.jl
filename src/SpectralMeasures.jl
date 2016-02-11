@@ -8,6 +8,8 @@ TridiagonalOperator,addentries!,setdomain, SavedBandedOperator, resizedata!
 
 export spectralmeasure, spectralmeasureU, spectralmeasureT, ql,SymTriOperator, discreteEigs
 
+export DiscreteLaplacian
+
 include("helper.jl")
 
 function discreteEigs(a,b)

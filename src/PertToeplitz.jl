@@ -1,6 +1,35 @@
 
 
 
+## New ToeplitzOperator routines
+
+
+ToeplitzOperator(L::UniformScaling)=ToeplitzOperator(eltype(L)[],[L.λ])
+
+Base.issym(T::ToeplitzOperator)=length(T.negative)==length(T.nonnegative)-1&&T.negative==T.nonnegative[2:end]
+
+
+for OP in (:+,:-)
+    @eval begin
+        $OP(A::ToeplitzOperator,c::UniformScaling)=$OP(A,ToeplitzOperator(c))
+        $OP(c::UniformScaling,A::ToeplitzOperator)=$OP(ToeplitzOperator(c),A)
+        function $OP(A::ToeplitzOperator,B::ToeplitzOperator)
+            n=max(length(A.negative),length(B.negative))
+            m=max(length(A.nonnegative),length(B.nonnegative))
+            ToeplitzOperator($OP(pad(A.negative,n),pad(B.negative,n)),
+                             $OP(pad(A.nonnegative,m),pad(B.nonnegative,m)))
+        end
+    end
+end
+
+
+
+## Symetric tridiagonal finite dimensional operators
+
+
+
+
+
 immutable SymTriOperator{T} <: TridiagonalOperator{T}
     dv::Vector{T}
     ev::Vector{T}
@@ -39,6 +68,18 @@ function SymTriToeplitz(T::ToeplitzOperator,K::SymTriOperator)
 end
 
 
+function SymTriToeplitz(T::ToeplitzOperator)
+    @assert issym(T)
+
+    if isdiag(T)
+        SymTriToeplitz(eltype(T)[],eltype(T)[],T.nonnegative[1],zero(eltype(T)))
+    elseif bandinds(T)==(-1,1)
+        SymTriToeplitz(eltype(T)[],eltype(T)[],T.nonnegative...)
+    else
+        error("Not a tridiagonal operator")
+    end
+end
+
 function addentries!(S::SymTriToeplitz,A,kr::Range,::Colon)
     addentries!(SymTriOperator(S.dv,S.ev),A,kr,:)
 
@@ -66,7 +107,8 @@ function addentries!(P::PertToeplitz,A,kr::Range,::Colon)
 end
 
 
-Base.issym(T::ToeplitzOperator)=length(T.negative)==length(T.nonnegative)-1&&T.negative==T.nonnegative[2:end]
+
+
 
 # slcie of a PertToeplitz is a PertToeplitz
 Base.slice(P::PertToeplitz,kr::FloatRange,jr::FloatRange)=slice(P.T,kr,jr)+slice(P.K,kr,jr)
@@ -91,6 +133,10 @@ end
 
 
 
+
+for OP in (:ql,:(Base.eigvals),:(Base.eig))
+    @eval $OP(A::ToeplitzOperator)=$OP(SymTriToeplitz(A))
+end
 
 
 ql(A::SymTriToeplitz)=ql(A.dv+A.a,A.ev+A.b,A.a,A.b)

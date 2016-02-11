@@ -37,3 +37,6 @@ function jacobioperator(a,b,t0,t1)
 end
 
 jacobioperator(a,b) = jacobioperator(a,b,0,.5)
+
+
+DiscreteLaplacian()=ToeplitzOperator([0.5],[0.,0.5])
