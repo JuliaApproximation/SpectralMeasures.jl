@@ -1,5 +1,5 @@
 module SpectralMeasures
-using Base, Compat, ApproxFun, ComplexPhasePortrait, ImageMagick
+using Base, Compat, ApproxFun
 
 import Base: +,-,*,/
 

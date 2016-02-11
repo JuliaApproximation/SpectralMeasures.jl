@@ -1,3 +1,5 @@
+
+
 # Note that output Q is an array of orthogonal operators
 # Q[k] is to be interpretted as having an added kbyk identity in the top left
 function qlIteration(eigs,a,b,tol)
@@ -24,6 +26,16 @@ function qlIteration(eigs,a,b,tol)
   end
   eigs,a,b,Q,Qbndwdth
 end
+
+
+immutable HessenbergOrthogonal{T} <: BandedOperator{Float64}
+    c::Vector{T}
+    s::Vector{T}
+    c∞::T
+    s∞::T
+end
+
+
 
 
 immutable ToeplitzGivens <: BandedOperator{Float64}

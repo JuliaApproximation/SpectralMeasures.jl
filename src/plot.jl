@@ -1,3 +1,5 @@
+using ComplexPhasePortrait, ImageMagick
+
 
 function plotdiscresolvent(a,b)
   a = chop!(a); b = .5+chop!(b-.5)
