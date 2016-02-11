@@ -4,7 +4,7 @@ using Base, Compat, ApproxFun
 import Base: +,-,*,/
 
 import ApproxFun:BandedOperator,ToeplitzOperator,DiracSpace, plot, IdentityOperator,
-            TridiagonalOperator,addentries!,setdomain, SavedBandedOperator, resizedata!, bandinds
+            TridiagonalOperator,addentries!,setdomain, SavedBandedOperator, resizedata!, bandinds, PointSpace
 
 export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs, connectionCoeffsOperator
 
@@ -53,12 +53,10 @@ function spectralmeasureT(a,b)
   # Finds C such that J*C = C*Toeplitz([0,1/2])
   C = connectionCoeffsOperator(a,b)
   c = Fun([C.T[1,1];C.T.negative],Taylor)
-  f = Fun(C'*(C*[1]),Ultraspherical{1}())
 
   # Compute continuous part of measure
-  #coeffs = Fun(x->(2/pi)*(1-x^2)./abs(c(exp(im*arc,).coefficients
-  #coeffs = [coeffs[1];sqrt(2)*coeffs[2:end]] #normalised T_k polynomials
-  #μ = Fun(coeffs,JacobiWeight(.5,.5,Ultraspherical{1}()))
+  coeffs = Fun(x->(2/pi)*(1-x.^2)./abs(c(x+im*sqrt(1-x.^2))).^2,Ultraspherical{0}()).coefficients
+  μ = Fun(coeffs,JacobiWeight(-.5,-.5,Ultraspherical{0}()))
 
   # Check for discrete eigenvalues
   z = sort(real(filter!(z->abs(z)<1 && isreal(z),complexroots(c))))
