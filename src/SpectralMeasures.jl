@@ -11,7 +11,6 @@ export spectralmeasure, spectralmeasureU, spectralmeasureT, ql,SymTriOperator, d
 include("helper.jl")
 
 function discreteEigs(a,b)
-<<<<<<< HEAD
   a = chop!(a); b = .5+chop!(b-.5)
   n = max(length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
@@ -21,51 +20,6 @@ function discreteEigs(a,b)
   eigs=sort(real(map(joukowsky,filter!(z->abs(z)<1 && isreal(z),complexroots(Tfun)))))
   eigs,C
 end
-
-function plotdiscresolvent(a,b)
-  a = chop!(a); b = .5+chop!(b-.5)
-  n = max(length(a),length(b)+1)
-  a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
-  C = connectionCoeffsOperator(a,b)
-  Cmu = connectionCoeffsOperator(a[2:end],b[2:end])
-  c = Fun([C.T[1,1];C.T.negative],Taylor)
-  cmu = Fun([0;Cmu.T[1,1];Cmu.T.negative]/b[1],Taylor)
-  nx = 1000
-  x = linspace(-2, 2, nx)
-  Z = x' .+ flipdim(x, 1)*im
-  img=portrait(-cmu(Z)./c(Z),PTstepmod)
-  img["pixelspacing"] = [1,1]
-  img
-end
-
-function plotsplitplaneresolvent(a,b)
-  a = chop!(a); b = .5+chop!(b-.5)
-  n = max(length(a),length(b)+1)
-  a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
-  C = connectionCoeffsOperator(a,b)
-  Cmu = connectionCoeffsOperator(a[2:end],b[2:end])
-  f = Fun(C'*(C*[1]),Ultraspherical{1}())
-  fmu = Fun(Cmu'*((C*[1])[2:end])/b[1],Ultraspherical{1}())
-  nx = 1000
-  x = linspace(-2, 2, nx)
-  Z = x' .+ flipdim(x, 1)*im
-  img=portrait((2*sqrt(Z-1).*sqrt(Z+1)-2*Z-fmu(Z))./f(Z),PTstepmod)
-  img["pixelspacing"] = [1,1]
-  img
-end
-=======
-    a = chop!(a); b = .5+chop!(b-.5)
-    n = max(length(a),length(b)+1)
-    a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
-    # Finds C such that J*C = C*Toeplitz([0,1/2])
-    C = connectionCoeffsOperator(a,b)
-    Tfun = Fun([C.T[1,1];C.T.negative],Taylor)
-    eigs=sort(real(map(joukowsky,filter!(z->abs(z)<1 && isreal(z),complexroots(Tfun)))))
-    eigs,C
-end
-
->>>>>>> 3e5fdea3528ee938cf26dd6bfc505105a8da1059
-
 
 function spectralmeasure(a,b)
     a = chop!(a); b = .5+chop!(b-.5)
@@ -89,51 +43,6 @@ end
 
 
 spectralmeasure(a...;opts...)=spectralmeasureT(a...;opts...) # default to T
-
-
-
-
-function forwardSubChebyshevU(C,bandwidth,f,tol,maxlength)
-    # I want to make this a functional. No time to work out how to.
-    # f = CompactFunctional(f,)
-    if 3+bandwidth > length(f)
-        g = [f;zeros(3+bandwidth-length(f))]
-    else
-        g = f
-    end
-    m = length(g)
-
-    # I also want  y to be a functional
-    y = zeros(2)
-    y[1] = g[1]/C[1,1]
-    y[2] = (g[2]-C[2,1]*g[1])/C[2,2]
-
-    k = 3
-    cvg = false
-    while cvg == false
-        if k+bandwidth > m
-            push!(g,0)
-            m+=1
-        end
-        #There appears to be some issue with returning submatrices of C that sometimes gives Vectors and sometimes Matrix-es.
-        tmp = 0
-        for i = max(1,k-bandwidth):k-1
-            tmp += C[k,i]*y[i]
-        end
-        yk = (g[k]-tmp)/C[k,k]
-        push!(y,yk)
-        # If the forward L^2 error is less than tol or we reach max length, stop
-        if k > bandwidth
-            if ((norm(g[k+1:k+bandwidth]-C[k+1:k+bandwidth,k-bandwidth:k]*y[k-bandwidth:k]) < tol) | (k == maxlength))
-                cvg = true
-            end
-        end
-        k = k+1
-    end
-    y=chop!(y)
-    y
-end
-
 
 function connectionCoeffsOperator(a,b)
     n = max(length(a),length(b)+1)
@@ -195,8 +104,6 @@ end
 
 # This is for Chebyshev U
 connectionCoeffsMatrix(a,b,N) = connectionCoeffsMatrix(a,b,[],[],N)
-
-
 
 include("ql.jl")
 
