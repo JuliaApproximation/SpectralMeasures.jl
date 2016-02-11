@@ -6,7 +6,7 @@ import Base: +,-,*,/
 import ApproxFun:BandedOperator,ToeplitzOperator,DiracSpace, plot, IdentityOperator,
             TridiagonalOperator,addentries!,setdomain, SavedBandedOperator, resizedata!, bandinds
 
-export spectralmeasure, spectralmeasureRat, spectralmeasureT, discreteEigs, connectionCoeffsOperator
+export spectralmeasure, spectralmeasureRat, spectralmeasureU, discreteEigs, connectionCoeffsOperator
 
 export DiscreteLaplacian
 
@@ -34,15 +34,16 @@ function spectralmeasureRat(a,b)
     cprime = differentiate(c)
     eigs=real(map(joukowsky,z))
     weights = (z-1./z).^2./(z.*real(cprime(z)).*real(c(1./z)))
-    μ = RatFun(Fun(2/pi,JacobiWeight(.5,.5,Ultraspherical{1}())),f)
-    μ1 + Fun(weights,DiracSpace(eigs))
+    p = Fun(2/pi,JacobiWeight(.5,.5,Ultraspherical{1}())) + Fun(weights,DiracSpace(eigs))
+    q = f + Fun(ones(length(eigs)),PointSpace(eigs))
+    μ = RatFun(p,q)
   else
     μ = RatFun(Fun(2/pi,JacobiWeight(.5,.5,Ultraspherical{1}())),f)
   end
   μ
 end
 
-function spectralmeasureT(a,b)
+function spectralmeasureU(a,b)
   # Chop the a and b down
   a = chop!(a); b = .5+chop!(b-.5)
   n = max(length(a),length(b)+1)
@@ -54,9 +55,9 @@ function spectralmeasureT(a,b)
   f = Fun(C'*(C*[1]),Ultraspherical{1}())
 
   # Compute continuous part of measure
-  coeffs = (2/pi)*(Fun(x->1-x^2,Ultraspherical{1}())./f).coefficients
-  coeffs = [coeffs[1];sqrt(2)*coeffs[2:end]] #normalised T_k polynomials
-  μ = Fun(coeffs,JacobiWeight(-.5,-.5,Ultraspherical{0}()))
+  coeffs = (2/pi)*(1./f).coefficients
+  #coeffs = [coeffs[1];sqrt(2)*coeffs[2:end]] #normalised T_k polynomials
+  μ = Fun(coeffs,JacobiWeight(.5,.5,Ultraspherical{1}()))
 
   # Check for discrete eigenvalues
   z = sort(real(filter!(z->abs(z)<1 && isreal(z),complexroots(c))))
