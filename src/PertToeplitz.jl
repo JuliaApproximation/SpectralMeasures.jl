@@ -1,4 +1,4 @@
-import ApproFun.bandinds
+import ApproxFun.bandinds
 
 
 ## New ToeplitzOperator routines
