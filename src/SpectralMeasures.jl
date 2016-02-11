@@ -54,7 +54,7 @@ function spectralmeasureT(a,b)
   f = Fun(C'*(C*[1]),Ultraspherical{1}())
 
   # Compute continuous part of measure
-  coeffs = (2/pi)*((1-x^2)./f).coefficients
+  coeffs = (2/pi)*(Fun(x->1-x^2,Ultraspherical{1}())./f).coefficients
   coeffs = [coeffs[1];sqrt(2)*coeffs[2:end]] #normalised T_k polynomials
   μ = Fun(coeffs,JacobiWeight(-.5,-.5,Ultraspherical{0}()))
 
