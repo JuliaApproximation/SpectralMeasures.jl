@@ -8,7 +8,7 @@ import ApproxFun:BandedOperator,ToeplitzOperator,DiracSpace, plot, IdentityOpera
 
 export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs, connectionCoeffsOperator
 
-export DiscreteLaplacian, jacobioperator,ql
+export DiscreteLaplacian, jacobioperator,ql, RatFun, ratEval, ratPlot
 
 include("helper.jl")
 include("ql.jl")
@@ -32,12 +32,13 @@ function spectralmeasureRat(a,b)
   # Check for discrete eigenvalues
   z = sort(real(filter!(z->abs(z)<1 && isreal(z),complexroots(c))))
   if length(z) > 0
-    cprime = differentiate(c)
-    eigs=real(map(joukowsky,z))
-    weights = (z-1./z).^2./(z.*real(cprime(z)).*real(c(1./z)))
-    p = Fun(2/pi,JacobiWeight(.5,.5,Ultraspherical{1}())) + Fun(weights,DiracSpace(eigs))
-    q = f + Fun(ones(length(eigs)),PointSpace(eigs))
-    μ = RatFun(p,q)
+    error("Can't deal with discrete spectrum until PointsSpace is fully implemented.")
+#     cprime = differentiate(c)
+#     eigs=real(map(joukowsky,z))
+#     weights = (z-1./z).^2./(z.*real(cprime(z)).*real(c(1./z)))
+#     p = Fun(2/pi,JacobiWeight(.5,.5,Ultraspherical{1}())) + Fun(weights,DiracSpace(eigs))
+#     q = f + Fun(ones(length(eigs)),PointSpace(eigs))
+#     μ = RatFun(p,q)
   else
     μ = RatFun(Fun(2/pi,JacobiWeight(.5,.5,Ultraspherical{1}())),f)
   end
@@ -96,8 +97,6 @@ function spectralmeasureU(a,b)
     μ
   end
 end
-
-spectralmeasure(a...;opts...)=spectralmeasureT(a...;opts...) # default to T
 
 function discreteEigs(a,b)
   a = chop!(a); b = .5+chop!(b-.5)
