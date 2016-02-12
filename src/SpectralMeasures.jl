@@ -40,7 +40,7 @@ function spectralmeasureRat(a,b)
 #     q = f + Fun(ones(length(eigs)),PointSpace(eigs))
 #     μ = RatFun(p,q)
   else
-    μ = RatFun(Fun(2/pi,JacobiWeight(.5,.5,Ultraspherical{1}())),f)
+    μ = RatFun(Fun([2/pi],JacobiWeight(.5,.5,Ultraspherical{1}())),f)
   end
   μ
 end
