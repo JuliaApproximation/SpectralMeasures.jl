@@ -8,7 +8,7 @@ import ApproxFun:BandedOperator,ToeplitzOperator,DiracSpace, plot, IdentityOpera
 
 export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs, connectionCoeffsOperator
 
-export DiscreteLaplacian, jacobioperator,ql
+export DiscreteLaplacian, jacobioperator,ql, RatFun, ratEval, ratPlot
 
 include("helper.jl")
 include("ql.jl")
@@ -96,8 +96,6 @@ function spectralmeasureU(a,b)
     μ
   end
 end
-
-spectralmeasure(a...;opts...)=spectralmeasureT(a...;opts...) # default to T
 
 function discreteEigs(a,b)
   a = chop!(a); b = .5+chop!(b-.5)
