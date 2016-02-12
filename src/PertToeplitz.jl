@@ -90,7 +90,7 @@ function addentries!(S::SymTriToeplitz,A,kr::Range,::Colon)
     A
 end
 
-
+## represents T + K where T is Toeplitz and K is finite-dimensional
 immutable PertToeplitz{T} <: BandedOperator{T}
     T::ToeplitzOperator{T}
     K::FiniteOperator{T}
