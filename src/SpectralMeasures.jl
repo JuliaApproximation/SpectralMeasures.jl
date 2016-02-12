@@ -32,12 +32,13 @@ function spectralmeasureRat(a,b)
   # Check for discrete eigenvalues
   z = sort(real(filter!(z->abs(z)<1 && isreal(z),complexroots(c))))
   if length(z) > 0
-    cprime = differentiate(c)
-    eigs=real(map(joukowsky,z))
-    weights = (z-1./z).^2./(z.*real(cprime(z)).*real(c(1./z)))
-    p = Fun(2/pi,JacobiWeight(.5,.5,Ultraspherical{1}())) + Fun(weights,DiracSpace(eigs))
-    q = f + Fun(ones(length(eigs)),PointSpace(eigs))
-    μ = RatFun(p,q)
+    error("Can't deal with discrete spectrum until PointsSpace is fully implemented.")
+#     cprime = differentiate(c)
+#     eigs=real(map(joukowsky,z))
+#     weights = (z-1./z).^2./(z.*real(cprime(z)).*real(c(1./z)))
+#     p = Fun(2/pi,JacobiWeight(.5,.5,Ultraspherical{1}())) + Fun(weights,DiracSpace(eigs))
+#     q = f + Fun(ones(length(eigs)),PointSpace(eigs))
+#     μ = RatFun(p,q)
   else
     μ = RatFun(Fun(2/pi,JacobiWeight(.5,.5,Ultraspherical{1}())),f)
   end
