@@ -146,3 +146,54 @@ function ql(a,b,t0,t1)
 end
 
 
+
+
+
+
+
+#### New ql
+
+
+##
+# INPUT: data for givens
+# OUTPUT: data for Q and L
+
+function givensrecurrence(α,β,γ0n,γ1n)
+    n=length(α)
+    @assert length(β)==n
+
+    γ0=Array(Float64,n+1)
+    γ1=Array(Float64,n)
+    c=Array(Float64,n)
+    s=Array(Float64,n)
+
+    l0=Array(Float64,n+1)
+    l1=Array(Float64,n)
+    l2=Array(Float64,n-1)
+
+    γ0[n+1],γ1[n]=γ0n,γ1n
+
+    l0[n+1]=sqrt(γ0[n+1]^2+β[n]^2)
+    c[n]=γ0[n+1]/l0[n+1]
+    s[n]=-β[n]/l0[n+1]
+
+    for k=n:-1:1
+        l0[k+1]=sqrt(γ0[k+1]^2+β[k]^2)
+        c[k]=γ0[k+1]/l0[k+1]
+        s[k]=-β[k]/l0[k+1]
+
+
+        γ0[k]=c[k]*α[k]+s[k]*γ1[k]
+        if k>1
+            γ1[k-1]=c[k]*β[k-1]
+            l2[k-1]=-s[k]*β[k-1]
+        end
+
+        l1[k]=c[k]*γ1[k]-s[k]*α[k]
+    end
+
+
+    l0[1]=abs(γ0[1])
+
+    sign(γ0[1]),c,s,l0,l1,l2
+end
