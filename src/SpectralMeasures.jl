@@ -32,13 +32,13 @@ function spectralmeasureRat(a,b)
   # Check for discrete eigenvalues
   z = sort(real(filter!(z->abs(z)<1 && isreal(z),complexroots(c))))
   if length(z) > 0
-    error("Can't deal with discrete spectrum until PointsSpace is fully implemented.")
-#     cprime = differentiate(c)
-#     eigs=real(map(joukowsky,z))
-#     weights = (z-1./z).^2./(z.*real(cprime(z)).*real(c(1./z)))
-#     p = Fun(2/pi,JacobiWeight(.5,.5,Ultraspherical{1}())) + Fun(weights,DiracSpace(eigs))
-#     q = f + Fun(ones(length(eigs)),PointSpace(eigs))
-#     μ = RatFun(p,q)
+    #error("Can't deal with discrete spectrum until PointsSpace is fully implemented.")
+     cprime = differentiate(c)
+     eigs=real(map(joukowsky,z))
+     weights = (z-1./z).^2./(z.*real(cprime(z)).*real(c(1./z)))
+     p = Fun(2/pi,JacobiWeight(.5,.5,Ultraspherical{1}())) + Fun(weights,DiracSpace(eigs))
+     q = f + Fun(ones(length(eigs)),PointSpace(eigs))
+     μ = RatFun(p,q)
   else
     μ = RatFun(Fun([2/pi],JacobiWeight(.5,.5,Ultraspherical{1}())),f)
   end
@@ -156,7 +156,6 @@ end
 #Finds NxN truncation of C such that C(Q_k(s)) =  (P_k(s)),
 # where P_k has Jacobi coeffs a,b and Q_k has Jacobi coeffs c,d
 function connectionCoeffsMatrix(a,b,c,d,N)
-  @assert N >= 2*max(length(a),length(b),length(c),length(d))
   a = [a;zeros(N-length(a))]; b = [b;.5+zeros(N-length(b))]
   c = [c;zeros(N-length(c))]; d = [d;.5+zeros(N-length(d))]
 
