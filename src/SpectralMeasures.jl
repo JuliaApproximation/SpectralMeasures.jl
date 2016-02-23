@@ -156,8 +156,10 @@ end
 #Finds NxN truncation of C such that C(Q_k(s)) =  (P_k(s)),
 # where P_k has Jacobi coeffs a,b and Q_k has Jacobi coeffs c,d
 function connectionCoeffsMatrix(a,b,c,d,N)
-  a = [a;zeros(N-length(a))]; b = [b;.5+zeros(N-length(b))]
-  c = [c;zeros(N-length(c))]; d = [d;.5+zeros(N-length(d))]
+  if N>max(length(a),length(b)+1,length(c),length(d)+1)
+    a = [a;zeros(N-length(a))]; b = [b;.5+zeros(N-length(b))]
+    c = [c;zeros(N-length(c))]; d = [d;.5+zeros(N-length(d))]
+  end
 
   C = zeros(N,N)
   C[1,1] = 1
