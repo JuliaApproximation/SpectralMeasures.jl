@@ -48,21 +48,24 @@ function tridql!(L::Matrix)
     n=size(L,1)
 
   # Now we do QL for the compact part in the top left
-    Q = eye(eltype(L),n)
+    cc=Array(eltype(L),n)
+    ss=Array(eltype(L),n-1)
+
     for i = n:-1:2
         nrm=sqrt(L[i-1,i]^2+L[i,i]^2)
-        c,s = L[i,i]/nrm, L[i-1,i]/nrm
+        c,s = L[i,i]/nrm, -L[i-1,i]/nrm
         if i > 2
-            L[i-1:i,i-2:i] = [c -s; s c]*L[i-1:i,i-2:i]
+            L[i-1:i,i-2:i] = [c s; -s c]*L[i-1:i,i-2:i]
             L[i-1,i]=0
         else
-            L[i-1:i,i-1:i] = [c -s; s c]*L[i-1:i,i-1:i]
+            L[i-1:i,i-1:i] = [c s; -s c]*L[i-1:i,i-1:i]
             L[i-1,i]=0
         end
-        G=eye(eltype(L),n)
-        G[i-1:i,i-1:i]=[c s; -s c]
-        Q = Q*G
+        cc[i]=c
+        ss[i-1]=s
     end
-    Q,L
+    cc[1]=sign(L[1,1])
+    L[1,1]=abs(L[1,1])
+    cc,ss,L
 end
 

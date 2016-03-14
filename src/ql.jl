@@ -240,18 +240,14 @@ function ql(a,b,t0,t1)
     TQ,TL,α,β=givenstail(t0,t1)
 
     # Here we construct this matrix as L
-    n = max(length(a),length(b)+1)
-    L = jacobimatrix(a,b,t0,t1,n+1)
+n = max(length(a),length(b)+1)
+L = jacobimatrix(a,b,t0,t1,n+1)
     L[n,n+1] = t1
     #    L[n+1,n+2] = 0
     L[n+1,n+1]=β
     L[n+1,n]=α
-
-    Q,L=tridql!(L)
-
-    for k=1:size(Q,1)
-        Q[k,k]-=1
-    end
+    c,s,L=tridql!(L)
+    Q=HessenbergOrthogonal('L',c,s,TQ.c,-TQ.s)
     for j=1:n+1
         L[j,j]-=TL.nonnegative[1]
         if j ≤ n
@@ -261,8 +257,7 @@ function ql(a,b,t0,t1)
             end
         end
     end
-
-    partialgivens(TQ,n+1)*(I+FiniteOperator(Q)),TL+FiniteOperator(L)
+    Q,TL+FiniteOperator(L)
 end
 
 
