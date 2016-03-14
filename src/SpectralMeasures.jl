@@ -1,5 +1,5 @@
 module SpectralMeasures
-using Base, Compat, ApproxFun
+using Base, Compat, ApproxFun, Plots
 
 import Base: +,-,*,/
 
@@ -8,7 +8,7 @@ import ApproxFun:BandedOperator,ToeplitzOperator,DiracSpace, plot, IdentityOpera
 
 export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs, connectionCoeffsOperator
 
-export DiscreteLaplacian, jacobioperator,ql, RatFun, ratEval, ratPlot
+export DiscreteLaplacian, jacobioperator,ql, RatFun
 
 include("helper.jl")
 include("ql.jl")
