@@ -1,13 +1,35 @@
 import ApproxFun:evaluate,dimension
 import Plots:plot,plot!
 
+export RatFun, reciprocal
+
 immutable RatFun{S1,T1,S2,T2}
-  p::Fun{S1,T1}
-  q::Fun{S2,T2}
+    p::Fun{S1,T1}
+    q::Fun{S2,T2}
 end
 
 function evaluate(r::RatFun,x)
-  (r.p)(x)./(r.q)(x)
+    (r.p)(x)./(r.q)(x)
+end
+
+for op = (:*,:.*)
+    @eval $op(r1::RatFun,r2::RatFun)=RatFun($op(r1.p,r2.p),$op(r1.q,r2.q))
+    @eval $op(r::RatFun,a) = RatFun($op(r.p,a),r.q)
+    @eval $op(a,r::RatFun) = RatFun($op(a,r.p),r.q)
+end
+
+reciprocal(r::RatFun) = RatFun(r.q,r.p)
+
+(./)(r1::RatFun,r2::RatFun)=r1.*reciprocal(r2)
+(./)(a,r::RatFun)=a.*reciprocal(r)
+(./)(r::RatFun,a)=reciprocal(r).*a
+
+(/)(r1::RatFun,r2::RatFun)=r1*reciprocal(r2)
+(/)(a,r::RatFun)=a*reciprocal(r)
+(./)(r::RatFun,a)=reciprocal(r)*a
+
+for op = (:+,:.+,:-,:.-)
+  @eval $op(r1::RatFun,r2::RatFun) = RatFun($op((r1.p.*r2.q),(r2.p.*r1.q)),r1.q.*r2.q)
 end
 
 plot(r::RatFun;grid=true,kwds...)=plot!(plot(grid=grid),r;kwds...)
@@ -16,6 +38,9 @@ plot!(f::RatFun;kwds...)=plot!(current(),r;kwds...)
 plot(x::AbstractVector,r::RatFun;grid=true,kwds...)=plot!(plot(grid=grid),x,r;kwds...)
 plot!(x::AbstractVector,f::RatFun;kwds...)=plot!(current(),x,r;kwds...)
 
+
+# The padding in this function can be improved
+# No support for functions with poles within the domain
 function plotptsvals(r::RatFun)
     p = r.p
     q = r.q
