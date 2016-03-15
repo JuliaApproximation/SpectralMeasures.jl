@@ -155,10 +155,33 @@ function addentries!(Q::HessenbergOrthogonal{'U'},A,kr::UnitRange,::Colon)
     A
 end
 
-bandinds(Q::HessenbergOrthogonal{'L'}) = -Q.band, 1
-bandinds(Q::HessenbergOrthogonal{'U'}) = -1, Q.band
+bandinds(Q::HessenbergOrthogonal{'L'}) = Q.band, 1
+bandinds(Q::HessenbergOrthogonal{'U'}) = 1, Q.band
+
+function *(Q::HessenbergOrthogonal{'U'},v::Vector)
+    # This part makes ret, c and s all the same length
+    slen = length(Q.s)
+    vlen = length(v)
+    if slen < vlen
+        s = [Q.s;Q.s∞*ones(vlen-slen)]
+        c = [Q.c[2:end];Q.c∞*ones(vlen-slen)]
+    else
+        s = Q.s
+        c = (Q.c)[2:end]
+    end
+    ret = pad(v,vlen+1)
+
+    # Compute each Givens rotation starting from the right
+    for i = vlen:-1:1
+        ret[i:i+1] = [c[i] s[i]; -s[i] c[i]]*ret[i:i+1]
+    end
+    ret = (Q.c)[1]*ret
+    ret
+end
+
 
 function *(Q::HessenbergOrthogonal{'L'},v::Vector)
+    # This part makes ret, c and s all the same length
     slen = length(Q.s)
     vlen = length(v)
     if slen < vlen
@@ -171,7 +194,8 @@ function *(Q::HessenbergOrthogonal{'L'},v::Vector)
         ret = pad(v,slen+1)
     end
 
-    N = length(ret) #also equal to length s, c
+    # This part does the computation we are certain we have to do
+    N = length(ret)
     ret = (Q.c)[1]*ret
     for i = 1:N-1
         ret[i:i+1] = [c[i] -s[i]; s[i] c[i]]*ret[i:i+1]
@@ -187,7 +211,6 @@ function *(Q::HessenbergOrthogonal{'L'},v::Vector)
     end
     ret
 end
-
 
 immutable ToeplitzGivens <: BandedOperator{Float64}
     c::Float64
