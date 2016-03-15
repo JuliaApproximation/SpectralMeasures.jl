@@ -6,15 +6,6 @@ end
 
 joukowsky(z)=.5*(z+1./z)
 
-function onesAndZeros(n)
-  v = ones(n)
-  for i = 1:div(n,2)
-    v[2*i] = 0
-  end
-  v
-end
-
-
 function jacobimatrix(a,b,t0,t1,N)
     J = BandedMatrix(Float64,N,N,1,1)
 

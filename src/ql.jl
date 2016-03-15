@@ -59,7 +59,7 @@ function HessenbergOrthogonal(uplo::Char,c,s,c∞,s∞)
     tol=eps()
 
 
-
+    # Compute the bandwidth of the matrix
     k=1
     for j=1:n+2
         while abs(cur) > tol
@@ -155,7 +155,38 @@ function addentries!(Q::HessenbergOrthogonal{'U'},A,kr::UnitRange,::Colon)
     A
 end
 
+bandinds(Q::HessenbergOrthogonal{'L'}) = -Q.band, 1
+bandinds(Q::HessenbergOrthogonal{'U'}) = -1, Q.band
 
+function *(Q::HessenbergOrthogonal{'L'},v::Vector)
+    slen = length(Q.s)
+    vlen = length(v)
+    if slen < vlen
+        s = [Q.s;Q.s∞*ones(vlen-slen+1)]
+        c = [Q.c[2:end];Q.c∞*ones(vlen-slen+1)]
+        ret = pad(v,vlen+1)
+    else
+        s = [Q.s;s∞]
+        c = [(Q.c)[2:end];c∞]
+        ret = pad(v,slen+1)
+    end
+
+    N = length(ret) #also equal to length s, c
+    ret = (Q.c)[1]*ret
+    for i = 1:N-1
+        ret[i:i+1] = [c[i] -s[i]; s[i] c[i]]*ret[i:i+1]
+    end
+
+    i = N
+    # After this point, ret is monotonically decreasing to zero
+    while abs(ret[i]) > eps()
+        reti = ret[i]
+        ret[i] = c[N]*reti
+        push!(ret,s[N]*reti)
+        i += 1
+    end
+    ret
+end
 
 
 immutable ToeplitzGivens <: BandedOperator{Float64}
