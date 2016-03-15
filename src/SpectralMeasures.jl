@@ -4,7 +4,8 @@ using Base, Compat, ApproxFun, Plots
 import Base: +,-,*,/
 
 import ApproxFun:BandedOperator,ToeplitzOperator,DiracSpace, plot, IdentityOperator,
-            TridiagonalOperator,addentries!,setdomain, SavedBandedOperator, resizedata!, bandinds, PointSpace
+            TridiagonalOperator,addentries!,setdomain, SavedBandedOperator, resizedata!, bandinds, PointSpace,
+            BandedMatrix
 
 export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs, connectionCoeffsOperator
 

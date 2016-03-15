@@ -16,15 +16,23 @@ end
 
 
 function jacobimatrix(a,b,t0,t1,N)
-    J = zeros(N,N)
-    a = [a;t0*ones(N-length(a))]
-    b = [b;t1*ones(N-length(b))]
-    J[1,1]=a[1]
-    for i = 1:N-1
-        J[i+1,i+1] = a[i+1]
-        J[i,i+1] = b[i]
-        J[i+1,i] = b[i]
+    J = BandedMatrix(Float64,N,N,1,1)
+
+    for i = 1:min(length(a),N)
+        J[i,i] = a[i]
     end
+    for i=length(a)+1:N
+        J[i,i] = t0
+    end
+
+    for i = 1:min(length(b),N-1)
+        J[i,i+1] = J[i+1,i] = b[i]
+    end
+
+    for i=length(b)+1:N-1
+        J[i,i+1] = J[i+1,i] = t1
+    end
+
     J
 end
 
@@ -66,6 +74,31 @@ function tridql!(L::Matrix)
     end
     cc[1]=sign(L[1,1])
     L[1,1]=abs(L[1,1])
+    cc,ss,L
+end
+
+
+function tridql!(J::BandedMatrix)
+    n=size(J,1)
+    L=BandedMatrix(copy(J.data),J.m,2,0)
+
+  # Now we do QL for the compact part in the top left
+    cc=Array(eltype(J),n)
+    ss=Array(eltype(J),n-1)
+
+    for i = n:-1:2
+        nrm=sqrt(J[i-1,i]^2+J[i,i]^2)
+        c,s = J[i,i]/nrm, -J[i-1,i]/nrm
+
+        for j=max(i-2,1):i
+            L[i,j]=-s*J[i-1,j]+c*J[i,j]
+            J[i-1,j]=c*J[i-1,j]+s*J[i,j]
+        end
+        cc[i]=c
+        ss[i-1]=s
+    end
+    cc[1]=sign(J[1,1])
+    L[1,1]=abs(J[1,1])
     cc,ss,L
 end
 

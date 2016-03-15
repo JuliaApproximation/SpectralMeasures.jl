@@ -93,7 +93,7 @@ end
 ## represents T + K where T is Toeplitz and K is finite-dimensional
 immutable PertToeplitz{T} <: BandedOperator{T}
     T::ToeplitzOperator{T}
-    K::FiniteOperator{T}
+    K::FiniteOperator{BandedMatrix{T},T}
 end
 
 bandinds(P::PertToeplitz)=min(bandinds(P.T,1),bandinds(P.K,1)),max(bandinds(P.T,2),bandinds(P.K,2))

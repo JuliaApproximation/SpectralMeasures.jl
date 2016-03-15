@@ -240,13 +240,13 @@ function ql(a,b,t0,t1)
     TQ,TL,α,β=givenstail(t0,t1)
 
     # Here we construct this matrix as L
-n = max(length(a),length(b)+1)
-L = jacobimatrix(a,b,t0,t1,n+1)
-    L[n,n+1] = t1
+    n = max(length(a),length(b)+1)
+    J = jacobimatrix(a,b,t0,t1,n+1)
+    J[n,n+1] = t1
     #    L[n+1,n+2] = 0
-    L[n+1,n+1]=β
-    L[n+1,n]=α
-    c,s,L=tridql!(L)
+    J[n+1,n+1]=β
+    J[n+1,n]=α
+    c,s,L=tridql!(J)
     Q=HessenbergOrthogonal('L',c,s,TQ.c,-TQ.s)
     for j=1:n+1
         L[j,j]-=TL.nonnegative[1]
