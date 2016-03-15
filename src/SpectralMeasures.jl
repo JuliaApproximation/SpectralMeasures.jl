@@ -1,7 +1,7 @@
 module SpectralMeasures
 using Base, Compat, ApproxFun, Plots
 
-import Base: +,-,*,/
+import Base: +,-,*,/,.*,.-,./
 
 import ApproxFun:BandedOperator,ToeplitzOperator,DiracSpace, plot, IdentityOperator,
             TridiagonalOperator,addentries!,setdomain, SavedBandedOperator, resizedata!, bandinds, PointSpace
