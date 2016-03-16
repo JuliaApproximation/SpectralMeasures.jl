@@ -93,7 +93,7 @@ function tridql!(J::BandedMatrix)
     cc,ss,L
 end
 
-#Finds NxN truncation of C such that C(Q_k(s)) =  (P_k(s)),
+#Finds NxN truncation of C such that C'(Q_k(s)) =  (P_k(s)),
 # where P_k has Jacobi coeffs a,b and Q_k has Jacobi coeffs c,d
 function connectionCoeffsMatrix(a,b,c,d,N)
   if N>max(length(a),length(b)+1,length(c),length(d)+1)
@@ -103,14 +103,14 @@ function connectionCoeffsMatrix(a,b,c,d,N)
 
   C = zeros(N,N)
   C[1,1] = 1
-  C[2,1] = (c[1]-a[1])/b[1]
+  C[1,2] = (c[1]-a[1])/b[1]
   C[2,2] = d[1]/b[1]
-  for i = 3:N
-    C[i,1] = ((c[1]-a[i-1])*C[i-1,1] + d[1]*C[i-1,2] - b[i-2]*C[i-2,1])/b[i-1]
-    for j = 2:i-1
-      C[i,j] = (d[j-1]*C[i-1,j-1] + (c[j]-a[i-1])*C[i-1,j] + d[j]*C[i-1,j+1] - b[i-2]*C[i-2,j])/b[i-1]
+  for j = 3:N
+    C[1,j] = ((c[1]-a[j-1])*C[1,j-1] + d[1]*C[2,j-1] - b[j-2]*C[1,j-2])/b[j-1]
+    for i = 2:j-1
+      C[j,i] = (d[i-1]*C[i-1,j-1] + (c[i]-a[j-1])*C[i,j-1] + d[i]*C[i+1,j-1] - b[j-2]*C[i,j-2])/b[j-1]
     end
-    C[i,i] = d[i-1]*C[i-1,i-1]/b[i-1]
+    C[j,j] = d[j-1]*C[j-1,j-1]/b[j-1]
   end
   C
 end
