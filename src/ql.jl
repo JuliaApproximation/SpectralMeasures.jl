@@ -186,61 +186,6 @@ function *(Q::HessenbergOrthogonal{'L'},v::Vector)
 end
 
 
-function *(L::PertToeplitz,Q::HessenbergOrthogonal{'L'})
-    n=max(size(L.K.matrix,1),length(Q.s)+3)
-
-    if bandinds(L)==(-2,0)
-         # We check if L*Q is tridiagin al
-        tol=1E-15
-        istri=true
-        for k=3:n
-            if abs(L[k,k-2]*hc(Q,k-1)+L[k,k-1]*hs(Q,k-2)*hc(Q,k)+L[k,k]*hs(Q,k-2)*hs(Q,k-1)*hc(Q,k+1))>tol
-                istri=false
-                break
-            end
-        end
-        if istri
-            issym=true
-            if !isapprox(-L[1,1]*hs(Q,1),L[2,1]*hc(Q,1)*hc(Q,2)+L[2,2]*hc(Q,1)*hc(Q,3)*hs(Q,1))
-                issym=false
-            end
-
-            if issym
-                for k=2:n+1  # kth row
-                    if !isapprox(-L[k+1,k-1]*hs(Q,k-1)+L[k+1,k]*hc(Q,k)*hc(Q,k+1)+L[k+1,k+1]*hc(Q,k)*hc(Q,k+2)*hs(Q,k),
-                    -L[k,k]*hs(Q,k))
-                        issym=false
-                        break
-                    end
-                end
-            end
-
-            if issym
-               # result is SymTriToeplitxz
-
-                ev=Array(Float64,max(min(size(L.K.matrix,1),size(L.K.matrix,2)),
-                                     length(Q.s)))
-                for k=1:length(ev)
-                    ev[k]=-L[k,k]*hs(Q,k)
-                end
-
-                dv=Array(Float64,max(length(Q.s)+1,size(L.K.matrix,1)))
-                dv[1]=hc(Q,1)*hc(Q,2)*L[1,1]
-                for k=2:length(dv)
-                    dv[k]=-hs(Q,k-1)*L[k,k-1]+hc(Q,k)*hc(Q,k+1)*L[k,k]
-                end
-
-                t1=-L.T[1,1]*Q.s∞
-                t0=-Q.s∞*L.T[2,1]+Q.c∞^2*L.T[1,1]
-                return SymTriToeplitz(dv-t0,ev-t1,t0,t1)
-            end
-        end
-    end
-
-    # default constructor
-    TimesOperator(L,Q)
-end
-
 
 
 immutable ToeplitzGivens <: BandedOperator{Float64}
