@@ -166,31 +166,20 @@ end
 
 
 function *(Q::HessenbergOrthogonal{'L'},v::Vector)
-    # This part makes ret, c and s all the same length
-    slen = length(Q.s)
-    vlen = length(v)
-    if slen < vlen
-        s = [Q.s;Q.s∞*ones(vlen-slen+1)]
-        c = [Q.c[2:end];Q.c∞*ones(vlen-slen+1)]
-        ret = pad(v,vlen+1)
-    else
-        s = [Q.s;s∞]
-        c = [(Q.c)[2:end];c∞]
-        ret = pad(v,slen+1)
-    end
+    ret = pad(v, max(length(v),length(Q.s))+1)
 
     # This part does the computation we are certain we have to do
     N = length(ret)
-    ret = (Q.c)[1]*ret
+    ret = hc(Q,1)*ret
     for i = 1:N-1
-        ret[i:i+1] = [c[i] -s[i]; s[i] c[i]]*ret[i:i+1]
+        ret[i:i+1] = [hc(Q,i+1) -hs(Q,i); hs(Q,i) hc(Q,i+1)]*ret[i:i+1]
     end
 
-    i = N
     # After this point, ret is monotonically decreasing to zero
+    i = N
     while abs(ret[i]) > eps()
-        push!(ret,s[N]*ret[i])
-        ret[i] *= c[N]
+        push!(ret,(Q.s∞)*ret[i])
+        ret[i] *= Q.c∞
         i += 1
     end
     ret
