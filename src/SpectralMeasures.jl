@@ -116,7 +116,7 @@ function connectionCoeffsOperator(a,b)
   N = 2*n #This is sufficient only because we go from Chebyshev U
   a = [a;zeros(N-length(a))]; b = [b;.5+zeros(N-length(b))]
   ToeplitzVec = zeros(N)
-  K = zeros(n,N)
+  K = zeros(N,N)
   K[1,1] = 1
   K[1,2] = -a[1]/b[1]
   K[2,2] = .5/b[1]
@@ -151,7 +151,7 @@ function connectionCoeffsOperator(a,b)
       K[i,j]-=T[i,j]
     end
   end
-  T+FiniteOperator(K[1:n-1,1:N-1])
+  T+FiniteOperator(ApproxFun.BandedMatrix(K[1:N-1,1:N-1],N-1,0,N-2))
 end
 
 end  #Module
