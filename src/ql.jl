@@ -166,10 +166,10 @@ end
 
 
 function *(Q::HessenbergOrthogonal{'L'},v::Vector)
-    ret = pad(v, max(length(v),length(Q.s))+1)
+    N =  max(length(v),length(Q.s))+1
+    ret = pad(v,N)
 
     # This part does the computation we are certain we have to do
-    N = length(ret)
     ret = hc(Q,1)*ret
     for i = 1:N-1
         ret[i:i+1] = [hc(Q,i+1) -hs(Q,i); hs(Q,i) hc(Q,i+1)]*ret[i:i+1]
