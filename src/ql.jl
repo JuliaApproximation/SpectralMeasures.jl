@@ -155,9 +155,6 @@ function addentries!(Q::HessenbergOrthogonal{'U'},A,kr::UnitRange,::Colon)
     A
 end
 
-bandinds(Q::HessenbergOrthogonal{'L'}) = Q.band, 1
-bandinds(Q::HessenbergOrthogonal{'U'}) = 1, Q.band
-
 function *(Q::HessenbergOrthogonal{'U'},v::Vector)
     # This part makes ret, c and s all the same length
     slen = length(Q.s)
