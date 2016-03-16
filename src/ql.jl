@@ -185,6 +185,9 @@ function *(Q::HessenbergOrthogonal{'L'},v::Vector)
     ret
 end
 
+
+
+
 immutable ToeplitzGivens <: BandedOperator{Float64}
     c::Float64
     s::Float64

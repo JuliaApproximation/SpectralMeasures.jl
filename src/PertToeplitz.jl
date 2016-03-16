@@ -61,7 +61,7 @@ SymTriToeplitz(dv::Vector,ev::Vector,a,b)=SymTriOperator{promote_type(eltype(dv)
 
 function SymTriToeplitz(T::ToeplitzOperator,K::SymTriOperator)
     @assert bandinds(T)==(-1,1) && issym(T)
-    SymTriToeplitz(K.dv,K.ev,T.nonnegative...)
+    SymTriToeplitz(K.dv+T.nonnegative[1],K.ev+T.nonnegative[2],T.nonnegative...)
 end
 
 
@@ -78,14 +78,12 @@ function SymTriToeplitz(T::ToeplitzOperator)
 end
 
 function addentries!(S::SymTriToeplitz,A,kr::Range,::Colon)
-    addentries!(SymTriOperator(S.dv,S.ev),A,kr,:)
-
    for k=kr
         if 2 ≤ k
-            A[k,k-1]+=S.b
+            A[k,k-1]+=k≤length(S.ev)+1?S.ev[k-1]:S.b
         end
-        A[k,k+1]+=S.b
-        A[k,k]+=S.a
+        A[k,k+1]+=k≤length(S.ev)?S.ev[k]:S.b
+        A[k,k]+=k≤length(S.dv)?S.dv[k]:S.a
     end
     A
 end
@@ -121,8 +119,8 @@ for OP in (:+,:-)
     end
 end
 
-+(c::UniformScaling,A::SymTriToeplitz)=SymTriToeplitz(A.dv,A.ev,c.λ+A.a,A.b)
--(c::UniformScaling,A::SymTriToeplitz)=SymTriToeplitz(-A.dv,-A.ev,c.λ-A.a,-A.b)
++(c::UniformScaling,A::SymTriToeplitz)=SymTriToeplitz(c.λ+A.dv,A.ev,c.λ+A.a,A.b)
+-(c::UniformScaling,A::SymTriToeplitz)=SymTriToeplitz(c.λ-A.dv,-A.ev,c.λ-A.a,-A.b)
 
 *(c::Number,A::SymTriToeplitz)=SymTriToeplitz(c*A.dv,c*A.ev,c*A.a,c*A.b)
 /(A::SymTriToeplitz,c::Number)=(1/c)*A
@@ -136,21 +134,80 @@ for OP in (:ql,:(Base.eigvals),:(Base.eig))
 end
 
 
-ql(A::SymTriToeplitz)=ql(A.dv+A.a,A.ev+A.b,A.a,A.b)
+ql(A::SymTriToeplitz)=ql(A.dv,A.ev,A.a,A.b)
 
-function Base.eigvals(A::SymTriToeplitz)
+function spectralmeasure(A::SymTriToeplitz)
     if isapprox(A.a,0.) && isapprox(A.b,0.5)
-        spectralmeasure(A.dv+A.a,A.ev+A.b)
+        spectralmeasure(A.dv,A.ev)
     elseif isapprox(A.a,0.)
         c=2*A.b
-        μ=eigvals(A/c)
+        μ=spectralmeasure(A/c)
         sp=space(μ)
 
         np=isa(sp,DiracSpace)?length(sp.points):0  # number of points
 
         Fun([μ.coefficients[1:np];μ.coefficients[np+1:end]/c],setdomain(space(μ),c*domain(μ)))
     else
-        μ=eigvals(A-A.a*I)
+        μ=spectralmeasure(A-A.a*I)
         setdomain(μ,domain(μ)+A.a)
     end
+end
+
+Base.eigvals(A::SymTriToeplitz)=domain(spectralmeasure(A))
+
+
+
+function *(L::PertToeplitz,Q::HessenbergOrthogonal{'L'})
+    n=max(size(L.K.matrix,1),length(Q.s)+3)
+
+    if bandinds(L)==(-2,0)
+         # We check if L*Q is tridiagin al
+        tol=1E-15
+        istri=true
+        for k=3:n
+            if abs(L[k,k-2]*hc(Q,k-1)+L[k,k-1]*hs(Q,k-2)*hc(Q,k)+L[k,k]*hs(Q,k-2)*hs(Q,k-1)*hc(Q,k+1))>tol
+                istri=false
+                break
+            end
+        end
+        if istri
+            issym=true
+            if !isapprox(-L[1,1]*hs(Q,1),L[2,1]*hc(Q,1)*hc(Q,2)+L[2,2]*hc(Q,1)*hc(Q,3)*hs(Q,1))
+                issym=false
+            end
+
+            if issym
+                for k=2:n+1  # kth row
+                    if !isapprox(-L[k+1,k-1]*hs(Q,k-1)+L[k+1,k]*hc(Q,k)*hc(Q,k+1)+L[k+1,k+1]*hc(Q,k)*hc(Q,k+2)*hs(Q,k),
+                    -L[k,k]*hs(Q,k))
+                        issym=false
+                        break
+                    end
+                end
+            end
+
+            if issym
+               # result is SymTriToeplitxz
+
+                ev=Array(Float64,max(min(size(L.K.matrix,1),size(L.K.matrix,2)),
+                                     length(Q.s)))
+                for k=1:length(ev)
+                    ev[k]=-L[k,k]*hs(Q,k)
+                end
+
+                dv=Array(Float64,max(length(Q.s)+1,size(L.K.matrix,1)))
+                dv[1]=hc(Q,1)*hc(Q,2)*L[1,1]
+                for k=2:length(dv)
+                    dv[k]=-hs(Q,k-1)*L[k,k-1]+hc(Q,k)*hc(Q,k+1)*L[k,k]
+                end
+
+                t1=-L.T[1,1]*Q.s∞
+                t0=-Q.s∞*L.T[2,1]+Q.c∞^2*L.T[1,1]
+                return SymTriToeplitz(dv,ev,t0,t1)
+            end
+        end
+    end
+
+    # default constructor
+    TimesOperator(L,Q)
 end
