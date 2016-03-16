@@ -108,7 +108,7 @@ function connectionCoeffsMatrix(a,b,c,d,N)
   for j = 3:N
     C[1,j] = ((c[1]-a[j-1])*C[1,j-1] + d[1]*C[2,j-1] - b[j-2]*C[1,j-2])/b[j-1]
     for i = 2:j-1
-      C[j,i] = (d[i-1]*C[i-1,j-1] + (c[i]-a[j-1])*C[i,j-1] + d[i]*C[i+1,j-1] - b[j-2]*C[i,j-2])/b[j-1]
+      C[i,j] = (d[i-1]*C[i-1,j-1] + (c[i]-a[j-1])*C[i,j-1] + d[i]*C[i+1,j-1] - b[j-2]*C[i,j-2])/b[j-1]
     end
     C[j,j] = d[j-1]*C[j-1,j-1]/b[j-1]
   end
