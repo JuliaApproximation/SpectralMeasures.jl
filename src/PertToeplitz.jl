@@ -77,6 +77,15 @@ function SymTriToeplitz(T::ToeplitzOperator)
     end
 end
 
+function Base.getindex(S::SymTriToeplitz,kr::FloatRange,jr::FloatRange)
+    k=first(kr)
+    @assert k==first(jr)
+    @assert step(kr)==step(jr)==1
+    @assert last(kr)==last(jr)==Inf
+
+    SymTriToeplitz(S.dv[k:end],S.ev[k:end],S.a,S.b)
+end
+
 function addentries!(S::SymTriToeplitz,A,kr::Range,::Colon)
    for k=kr
         if 2 ≤ k
@@ -115,7 +124,7 @@ Base.slice(P::PertToeplitz,kr::FloatRange,jr::FloatRange)=slice(P.T,kr,jr)+slice
 
 for OP in (:+,:-)
     @eval begin
-        $OP(A::SymTriToeplitz,c::UniformScaling)=SymTriToeplitz(A.dv,A.ev,$OP(A.a,c.λ),A.b)
+        $OP(A::SymTriToeplitz,c::UniformScaling)=SymTriToeplitz($OP(A.dv,c.λ),A.ev,$OP(A.a,c.λ),A.b)
     end
 end
 
