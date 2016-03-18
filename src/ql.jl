@@ -29,6 +29,7 @@ end
 
 
 immutable HessenbergOrthogonal{uplo,T} <: BandedOperator{Float64}
+    sign::Bool
     c::Vector{T}
     s::Vector{T}
     c∞::T
@@ -36,13 +37,13 @@ immutable HessenbergOrthogonal{uplo,T} <: BandedOperator{Float64}
     band::Int
 end
 
-function HessenbergOrthogonal(uplo::Char,c,s,c∞,s∞,band)
+function HessenbergOrthogonal(uplo::Char,sign,c,s,c∞,s∞,band)
     @assert uplo=='L' || uplo=='U'
     HessenbergOrthogonal{uplo,promote_type(eltype(c),eltype(s),
-                                           typeof(c∞),typeof(s∞))}(c,s,c∞,s∞,band)
+                                           typeof(c∞),typeof(s∞))}(sign,c,s,c∞,s∞,band)
 end
 
-function HessenbergOrthogonal(uplo::Char,c,s,c∞,s∞)
+function HessenbergOrthogonal(uplo::Char,sign,c,s,c∞,s∞)
     @assert isapprox(s∞^2+c∞^2,1)
     @assert length(c)==length(s)+1
 
@@ -92,12 +93,12 @@ function HessenbergOrthogonal(uplo::Char,c,s,c∞,s∞)
     end
 
 
-    HessenbergOrthogonal(uplo,c,s,c∞,s∞,band)
+    HessenbergOrthogonal(uplo,sign,c,s,c∞,s∞,band)
 end
 
 
-Base.ctranspose(Q::HessenbergOrthogonal{'L'})=HessenbergOrthogonal('U',Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
-Base.ctranspose(Q::HessenbergOrthogonal{'U'})=HessenbergOrthogonal('L',Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
+Base.ctranspose(Q::HessenbergOrthogonal{'L'})=HessenbergOrthogonal('U',Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
+Base.ctranspose(Q::HessenbergOrthogonal{'U'})=HessenbergOrthogonal('L',Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
 
 Base.transpose{uplo,T<:Real}(Q::HessenbergOrthogonal{uplo,T})=Q'
 
@@ -116,9 +117,9 @@ function addentries!(Q::HessenbergOrthogonal{'L'},A,kr::UnitRange,::Colon)
     f=first(kr)
     l=last(kr)
 
-
+    si=Q.sign?1:-1
     for k=kr
-        A[k,k+1]-=hs(Q,k)
+        A[k,k+1]-=si*hs(Q,k)
     end
     for j=max(1,first(kr)+b):last(kr)
         col0=hc(Q,j)*hc(Q,j+1)
@@ -127,7 +128,7 @@ function addentries!(Q::HessenbergOrthogonal{'L'},A,kr::UnitRange,::Colon)
         end
 
         for k=max(0,f-j):min(-b,l-j)
-            A[j+k,j]+=col0
+            A[j+k,j]+=si*col0
             col0*=hs(Q,j+k)*hc(Q,j+k+2)/hc(Q,j+k+1)
         end
     end
@@ -139,16 +140,18 @@ function addentries!(Q::HessenbergOrthogonal{'U'},A,kr::UnitRange,::Colon)
     cn=length(Q.c)
     b=bandinds(Q,2)
 
+    si=Q.sign?1:-1
+
     # j is the row here
     for j=kr
         if j≥2
-            A[j,j-1]-=hs(Q,j-1)
+            A[j,j-1]-=si*hs(Q,j-1)
         end
 
         col0=hc(Q,j)*hc(Q,j+1)
 
         for k=0:b
-            A[j,j+k]+=col0
+            A[j,j+k]+=si*col0
             col0*=hs(Q,j+k)*hc(Q,j+k+2)/hc(Q,j+k+1)
         end
     end
@@ -156,23 +159,30 @@ function addentries!(Q::HessenbergOrthogonal{'U'},A,kr::UnitRange,::Colon)
 end
 
 function *(Q::HessenbergOrthogonal{'U'},v::Vector)
-    ret = pad(v,length(v)+1)
+    si=Q.sign?1:-1
+
+    ret = pad!(si*v,length(v)+1)
     # Compute each Givens rotation starting from the right
+
     for i = length(v):-1:1
-        ret[i:i+1] = [hc(Q,i+1) hs(Q,i); -hs(Q,i) hc(Q,i+1)]*ret[i:i+1]
+        ret[i],ret[i+1] = hc(Q,i+1)*ret[i] + hs(Q,i)*ret[i+1],
+                -hs(Q,i)*ret[i] + hc(Q,i+1)*ret[i+1]
     end
-    hc(Q,1)*ret
+    ret[1]*=hc(Q,1)
+    ret
 end
 
 
 function *(Q::HessenbergOrthogonal{'L'},v::Vector)
     N =  max(length(v),length(Q.s))+1
-    ret = pad(v,N)
+    si=Q.sign?1:-1
+    ret = pad!(si*v,N)
 
     # This part does the computation we are certain we have to do
-    ret = hc(Q,1)*ret
+    ret[1] *= hc(Q,1)
     for i = 1:N-1
-        ret[i:i+1] = [hc(Q,i+1) -hs(Q,i); hs(Q,i) hc(Q,i+1)]*ret[i:i+1]
+        ret[i],ret[i+1] = hc(Q,i+1)*ret[i] -hs(Q,i)*ret[i+1],
+                           hs(Q,i)*ret[i] + hc(Q,i+1)*ret[i+1]
     end
 
     # After this point, ret is monotonically decreasing to zero
@@ -184,6 +194,12 @@ function *(Q::HessenbergOrthogonal{'L'},v::Vector)
     end
     ret
 end
+
+
+-{uplo}(Q::HessenbergOrthogonal{uplo})=
+    HessenbergOrthogonal{uplo,eltype(Q)}(!Q.sign,Q.c,Q.s,
+                                          Q.c∞,
+                                          Q.s∞,Q.band)
 
 
 
@@ -206,6 +222,7 @@ function givenstail(t0::Real,t1::Real)
     β = c∞*t0 - s∞*α
     l1 = 2t1
     l2 = t1*s∞
+
     ToeplitzGivens(c∞,s∞),ToeplitzOperator([l1,l2],[l0]),α,β
 end
 
@@ -269,6 +286,13 @@ function ql(a,b,t0,t1)
 
     TQ,TL,α,β=givenstail(t0,t1)
 
+
+    if TL[1,1] < 0
+        # we want positive on L
+        Q,L=ql(-a,-b,-t0,-t1)
+        return -Q,L
+    end
+
     # Here we construct this matrix as L
     n = max(length(a),length(b)+1)
     J = jacobimatrix(a,b,t0,t1,n+1)
@@ -277,7 +301,14 @@ function ql(a,b,t0,t1)
     J[n+1,n+1]=β
     J[n+1,n]=α
     c,s,L=tridql!(J)
-    Q=HessenbergOrthogonal('L',c,s,TQ.c,-TQ.s)
+
+#    if !negL
+        Q=HessenbergOrthogonal('L',true,c,s,TQ.c,-TQ.s)
+#     else
+#         Q=-HessenbergOrthogonal('L',-c,-s,TQ.c,-TQ.s)
+#     end
+
+
     for j=1:n+1
         L[j,j]-=TL.nonnegative[1]
         if j ≤ n

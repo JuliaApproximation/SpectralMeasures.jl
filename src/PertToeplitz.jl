@@ -128,6 +128,7 @@ for OP in (:+,:-)
     end
 end
 
+-(A::SymTriToeplitz)=SymTriToeplitz(-A.dv,-A.ev,-A.a,-A.b)
 +(c::UniformScaling,A::SymTriToeplitz)=SymTriToeplitz(c.λ+A.dv,A.ev,c.λ+A.a,A.b)
 -(c::UniformScaling,A::SymTriToeplitz)=SymTriToeplitz(c.λ-A.dv,-A.ev,c.λ-A.a,-A.b)
 
@@ -212,7 +213,9 @@ function *(L::PertToeplitz,Q::HessenbergOrthogonal{'L'})
 
                 t1=-L.T[1,1]*Q.s∞
                 t0=-Q.s∞*L.T[2,1]+Q.c∞^2*L.T[1,1]
-                return SymTriToeplitz(dv,ev,t0,t1)
+
+                si=Q.sign?1:-1
+                return SymTriToeplitz(si*dv,si*ev,si*t0,si*t1)
             end
         end
     end
