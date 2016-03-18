@@ -16,8 +16,8 @@ end
 
 for op = (:*,:.*)
     @eval $op(r1::RatFun,r2::RatFun)=RatFun($op(r1.p,r2.p),$op(r1.q,r2.q))
-    @eval $op(r::RatFun,a) = RatFun($op(r.p,a),r.q)
-    @eval $op(a,r::RatFun) = RatFun($op(a,r.p),r.q)
+    @eval $op(r::RatFun,a::Union{Number,Fun}) = RatFun($op(r.p,a),r.q)
+    @eval $op(a::Union{Number,Fun},r::RatFun) = RatFun($op(a,r.p),r.q)
 end
 
 reciprocal(r::RatFun) = RatFun(r.q,r.p)
