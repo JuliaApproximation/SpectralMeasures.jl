@@ -27,7 +27,7 @@ function spectralmeasureRat(a,b)
 
   # Finds C such that J*C = C*Toeplitz([0,1/2])
   C = connectionCoeffsOperator(a,b)
-  c = Fun([C.T[1,1];C.T.negative],Taylor)
+  c = Fun(C.T.nonnegative,Taylor)
   f = Fun(C'*(C*[1]),Ultraspherical{1}())
 
   # Check for discrete eigenvalues
@@ -54,7 +54,7 @@ function spectralmeasureT(a,b)
 
   # Finds C such that J*C = C*Toeplitz([0,1/2])
   C = connectionCoeffsOperator(a,b)
-  c = Fun([C.T[1,1];C.T.negative],Taylor)
+  c = Fun(C.T.nonnegative,Taylor)
 
   # Compute continuous part of measure
   coeffs = Fun(x->(2/pi)*(1-x.^2)./abs(c(x+im*sqrt(1-x.^2))).^2,Ultraspherical{0}()).coefficients
@@ -80,7 +80,7 @@ function spectralmeasureU(a,b)
 
   # Finds C such that J*C = C*Toeplitz([0,1/2])
   C = connectionCoeffsOperator(a,b)
-  c = Fun([C.T[1,1];C.T.negative],Taylor)
+  c = Fun(C.T.nonnegative,Taylor)
   f = Fun(C'*(C*[1]),Ultraspherical{1}())
 
   # Compute continuous part of measure
@@ -103,9 +103,9 @@ function discreteEigs(a,b)
   a = chop!(a); b = .5+chop!(b-.5)
   n = max(length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
-  # Finds C such that J*C = C*Toeplitz([0,1/2])
+  # Finds C such that C*J = Toeplitz([0,1/2])*C
   C = connectionCoeffsOperator(a,b)
-  Tfun = Fun([C.T[1,1];C.T.negative],Taylor)
+  Tfun = Fun(C.T.nonnegative,Taylor)
   sort(real(map(joukowsky,filter!(z->abs(z)<1 && isreal(z) && !isapprox(abs(z),1),complexroots(Tfun)))))
 end
 
@@ -145,7 +145,7 @@ function connectionCoeffsOperator(a,b)
     ToeplitzVec[2*(j-n)-1] = K[N+1-j,j-1]
     ToeplitzVec[2*(j-n)] = K[N+1-j,j]
   end
-  T = ToeplitzOperator([0.],chop!(ToeplitzVec))
+  T = ToeplitzOperator(Float64[],chop!(ToeplitzVec))
   for j = 1:N
     for i = 1:min(j,N+1-j)
       K[i,j]-=T[i,j]
