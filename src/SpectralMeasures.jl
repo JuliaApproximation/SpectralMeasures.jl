@@ -31,7 +31,7 @@ function spectralmeasureRat(a,b)
   f = Fun(C'*(C*[1]),Ultraspherical{1}())
 
   # Check for discrete eigenvalues
-  z = sort(real(filter!(z->abs(z)<1 && isreal(z),complexroots(c))))
+  z = sort(real(filter!(z->abs(z)<1 && isreal(z) && !isapprox(abs(z),1) ,complexroots(c))))
   if length(z) > 0
     #error("Can't deal with discrete spectrum until PointsSpace is fully implemented.")
      cprime = differentiate(c)
@@ -61,7 +61,7 @@ function spectralmeasureT(a,b)
   μ = Fun(coeffs,JacobiWeight(-.5,-.5,Ultraspherical{0}()))
 
   # Check for discrete eigenvalues
-  z = sort(real(filter!(z->abs(z)<1 && isreal(z),complexroots(c))))
+  z = sort(real(filter!(z->abs(z)<1 && isreal(z) && !isapprox(abs(z),1),complexroots(c))))
   if length(z) > 0
     cprime = differentiate(c)
     eigs=real(map(joukowsky,z))
@@ -88,7 +88,7 @@ function spectralmeasureU(a,b)
   μ = Fun((2/pi)*coeffs,JacobiWeight(.5,.5,Ultraspherical{1}()))
 
   # Check for discrete eigenvalues
-  z = sort(real(filter!(z->abs(z)<1 && isreal(z),complexroots(c))))
+  z = sort(real(filter!(z->abs(z)<1 && isreal(z) && !isapprox(abs(z),1),complexroots(c))))
   if length(z) > 0
     cprime = differentiate(c)
     eigs=real(map(joukowsky,z))
@@ -106,7 +106,7 @@ function discreteEigs(a,b)
   # Finds C such that J*C = C*Toeplitz([0,1/2])
   C = connectionCoeffsOperator(a,b)
   Tfun = Fun([C.T[1,1];C.T.negative],Taylor)
-  sort(real(map(joukowsky,filter!(z->abs(z)<1 && isreal(z),complexroots(Tfun)))))
+  sort(real(map(joukowsky,filter!(z->abs(z)<1 && isreal(z) && !isapprox(abs(z),1),complexroots(Tfun)))))
 end
 
 #Finds C such that C'(U_k(s)) =  (P_k(s)),
