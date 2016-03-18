@@ -172,7 +172,7 @@ function *(L::PertToeplitz,Q::HessenbergOrthogonal{'L'})
 
     if bandinds(L)==(-2,0)
          # We check if L*Q is tridiagin al
-        tol=1E-15
+        tol=1E-14*(maximum(L.T)+maximum(L.K))
         istri=true
         for k=3:n
             if abs(L[k,k-2]*hc(Q,k-1)+L[k,k-1]*hs(Q,k-2)*hc(Q,k)+L[k,k]*hs(Q,k-2)*hs(Q,k-1)*hc(Q,k+1))>tol
@@ -182,14 +182,14 @@ function *(L::PertToeplitz,Q::HessenbergOrthogonal{'L'})
         end
         if istri
             issym=true
-            if !isapprox(-L[1,1]*hs(Q,1),L[2,1]*hc(Q,1)*hc(Q,2)+L[2,2]*hc(Q,1)*hc(Q,3)*hs(Q,1))
+            if !isapprox(-L[1,1]*hs(Q,1),L[2,1]*hc(Q,1)*hc(Q,2)+L[2,2]*hc(Q,1)*hc(Q,3)*hs(Q,1);atol=tol)
                 issym=false
             end
 
             if issym
                 for k=2:n+1  # kth row
                     if !isapprox(-L[k+1,k-1]*hs(Q,k-1)+L[k+1,k]*hc(Q,k)*hc(Q,k+1)+L[k+1,k+1]*hc(Q,k)*hc(Q,k+2)*hs(Q,k),
-                    -L[k,k]*hs(Q,k))
+                    -L[k,k]*hs(Q,k);atol=tol)
                         issym=false
                         break
                     end
@@ -223,3 +223,4 @@ function *(L::PertToeplitz,Q::HessenbergOrthogonal{'L'})
     # default constructor
     TimesOperator(L,Q)
 end
+
