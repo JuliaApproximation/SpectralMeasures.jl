@@ -12,6 +12,7 @@ export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, 
 export DiscreteLaplacian, jacobioperator,ql
 
 include("helper.jl")
+include("HessenbergOrthogonal.jl")
 include("ql.jl")
 include("PertToeplitz.jl")
 include("plot.jl")
