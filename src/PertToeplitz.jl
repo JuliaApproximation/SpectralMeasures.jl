@@ -78,7 +78,7 @@ function SymTriToeplitz(T::ToeplitzOperator)
 end
 
 function Base.getindex(S::SymTriToeplitz,kr::FloatRange,jr::FloatRange)
-    k=first(kr)
+    k=round(Int,first(kr))
     @assert k==first(jr)
     @assert step(kr)==step(jr)==1
     @assert last(kr)==last(jr)==Inf
@@ -167,7 +167,7 @@ Base.eigvals(A::SymTriToeplitz)=domain(spectralmeasure(A))
 
 
 
-function *(L::PertToeplitz,Q::HessenbergOrthogonal{'L'})
+function *(L::PertToeplitz,Q::HessenbergUnitary{'L'})
     n=max(size(L.K.matrix,1),length(Q.s)+3)
 
     if bandinds(L)==(-2,0)

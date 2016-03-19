@@ -3,18 +3,18 @@ using Base, Compat, ApproxFun, Plots
 
 import Base:+,-,*,/,.*,.-,./,.+
 
-import ApproxFun:BandedOperator,ToeplitzOperator,DiracSpace, plot, IdentityOperator,
+import ApproxFun:BandedOperator, ToeplitzOperator, DiracSpace, plot, IdentityOperator,
             TridiagonalOperator,addentries!,setdomain, SavedBandedOperator, resizedata!, bandinds, PointSpace,
-            BandedMatrix, bazeros
+            BandedMatrix, bazeros, TimesOperator, BlockOperator, SpaceOperator, AnySpace
 
 export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs, connectionCoeffsOperator
 
 export DiscreteLaplacian, jacobioperator,ql
 
 include("helper.jl")
-include("HessenbergOrthogonal.jl")
-include("ql.jl")
+include("HessenbergUnitary.jl")
 include("PertToeplitz.jl")
+include("ql.jl")
 include("plot.jl")
 include("RatFun.jl")
 

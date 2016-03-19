@@ -48,7 +48,7 @@ function ql(a,b,t0,t1)
     c,s,L=tridql!(J)
 
 
-    Q=HessenbergOrthogonal('L',true,c,s,c∞,-s∞)
+    Q=HessenbergUnitary('L',true,c,s,c∞,-s∞)
 
 
     for j=1:n+1
@@ -62,3 +62,52 @@ function ql(a,b,t0,t1)
     end
     Q,TL+FiniteOperator(L)
 end
+
+
+
+
+for OP in (:discreteEigs,:connectionCoeffsOperator)
+    @eval function $OP(J::SymTriToeplitz)
+        @assert abs(J.a)<1E-14
+        @assert isapprox(J.b,0.5)
+        $OP(J.dv,J.ev)
+    end
+end
+
+function Base.eig(Jin::SymTriToeplitz)
+    Qret=Array(HessenbergUnitary{'U',Float64},0)
+    λapprox=sort(discreteEigs(Jin))
+    λ=Array(Float64,0)
+
+    J=Jin
+
+    tol=1E-14
+    for k=1:length(λapprox)
+        μ=λapprox[k]
+
+        J=J-μ*I
+        Q,L=ql(J)
+        push!(Qret,deflate(Q',k-1))
+        J=(L*Q+μ*I)
+        @assert isa(J,SymTriToeplitz)
+
+         while abs(J[1,2]) > tol
+             μ=J[1,1]
+             Q,L=ql(J-μ*I)
+             J=L*Q+μ*I
+             push!(Qret,deflate(Q',k-1))
+         end
+
+        push!(λ,J[1,1])
+        J=J[2:end,2:end]
+    end
+    Q=BandedUnitary(reverse!(Qret))
+    C=BlockOperator(eye(length(λ)),connectionCoeffsOperator(J))
+
+    x=Fun(identity,mapreduce(PointSpace,⊕,λ)⊕Ultraspherical{1}())
+
+    U=SpaceOperator(C*Q,AnySpace(),space(x))
+    x,U
+end
+
+Base.eigvals(Jin::SymTriToeplitz)=domain(eig(Jin)[1])

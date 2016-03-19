@@ -1,4 +1,10 @@
-immutable HessenbergOrthogonal{uplo,T} <: BandedOperator{Float64}
+abstract UnitaryOperator{T} <: BandedOperator{T}
+
+Base.inv(Q::UnitaryOperator)=Q'
+Base.transpose{T<:Real}(Q::UnitaryOperator{T})=Q'
+
+
+immutable HessenbergUnitary{uplo,T} <: UnitaryOperator{T}
     sign::Bool
     c::Vector{T}
     s::Vector{T}
@@ -7,13 +13,13 @@ immutable HessenbergOrthogonal{uplo,T} <: BandedOperator{Float64}
     band::Int
 end
 
-function HessenbergOrthogonal(uplo::Char,sign,c,s,c∞,s∞,band)
+function HessenbergUnitary(uplo::Char,sign,c,s,c∞,s∞,band)
     @assert uplo=='L' || uplo=='U'
-    HessenbergOrthogonal{uplo,promote_type(eltype(c),eltype(s),
+    HessenbergUnitary{uplo,promote_type(eltype(c),eltype(s),
                                            typeof(c∞),typeof(s∞))}(sign,c,s,c∞,s∞,band)
 end
 
-function HessenbergOrthogonal(uplo::Char,sign,c,s,c∞,s∞)
+function HessenbergUnitary(uplo::Char,sign,c,s,c∞,s∞)
     @assert isapprox(s∞^2+c∞^2,1)
     @assert length(c)==length(s)+1
 
@@ -63,24 +69,23 @@ function HessenbergOrthogonal(uplo::Char,sign,c,s,c∞,s∞)
     end
 
 
-    HessenbergOrthogonal(uplo,sign,c,s,c∞,s∞,band)
+    HessenbergUnitary(uplo,sign,c,s,c∞,s∞,band)
 end
 
 
-Base.ctranspose(Q::HessenbergOrthogonal{'L'})=HessenbergOrthogonal('U',Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
-Base.ctranspose(Q::HessenbergOrthogonal{'U'})=HessenbergOrthogonal('L',Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
-
-Base.transpose{uplo,T<:Real}(Q::HessenbergOrthogonal{uplo,T})=Q'
+Base.ctranspose{T<:Real}(Q::HessenbergUnitary{'L',T})=HessenbergUnitary('U',Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
+Base.ctranspose{T<:Real}(Q::HessenbergUnitary{'U',T})=HessenbergUnitary('L',Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
 
 
-bandinds(Q::HessenbergOrthogonal{'L'})=-Q.band,1
-bandinds(Q::HessenbergOrthogonal{'U'})=-1,Q.band
+
+bandinds(Q::HessenbergUnitary{'L'})=-Q.band,1
+bandinds(Q::HessenbergUnitary{'U'})=-1,Q.band
 
 
-hc(Q::HessenbergOrthogonal,k)=k≤length(Q.c)?Q.c[k]:Q.c∞
-hs(Q::HessenbergOrthogonal,k)=k≤length(Q.s)?Q.s[k]:Q.s∞
+hc(Q::HessenbergUnitary,k)=k≤length(Q.c)?Q.c[k]:Q.c∞
+hs(Q::HessenbergUnitary,k)=k≤length(Q.s)?Q.s[k]:Q.s∞
 
-function addentries!(Q::HessenbergOrthogonal{'L'},A,kr::UnitRange,::Colon)
+function addentries!(Q::HessenbergUnitary{'L'},A,kr::UnitRange,::Colon)
     sn=length(Q.s)
     cn=length(Q.c)
     b=bandinds(Q,1)
@@ -105,7 +110,7 @@ function addentries!(Q::HessenbergOrthogonal{'L'},A,kr::UnitRange,::Colon)
     A
 end
 
-function addentries!(Q::HessenbergOrthogonal{'U'},A,kr::UnitRange,::Colon)
+function addentries!(Q::HessenbergUnitary{'U'},A,kr::UnitRange,::Colon)
     sn=length(Q.s)
     cn=length(Q.c)
     b=bandinds(Q,2)
@@ -128,7 +133,7 @@ function addentries!(Q::HessenbergOrthogonal{'U'},A,kr::UnitRange,::Colon)
     A
 end
 
-function *(Q::HessenbergOrthogonal{'U'},v::Vector)
+function *(Q::HessenbergUnitary{'U'},v::Vector)
     si=Q.sign?1:-1
 
     ret = pad!(si*v,length(v)+1)
@@ -143,7 +148,7 @@ function *(Q::HessenbergOrthogonal{'U'},v::Vector)
 end
 
 
-function *(Q::HessenbergOrthogonal{'L'},v::Vector)
+function *(Q::HessenbergUnitary{'L'},v::Vector)
     N =  max(length(v),length(Q.s))+1
     si=Q.sign?1:-1
     ret = pad!(si*v,N)
@@ -167,15 +172,26 @@ end
 
 
 
--{uplo}(Q::HessenbergOrthogonal{uplo})=
-    HessenbergOrthogonal{uplo,eltype(Q)}(!Q.sign,Q.c,Q.s,
+-{uplo}(Q::HessenbergUnitary{uplo})=
+    HessenbergUnitary{uplo,eltype(Q)}(!Q.sign,Q.c,Q.s,
                                           Q.c∞,
                                           Q.s∞,Q.band)
 
 
 
-deflate{uplo}(Q::HessenbergOrthogonal{uplo})=HessenbergOrthogonal(uplo,Q.sign,
+deflate{uplo}(Q::HessenbergUnitary{uplo})=HessenbergUnitary(uplo,Q.sign,
                                                                   [(Q.sign?1:(-1))*sign(Q.c[1]);Q.c],
                                                                   [0;Q.s],Q.c∞,Q.s∞,Q.band)
 
-deflate(Q::HessenbergOrthogonal,k::Integer)=k==0?Q:deflate(deflate(Q),k-1)
+deflate(Q::HessenbergUnitary,k::Integer)=k==0?Q:deflate(deflate(Q),k-1)
+
+
+immutable BandedUnitary{uplo,T} <: UnitaryOperator{T}
+    ops::Vector{HessenbergUnitary{uplo,T}}
+end
+
+
+Base.ctranspose(Q::BandedUnitary)=BandedUnitary(reverse!(map(ctranspose,Q.ops)))
+
+addentries!(Q::BandedUnitary,A,kr::Range,::Colon)=addentries!(TimesOperator(Q.ops),A,kr,:)
+bandinds(Q::BandedUnitary)=bandinds(TimesOperator(Q.ops))
