@@ -29,7 +29,7 @@ function spectralmeasureRat(a,b)
   # Finds C such that J*C = C*Toeplitz([0,1/2])
   C = connectionCoeffsOperator(a,b)
   c = Fun(C.T.nonnegative,Taylor)
-  f = Fun(C'*(C*[1]),Ultraspherical{1}())
+  f = Fun(C*(C'*[1]),Ultraspherical{1}())
 
   # Check for discrete eigenvalues
   z = sort(real(filter!(z->abs(z)<1 && isreal(z) && !isapprox(abs(z),1) ,complexroots(c))))
@@ -82,7 +82,7 @@ function spectralmeasureU(a,b)
   # Finds C such that J*C = C*Toeplitz([0,1/2])
   C = connectionCoeffsOperator(a,b)
   c = Fun(C.T.nonnegative,Taylor)
-  f = Fun(C'*(C*[1]),Ultraspherical{1}())
+  f = Fun(C*(C'*[1]),Ultraspherical{1}())
 
   # Compute continuous part of measure
   coeffs = (1./f).coefficients
