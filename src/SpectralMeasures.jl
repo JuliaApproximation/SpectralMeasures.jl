@@ -5,7 +5,7 @@ import Base:+,-,*,/,.*,.-,./,.+
 
 import ApproxFun:BandedOperator, ToeplitzOperator, DiracSpace, plot, IdentityOperator,
             TridiagonalOperator,addentries!,setdomain, SavedBandedOperator, resizedata!, bandinds, PointSpace,
-            BandedMatrix, bazeros, TimesOperator, BlockOperator, SpaceOperator, AnySpace
+            BandedMatrix, bzeros, TimesOperator, BlockOperator, SpaceOperator, AnySpace
 
 export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs, connectionCoeffsOperator
 
@@ -117,7 +117,7 @@ function connectionCoeffsOperator(a,b)
   N = 2*n #This is sufficient only because we go from Chebyshev U
   a = [a;zeros(N-length(a))]; b = [b;.5+zeros(N-length(b))]
   ToeplitzVec = zeros(N)
-  K = bazeros(Float64,n,N,0,N+1)
+  K = bzeros(Float64,n,N,0,N+1)
   K[1,1] = 1
   K[1,2] = -a[1]/b[1]
   K[2,2] = .5/b[1]

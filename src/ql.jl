@@ -63,16 +63,9 @@ function ql(a,b,t0,t1)
     Q,TL+FiniteOperator(L)
 end
 
+discreteEigs(J::SymTriToeplitz) = J.b*discreteEigs((J.dv-J.a)/J.b,J.ev/J.b) + J.a
 
-
-
-for OP in (:discreteEigs,:connectionCoeffsOperator)
-    @eval function $OP(J::SymTriToeplitz)
-        @assert abs(J.a)<1E-14
-        @assert isapprox(J.b,0.5)
-        $OP(J.dv,J.ev)
-    end
-end
+connectionCoeffsOperator(J::SymTriToeplitz) = connectionCoeffsOperator(.5*(J.dv-J.a)/J.b,.5*J.ev/J.b)
 
 function Base.eig(Jin::SymTriToeplitz)
     Qret=Array(HessenbergUnitary{'U',Float64},0)
