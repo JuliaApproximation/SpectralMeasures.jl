@@ -63,7 +63,7 @@ function ql(a,b,t0,t1)
     Q,TL+FiniteOperator(L)
 end
 
-discreteEigs(J::SymTriToeplitz) = J.b*discreteEigs((J.dv-J.a)/J.b,J.ev/J.b) + J.a
+discreteEigs(J::SymTriToeplitz) = 2*J.b*discreteEigs(.5*(J.dv-J.a)/J.b,.5*J.ev/J.b) + J.a
 
 connectionCoeffsOperator(J::SymTriToeplitz) = connectionCoeffsOperator(.5*(J.dv-J.a)/J.b,.5*J.ev/J.b)
 

@@ -9,7 +9,7 @@ import ApproxFun:BandedOperator, ToeplitzOperator, DiracSpace, plot, IdentityOpe
 
 export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs, connectionCoeffsOperator
 
-export DiscreteLaplacian, jacobioperator,ql
+export DiscreteLaplacian, jacobioperator, ql
 
 include("helper.jl")
 include("HessenbergUnitary.jl")
