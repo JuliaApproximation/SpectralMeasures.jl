@@ -156,7 +156,7 @@ function connectionCoeffsOperator(a,b)
 end
 
 # Converts coefficients a^J to coefficients a^D
-function applyConversion(J::SymTriToeplitz,D::SymTriToeplitz,v::vector)
+function applyConversion(J::SymTriToeplitz,D::SymTriToeplitz,v::Vector)
   N = length(v)
   b = zeros(N); b1 = zeros(N); b2 = zeros(N)
   for k = N:-1:1
