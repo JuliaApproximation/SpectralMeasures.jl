@@ -7,7 +7,7 @@ import ApproxFun:BandedOperator, ToeplitzOperator, DiracSpace, plot, IdentityOpe
             TridiagonalOperator,addentries!,setdomain, SavedBandedOperator, resizedata!, bandinds, PointSpace,
             BandedMatrix, bzeros, TimesOperator, BlockOperator, SpaceOperator, AnySpace
 
-export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs, connectionCoeffsOperator
+export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs, connectionCoeffsOperator, applyConversion
 
 export DiscreteLaplacian, jacobioperator, ql
 
@@ -153,6 +153,20 @@ function connectionCoeffsOperator(a,b)
     end
   end
   T+FiniteOperator(K)
+end
+
+# Converts coefficients a^J to coefficients a^D
+function applyConversion(J::SymTriToeplitz,D::SymTriToeplitz,v::Vector)
+  N = length(v)
+  b = zeros(N); b1 = zeros(N); b2 = zeros(N)
+  for k = N:-1:1
+    # before: b = b_k+1, b1 = b_k+2, (and b2 = b_k+3 is to be forgotten)
+    b2 = pad((D-J[k,k]*I)*b,N)/J[k,k+1]-b1*(J[k,k+1]/J[k+1,k+2])
+    b2[1] += v[k]
+    b2, b1, b = b1, b, b2
+    # after: b = b_k, b1 = b_k+1, b2 = b_k+2
+  end
+  b
 end
 
 end  #Module
