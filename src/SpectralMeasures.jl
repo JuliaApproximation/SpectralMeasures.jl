@@ -7,7 +7,7 @@ import ApproxFun:BandedOperator, ToeplitzOperator, DiracSpace, plot, IdentityOpe
             TridiagonalOperator,addentries!,setdomain, SavedBandedOperator, resizedata!, bandinds, PointSpace,
             BandedMatrix, bzeros, TimesOperator, BlockOperator, SpaceOperator, AnySpace
 
-export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs, connectionCoeffsOperator
+export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs, connectionCoeffsOperator, applyConversion
 
 export DiscreteLaplacian, jacobioperator, ql
 
