@@ -15,7 +15,7 @@ include("helper.jl")
 include("HessenbergUnitary.jl")
 include("PertToeplitz.jl")
 include("ql.jl")
-include("plot.jl")
+# include("plot.jl")
 include("RatFun.jl")
 
 spectralmeasure(a,b) = spectralmeasureRat(a,b)
