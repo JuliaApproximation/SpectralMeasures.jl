@@ -34,19 +34,16 @@ end
 SymTriOperator(A::Vector,B::Vector)=SymTriOperator{promote_type(eltype(A),eltype(B))}(A,B)
 
 
-function addentries!(S::SymTriOperator,A,kr::Range,::Colon)
-   for k=kr
-        if k ≤ length(S.dv)
-            A[k,k]+=S.dv[k]
-        end
-        if k ≤ length(S.ev)
-            A[k,k+1]+=S.ev[k]
-        end
-        if 2 ≤ k ≤ length(S.ev)+1
-            A[k,k-1]+=S.ev[k-1]
-        end
+function getindex(S::SymTriOperator,k::Integer,j::Integer)
+    if k ≤ length(S.dv) && k == j
+        S.dv[k]
+    elseif k ≤ length(S.ev) && j==k+1
+        S.ev[k]
+    elseif 2 ≤ k ≤ length(S.ev)+1 && j==k-1
+        S.ev[k-1]
+    else
+        zero(eltype(S))
     end
-    A
 end
 
 # Represents a SymTriOperator + Symmetric ToeplitzOperator
@@ -86,15 +83,16 @@ function Base.getindex(S::SymTriToeplitz,kr::FloatRange,jr::FloatRange)
     SymTriToeplitz(S.dv[k:end],S.ev[k:end],S.a,S.b)
 end
 
-function addentries!(S::SymTriToeplitz,A,kr::Range,::Colon)
-   for k=kr
-        if 2 ≤ k
-            A[k,k-1]+=k≤length(S.ev)+1?S.ev[k-1]:S.b
+function getindex(S::SymTriToeplitz,k::Integer,j::Integer)
+        if 2 ≤ k && j ==k-1
+            k≤length(S.ev)+1?S.ev[k-1]:S.b
+        elseif j==k+1
+            k≤length(S.ev)?S.ev[k]:S.b
+        elseif j==k
+            k≤length(S.dv)?S.dv[k]:S.a
+        else
+            zero(eltype(S))
         end
-        A[k,k+1]+=k≤length(S.ev)?S.ev[k]:S.b
-        A[k,k]+=k≤length(S.dv)?S.dv[k]:S.a
-    end
-    A
 end
 
 ## represents T + K where T is Toeplitz and K is finite-dimensional
@@ -105,17 +103,12 @@ end
 
 bandinds(P::PertToeplitz)=min(bandinds(P.T,1),bandinds(P.K,1)),max(bandinds(P.T,2),bandinds(P.K,2))
 
-function addentries!(P::PertToeplitz,A,kr::Range,::Colon)
-    addentries!(P.T,A,kr,:)
-    addentries!(P.K,A,kr,:)
-end
+getindex(P::PertToeplitz,k::Integer,j::Integer) =
+    P.T[k,j]+P.K[k,j]
 
+getindex(P::PertToeplitz,k::AbstractCount,j::AbstractCount) =
+    P.T[k,j]+P.K[k,j]
 
-
-
-
-# slcie of a PertToeplitz is a PertToeplitz
-Base.slice(P::PertToeplitz,kr::FloatRange,jr::FloatRange)=slice(P.T,kr,jr)+slice(P.K,kr,jr)
 
 
 +(T::ToeplitzOperator,K::FiniteOperator)=PertToeplitz(T,K)
@@ -223,4 +216,3 @@ function *(L::PertToeplitz,Q::HessenbergUnitary{'L'})
     # default constructor
     TimesOperator(L,Q)
 end
-

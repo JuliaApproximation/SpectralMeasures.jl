@@ -1,11 +1,11 @@
 module SpectralMeasures
 using Base, Compat, ApproxFun, Plots
 
-import Base:+,-,*,/,.*,.-,./,.+
+import Base:+,-,*,/,.*,.-,./,.+,getindex
 
 import ApproxFun:BandedOperator, ToeplitzOperator, DiracSpace, plot, IdentityOperator,
             TridiagonalOperator,addentries!,setdomain, SavedBandedOperator, resizedata!, bandinds, PointSpace,
-            BandedMatrix, bzeros, TimesOperator, BlockOperator, SpaceOperator, AnySpace
+            BandedMatrix, bzeros, TimesOperator, BlockOperator, SpaceOperator, AnySpace, AbstractCount
 
 export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs, connectionCoeffsOperator, applyConversion
 

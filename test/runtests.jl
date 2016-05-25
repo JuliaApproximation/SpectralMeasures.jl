@@ -58,4 +58,3 @@ length(ν)
 
 # Can you make this work, Sheehan? MW
 ApproxFun.plot(μ-ν)
-
