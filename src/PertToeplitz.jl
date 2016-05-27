@@ -74,11 +74,9 @@ function SymTriToeplitz(T::ToeplitzOperator)
     end
 end
 
-function Base.getindex(S::SymTriToeplitz,kr::FloatRange,jr::FloatRange)
-    k=round(Int,first(kr))
+function Base.getindex(S::SymTriToeplitz,kr::UnitCount{Int},jr::UnitCount{Int})
+    k=first(kr)
     @assert k==first(jr)
-    @assert step(kr)==step(jr)==1
-    @assert last(kr)==last(jr)==Inf
 
     SymTriToeplitz(S.dv[k:end],S.ev[k:end],S.a,S.b)
 end

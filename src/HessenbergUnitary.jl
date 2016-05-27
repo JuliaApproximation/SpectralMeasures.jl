@@ -85,7 +85,8 @@ bandinds(Q::HessenbergUnitary{'U'})=-1,Q.band
 hc(Q::HessenbergUnitary,k)=k≤length(Q.c)?Q.c[k]:Q.c∞
 hs(Q::HessenbergUnitary,k)=k≤length(Q.s)?Q.s[k]:Q.s∞
 
-function addentries!(Q::HessenbergUnitary{'L'},A,kr::UnitRange,::Colon)
+function getindex(S::SubBandedMatrix{T,HessenbergUnitary{'L',T}},k::Integer,j::Integer)
+    error("Implement")
     sn=length(Q.s)
     cn=length(Q.c)
     b=bandinds(Q,1)
@@ -110,27 +111,23 @@ function addentries!(Q::HessenbergUnitary{'L'},A,kr::UnitRange,::Colon)
     A
 end
 
-function addentries!(Q::HessenbergUnitary{'U'},A,kr::UnitRange,::Colon)
-    sn=length(Q.s)
-    cn=length(Q.c)
-    b=bandinds(Q,2)
-
+function getindex(Q::HessenbergUnitary{'U'},k::Integer,j::Integer)
     si=Q.sign?1:-1
 
-    # j is the row here
-    for j=kr
-        if j≥2
-            A[j,j-1]-=si*hs(Q,j-1)
+
+
+    if k>j+1
+        zero(eltype(Q))
+    elseif k≥2 && j ==k-1
+        -si*hs(Q,k-1)
+    else
+        col0=hc(Q,k)*hc(Q,k+1)
+        for p=k+1:j
+            col0*=hs(Q,p-1)*hc(Q,p+1)/hc(Q,p)
         end
 
-        col0=hc(Q,j)*hc(Q,j+1)
-
-        for k=0:b
-            A[j,j+k]+=si*col0
-            col0*=hs(Q,j+k)*hc(Q,j+k+2)/hc(Q,j+k+1)
-        end
+        si*col0
     end
-    A
 end
 
 function *(Q::HessenbergUnitary{'U'},v::Vector)
