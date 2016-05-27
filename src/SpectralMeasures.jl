@@ -85,8 +85,8 @@ function spectralmeasureU(a,b)
   f = Fun(C*(C'*[1]),Ultraspherical{1}())
 
   # Compute continuous part of measure
-  coeffs = (1./f).coefficients
-  μ = Fun((2/pi)*coeffs,JacobiWeight(.5,.5,Ultraspherical{1}()))
+  finv = (1./f)
+  μ = Fun((2/pi)*finv.coefficients,JacobiWeight(.5,.5,space(finv)))
 
   # Check for discrete eigenvalues
   z = sort(real(filter!(z->abs(z)<1 && isreal(z) && !isapprox(abs(z),1),complexroots(c))))
