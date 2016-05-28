@@ -6,7 +6,7 @@ import Base:+,-,*,/,.*,.-,./,.+,getindex
 import ApproxFun:BandedOperator, ToeplitzOperator, DiracSpace, plot, IdentityOperator,
             TridiagonalOperator,addentries!,setdomain, SavedBandedOperator, resizedata!, bandinds, PointSpace,
             BandedMatrix, bzeros, TimesOperator, BlockOperator, SpaceOperator, AnySpace, AbstractCount, UnitCount,
-            SubBandedMatrix, linsolve
+            SubBandedMatrix, linsolve, MatrixSpace
 
 export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs, connectionCoeffsOperator, applyConversion,
         SymTriOperator

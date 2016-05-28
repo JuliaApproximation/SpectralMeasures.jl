@@ -5,6 +5,8 @@ Base.transpose{T<:Real}(Q::UnitaryOperator{T})=Q'
 
 linsolve(Q::UnitaryOperator,v::Number;opts...) = Q'*v
 linsolve(Q::UnitaryOperator,v::Array;opts...) = Q'*v
+linsolve{S,T,DD,Q}(A::UnitaryOperator,b::Fun{MatrixSpace{S,T,DD,1},Q};kwds...) =
+    Q'*b
 linsolve(Q::UnitaryOperator,v::Fun;opts...) = Q'*v
 
 
