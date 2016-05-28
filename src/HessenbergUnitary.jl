@@ -91,52 +91,37 @@ Base.ctranspose{T<:Real}(Q::HessenbergUnitary{'U',T})=HessenbergUnitary('L',Q.si
 
 
 
-bandinds(Q::HessenbergUnitary{'L'})=-Q.band,1
-bandinds(Q::HessenbergUnitary{'U'})=-1,Q.band
+bandinds(Q::HessenbergUnitary{'L'}) = -Q.band,1
+bandinds(Q::HessenbergUnitary{'U'}) = -1,Q.band
 
 
-hc(Q::HessenbergUnitary,k)=k≤length(Q.c)?Q.c[k]:Q.c∞
-hs(Q::HessenbergUnitary,k)=k≤length(Q.s)?Q.s[k]:Q.s∞
-
-function getindex(S::HessenbergUnitary{'L'},k::Integer,j::Integer)
-    error("Implement")
-    sn=length(Q.s)
-    cn=length(Q.c)
-    b=bandinds(Q,1)
-    f=first(kr)
-    l=last(kr)
-
-    si=Q.sign?1:-1
-    for k=kr
-        A[k,k+1]-=si*hs(Q,k)
-    end
-    for j=max(1,first(kr)+b):last(kr)
-        col0=hc(Q,j)*hc(Q,j+1)
-        for k=0:f-j-1
-            col0*=hs(Q,j+k)*hc(Q,j+k+2)/hc(Q,j+k+1)
-        end
-
-        for k=max(0,f-j):min(-b,l-j)
-            A[j+k,j]+=si*col0
-            col0*=hs(Q,j+k)*hc(Q,j+k+2)/hc(Q,j+k+1)
-        end
-    end
-    A
-end
-
-function getindex(Q::HessenbergUnitary{'U'},k::Integer,j::Integer)
-    si=Q.sign?1:-1
+hc(c,c∞,k) = k≤length(c)?c[k]:c∞
+hs(s,s∞,k) = k≤length(s)?s[k]:s∞
 
 
+hc(Q::HessenbergUnitary,k) = hc(Q.c,Q.c∞,k)
+hs(Q::HessenbergUnitary,k) = hs(Q.s,Q.s∞,k)
+
+getindex(Q::HessenbergUnitary{'L'},k::Integer,j::Integer) =
+    hessuni_getindex(Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,j,k)
+
+
+getindex(Q::HessenbergUnitary{'U'},k::Integer,j::Integer) =
+    hessuni_getindex(Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,k,j)
+
+function hessuni_getindex{T}(sgn::Bool,c::AbstractVector{T},s::AbstractVector{T},
+                                c∞::T,s∞::T,
+                                k::Integer,j::Integer)
+    si=sgn?1:-1
 
     if k>j+1
-        zero(eltype(Q))
+        zero(T)
     elseif k≥2 && j ==k-1
-        -si*hs(Q,k-1)
+        -si*hs(s,s∞,k-1)
     else
-        col0=hc(Q,k)*hc(Q,k+1)
+        col0=hc(c,c∞,k)*hc(c,c∞,k+1)
         for p=k+1:j
-            col0*=hs(Q,p-1)*hc(Q,p+1)/hc(Q,p)
+            col0*=hs(s,s∞,p-1)*hc(c,c∞,p+1)/hc(c,c∞,p)
         end
 
         si*col0
@@ -205,3 +190,12 @@ Base.ctranspose(Q::BandedUnitary)=BandedUnitary(reverse!(map(ctranspose,Q.ops)))
 
 getindex(Q::BandedUnitary,k::Integer,j::Integer)=TimesOperator(Q.ops)[k,j]
 bandinds(Q::BandedUnitary)=bandinds(TimesOperator(Q.ops))
+
+
+function *(Q::BandedUnitary,v::Vector)
+    ret=v
+    for k=length(Q.ops):-1:1
+        ret=Q.ops[k]*ret
+    end
+    ret
+end

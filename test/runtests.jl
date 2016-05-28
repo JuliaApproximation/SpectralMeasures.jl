@@ -66,5 +66,27 @@ K=SymTriOperator(-ones(5),zeros(5))
 
 J=L+0.5K
 x,Q=eig(J)
-u=Q\(exp(im*x)*(Q*[1.]))
+@time u=Q\(exp(im*x)*(Q*[1.]))
 @test_approx_eq u expm(im*full(J[1:100,1:100]))[1:length(u)]
+
+t=100.0
+    @time u=Q\(exp(im*t*x)*(Q*[1.]))
+    scatter([real(u) imag(u)])
+
+
+typeof(Q)
+
+
+Q.op.ops[1].op
+Q.op.ops[1].mat11
+
+Q.op.ops[1]
+@time Q\[1.,2.,3.,4.,5.,6.]
+@time v=Q.op.ops[1]\[1.,2.,3.,4.,5.,6.]
+
+Qt.ops
+Qt=(Q.op.ops[2]')
+Qt.ops[1]*(Qt.ops[2]*(Qt.ops[3]*v.coefficients))
+@which Qt*v
+Profile.print()
+v=exp(im*t*x)*(Q*[1.])
