@@ -50,6 +50,14 @@ end
 *(c::Number,A::SymTriOperator)=SymTriOperator(c*A.dv,c*A.ev)
 *(A::SymTriOperator,c::Number)=SymTriOperator(c*A.dv,c*A.ev)
 
+function Base.SymTridiagonal(S::SymTriOperator,kr::UnitRange,jr::UnitRange)
+    n=last(kr)
+    @assert n==last(jr)
+    SymTridiagonal(pad(S.dv,n),pad(S.ev,n-1))
+end
+
+
+
 # Represents a SymTriOperator + Symmetric ToeplitzOperator
 immutable SymTriToeplitz{T} <: TridiagonalOperator{T}
     dv::Vector{T}
@@ -96,6 +104,21 @@ function getindex(S::SymTriToeplitz,k::Integer,j::Integer)
             zero(eltype(S))
         end
 end
+
+function Base.SymTridiagonal(S::SymTriToeplitz,kr::UnitRange,jr::UnitRange)
+    n=last(kr)
+    @assert n==last(jr)
+    dv= n>length(S.dv) ?
+        [S.dv;S.a*ones(eltype(S),n-length(S.dv))] :
+        S.dv[1:n]
+
+    ev= n-1>length(S.ev) ?
+        [S.ev;S.b*ones(eltype(S),n-1-length(S.ev))] :
+        S.ev[1:n-1]
+
+    SymTridiagonal(dv,ev)
+end
+
 
 
 

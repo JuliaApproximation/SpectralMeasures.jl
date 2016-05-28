@@ -70,9 +70,20 @@ x,Q=eig(J)
 @time u=Q\(exp(im*x)*(Q*[1.]))
 @test_approx_eq u expm(im*full(J[1:100,1:100]))[1:length(u)]
 
-t=10000.0
+t=10.0
     @time u=Q\(exp(im*t*x)*(Q*[1.]))  # 0.04s
     scatter([real(u) imag(u)])
+
+
+t=100000.0
+    @time u=Q\(exp(im*t*x)*(Q*[1.]))  # 0.04s
+    scatter([real(u) imag(u)])
+
+
+n=100
+    J[1:n,1:n]
+n=10000
+    @time eig(SymTridiagonal(J,1:n,1:n))
 
 
 @time exp(im*t*x)
