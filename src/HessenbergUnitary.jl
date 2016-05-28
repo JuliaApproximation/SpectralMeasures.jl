@@ -11,6 +11,19 @@ immutable HessenbergUnitary{uplo,T} <: UnitaryOperator{T}
     c∞::T
     s∞::T
     band::Int
+
+    function HessenbergUnitary(sgn::Bool,c::Vector{T},s::Vector{T},c∞::T,s∞::T,bnd::Int)
+        @assert isapprox(s∞^2+c∞^2,1)
+        @assert length(c)==length(s)+1
+
+        @assert isapprox(abs(first(c)),1)
+
+        for (cc,ss) in zip(c[2:end],s)
+            @assert isapprox(cc^2+ss^2,1)
+        end
+
+        new(sgn,c,s,c∞,s∞,bnd)
+    end
 end
 
 function HessenbergUnitary(uplo::Char,sign,c,s,c∞,s∞,band)
@@ -85,7 +98,7 @@ bandinds(Q::HessenbergUnitary{'U'})=-1,Q.band
 hc(Q::HessenbergUnitary,k)=k≤length(Q.c)?Q.c[k]:Q.c∞
 hs(Q::HessenbergUnitary,k)=k≤length(Q.s)?Q.s[k]:Q.s∞
 
-function getindex(S::SubBandedMatrix{T,HessenbergUnitary{'L',T}},k::Integer,j::Integer)
+function getindex(S::HessenbergUnitary{'L'},k::Integer,j::Integer)
     error("Implement")
     sn=length(Q.s)
     cn=length(Q.c)
@@ -190,5 +203,5 @@ end
 
 Base.ctranspose(Q::BandedUnitary)=BandedUnitary(reverse!(map(ctranspose,Q.ops)))
 
-addentries!(Q::BandedUnitary,A,kr::Range,::Colon)=addentries!(TimesOperator(Q.ops),A,kr,:)
+getindex(Q::BandedUnitary,k::Integer,j::Integer)=TimesOperator(Q.ops)[k,j]
 bandinds(Q::BandedUnitary)=bandinds(TimesOperator(Q.ops))

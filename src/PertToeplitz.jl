@@ -46,6 +46,10 @@ function getindex(S::SymTriOperator,k::Integer,j::Integer)
     end
 end
 
+
+*(c::Number,A::SymTriOperator)=SymTriOperator(c*A.dv,c*A.ev)
+*(A::SymTriOperator,c::Number)=SymTriOperator(c*A.dv,c*A.ev)
+
 # Represents a SymTriOperator + Symmetric ToeplitzOperator
 immutable SymTriToeplitz{T} <: TridiagonalOperator{T}
     dv::Vector{T}
@@ -92,6 +96,8 @@ function getindex(S::SymTriToeplitz,k::Integer,j::Integer)
             zero(eltype(S))
         end
 end
+
+
 
 ## represents T + K where T is Toeplitz and K is finite-dimensional
 immutable PertToeplitz{S} <: BandedOperator{S}

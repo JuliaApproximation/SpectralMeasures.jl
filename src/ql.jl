@@ -70,9 +70,19 @@ connectionCoeffsOperator(J::SymTriToeplitz) = connectionCoeffsOperator(.5*(J.dv-
 function Base.eig(Jin::SymTriToeplitz)
     Qret=Array(HessenbergUnitary{'U',Float64},0)
     λapprox=sort(discreteEigs(Jin))
-    λ=Array(Float64,0)
 
     J=Jin
+
+    if length(λapprox) == 0
+        C=connectionCoeffsOperator(J)
+
+        x=Fun(identity,Ultraspherical{1}())
+
+        U=SpaceOperator(C,AnySpace(),space(x))
+        return x,U
+    end
+
+    λ=Array(Float64,0)
 
     tol=1E-14
     for k=1:length(λapprox)
@@ -94,13 +104,24 @@ function Base.eig(Jin::SymTriToeplitz)
         push!(λ,J[1,1])
         J=J[2:end,2:end]
     end
-    Q=BandedUnitary(reverse!(Qret))
-    C=BlockOperator(eye(length(λ)),connectionCoeffsOperator(J))
 
-    x=Fun(identity,mapreduce(PointSpace,⊕,λ)⊕Ultraspherical{1}())
+    if length(λ) == 1
+        Q=Qret[1]
+        C=BlockOperator(eye(length(λ)),connectionCoeffsOperator(J))
 
-    U=SpaceOperator(C*Q,AnySpace(),space(x))
-    x,U
+        x=Fun(identity,PointSpace(λ[1])⊕Ultraspherical{1}())
+
+        U=SpaceOperator(C*Q,AnySpace(),space(x))
+        return x,U
+    else
+        Q=BandedUnitary(reverse!(Qret))
+        C=BlockOperator(eye(length(λ)),connectionCoeffsOperator(J))
+
+        x=Fun(identity,mapreduce(PointSpace,⊕,λ)⊕Ultraspherical{1}())
+
+        U=SpaceOperator(C*Q,AnySpace(),space(x))
+        return x,U
+    end
 end
 
 Base.eigvals(Jin::SymTriToeplitz)=domain(eig(Jin)[1])

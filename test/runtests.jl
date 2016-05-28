@@ -62,4 +62,9 @@ ApproxFun.plot(μ-ν)
 
 
 L=DiscreteLaplacian()
-K=SymTridiagonalOperator(-ones(5),zeros(5))
+K=SymTriOperator(-ones(5),zeros(5))
+
+J=L+0.5K
+x,Q=eig(J)
+u=Q\(exp(im*x)*(Q*[1.]))
+@test_approx_eq u expm(im*full(J[1:100,1:100]))[1:length(u)]
