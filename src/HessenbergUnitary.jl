@@ -3,6 +3,12 @@ abstract UnitaryOperator{T} <: BandedOperator{T}
 Base.inv(Q::UnitaryOperator)=Q'
 Base.transpose{T<:Real}(Q::UnitaryOperator{T})=Q'
 
+linsolve(Q::UnitaryOperator,v::Number;opts...) = Q'*v
+linsolve(Q::UnitaryOperator,v::Array;opts...) = Q'*v
+linsolve(Q::UnitaryOperator,v::Fun;opts...) = Q'*v
+
+
+
 
 immutable HessenbergUnitary{uplo,T} <: UnitaryOperator{T}
     sign::Bool

@@ -66,12 +66,17 @@ K=SymTriOperator(-ones(5),zeros(5))
 
 J=L+0.5K
 x,Q=eig(J)
+
 @time u=Q\(exp(im*x)*(Q*[1.]))
 @test_approx_eq u expm(im*full(J[1:100,1:100]))[1:length(u)]
 
-t=100.0
-    @time u=Q\(exp(im*t*x)*(Q*[1.]))
+t=10000.0
+    @time u=Q\(exp(im*t*x)*(Q*[1.]))  # 0.04s
     scatter([real(u) imag(u)])
+
+
+@time exp(im*t*x)
+Q*[.1]
 
 
 typeof(Q)
