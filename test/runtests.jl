@@ -67,8 +67,22 @@ K=SymTriOperator(-ones(5),zeros(5))
 J=L+0.5K
 x,Q=eig(J)
 
+
+# check some ApproxFun bugs
+n=100
+QM=full(Q[1:n,1:n])
+@test_approx_eq pad((Q*[1.] ).coefficients,n) QM[:,1]
+
+
+@test_approx_eq Q.op.ops[end][1:n,1:n]\[1.;zeros(n-1)] pad(Q.op.ops[end]\[1.],n)
+
+b=Q.op.ops[end]\[1.]
+
+@test_approx_eq Q.op.ops[1][1:n,1:n]\pad(b,n) pad((Q.op.ops[1]\b).coefficients,n)
+
+
 @time u=Q\(exp(im*x)*(Q*[1.]))
-@test_approx_eq u expm(im*full(J[1:100,1:100]))[1:length(u)]
+@test_approx_eq u expm(im*full(J[1:200,1:200]))[1:length(u)]
 
 t=10.0
     @time u=Q\(exp(im*t*x)*(Q*[1.]))  # 0.04s
@@ -91,6 +105,8 @@ Q*[.1]
 
 
 typeof(Q)
+
+
 
 
 Q.op.ops[1].op
