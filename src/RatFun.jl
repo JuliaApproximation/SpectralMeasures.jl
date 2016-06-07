@@ -48,15 +48,15 @@ function plotptsvals(r::RatFun)
     q = r.q
     plen = length(p)
     qlen = length(q)
-    if dimension(space(p)) == Inf && dimension(space(q)) == Inf
+    if dimension(space(p)) == ∞ && dimension(space(q)) == ∞
         p=pad(p,3plen+10*qlen+50)
         q=pad(q,3plen+10*qlen+50)
         r = RatFun(p,q)
-    elseif dimension(space(p)) == Inf && dimension(space(q)) < Inf
+    elseif dimension(space(p)) == ∞ && dimension(space(q)) < ∞
         p=pad(p,3plen+10*dimension(space(q))+50)
         q=pad(q,3plen+10*dimension(space(q))+50)
         r = RatFun(p,q)
-    elseif dimension(space(q)) == Inf && dimension(space(p)) < Inf
+    elseif dimension(space(q)) == ∞ && dimension(space(p)) < ∞
         q=pad(q,dimension(space(p))+10qlen+50)
         p=pad(p,dimension(space(p))+10qlen+50)
         r = RatFun(p,q)
