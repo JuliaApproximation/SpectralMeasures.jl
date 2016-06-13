@@ -35,7 +35,7 @@ for op = (:+,:.+,:-,:.-)
 end
 
 plot(r::RatFun;grid=true,kwds...)=plot!(plot(grid=grid),r;kwds...)
-plot!(f::RatFun;kwds...)=plot!(current(),r;kwds...)
+plot!(f::RatFun;kwds...)=plot!(current(),f;kwds...)
 
 plot(x::AbstractVector,r::RatFun;grid=true,kwds...)=plot!(plot(grid=grid),x,r;kwds...)
 plot!(x::AbstractVector,f::RatFun;kwds...)=plot!(current(),x,r;kwds...)
