@@ -64,9 +64,13 @@ immutable SymTriToeplitz{T} <: TridiagonalOperator{T}
     ev::Vector{T}
     a::T
     b::T
+
+    SymTriToeplitz(dv::Vector{T},ev::Vector{T},a::T,b::T) = new(dv,ev,a,b)
+    SymTriToeplitz(dv::Vector,ev::Vector,a,b) = new(Vector{T}(dv),Vector{T}(ev),T(a),T(b))
 end
 
-SymTriToeplitz(dv::Vector,ev::Vector,a,b)=SymTriOperator{promote_type(eltype(dv),eltype(dv),typeof(a),typeof(b))}(dv,ev,a,b)
+SymTriToeplitz(dv::Vector,ev::Vector,a,b) =
+    SymTriToeplitz{promote_type(eltype(dv),eltype(dv),typeof(a),typeof(b))}(dv,ev,a,b)
 
 function SymTriToeplitz(T::ToeplitzOperator,K::SymTriOperator)
     @assert bandinds(T)==(-1,1) && issym(T)
@@ -144,7 +148,8 @@ getindex(P::PertToeplitz,k::AbstractCount,j::AbstractCount) =
 
 for OP in (:+,:-)
     @eval begin
-        $OP(A::SymTriToeplitz,c::UniformScaling)=SymTriToeplitz($OP(A.dv,c.λ),A.ev,$OP(A.a,c.λ),A.b)
+        $OP(A::SymTriToeplitz,c::UniformScaling) =
+            SymTriToeplitz($OP(A.dv,c.λ),A.ev,$OP(A.a,c.λ),A.b)
     end
 end
 
