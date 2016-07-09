@@ -9,7 +9,7 @@ import ApproxFun:BandedOperator, ToeplitzOperator, DiracSpace, plot, IdentityOpe
             SubBandedMatrix, linsolve, MatrixSpace, ∞
 
 export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs, connectionCoeffsOperator, applyConversion,
-        SymTriOperator
+        SymTriOperator, SymTriToeplitz
 
 export DiscreteLaplacian, jacobioperator, ql
 
