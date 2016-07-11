@@ -88,14 +88,12 @@ function Base.eig(Jin::SymTriToeplitz)
     for k=1:length(λapprox)
         μ=λapprox[k]
 
-        J=J-μ*I
-        Q,L=ql(J)
+        Q,L=ql(J-μ*I)
         push!(Qret,deflate(Q',k-1))
         J=(L*Q+μ*I)
-        @assert isa(J,SymTriToeplitz)
 
          while abs(J[1,2]) > tol
-             μ=J[1,1]
+             # μ=J[1,1] DO NOT DO THIS, SINCE IF MU IS NOT ACCURATE, J[1,1] CAN BE AN INVALID SHIFT (MW)
              Q,L=ql(J-μ*I)
              J=L*Q+μ*I
              push!(Qret,deflate(Q',k-1))
