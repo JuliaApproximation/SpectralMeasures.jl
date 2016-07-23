@@ -127,7 +127,7 @@ end
 
 
 ## represents T + K where T is Toeplitz and K is finite-dimensional
-immutable PertToeplitz{S} <: BandedOperator{S}
+immutable PertToeplitz{S} <: Operator{S}
     T::ToeplitzOperator{S}
     K::FiniteOperator{BandedMatrix{S},S}
 end
