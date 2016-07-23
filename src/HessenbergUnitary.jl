@@ -1,4 +1,4 @@
-abstract UnitaryOperator{T} <: BandedOperator{T}
+abstract UnitaryOperator{T} <: Operator{T}
 
 Base.inv(Q::UnitaryOperator)=Q'
 Base.transpose{T<:Real}(Q::UnitaryOperator{T})=Q'

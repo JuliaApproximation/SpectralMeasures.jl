@@ -93,7 +93,7 @@ function Base.eig(Jin::SymTriToeplitz)
         J=(L*Q+μ*I)
 
          while abs(J[1,2]) > tol
-             # μ=J[1,1] DO NOT DO THIS, SINCE IF MU IS NOT ACCURATE, J[1,1] CAN BE AN INVALID SHIFT (MW)
+             # μ=J[1,1] DO NOT DO THIS. IF MU IS NOT ACCURATE, J[1,1] CAN BE AN INVALID SHIFT (MW)
              Q,L=ql(J-μ*I)
              J=L*Q+μ*I
              push!(Qret,deflate(Q',k-1))
