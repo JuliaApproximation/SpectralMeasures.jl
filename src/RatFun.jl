@@ -14,6 +14,8 @@ function evaluate(r::RatFun,x)
     (r.p)(x)./(r.q)(x)
 end
 
+Base.call(r::RatFun,x) = evaluate(r,x)
+
 for op = (:*,:.*)
     @eval $op(r1::RatFun,r2::RatFun)=RatFun($op(r1.p,r2.p),$op(r1.q,r2.q))
     @eval $op(r::RatFun,a::Union{Number,Fun}) = RatFun($op(r.p,a),r.q)
@@ -46,8 +48,8 @@ plot!(x::AbstractVector,f::RatFun;kwds...)=plot!(current(),x,r;kwds...)
 function plotptsvals(r::RatFun)
     p = r.p
     q = r.q
-    plen = length(p)
-    qlen = length(q)
+    plen = ncoefficients(p)
+    qlen = ncoefficients(q)
     if dimension(space(p)) == ∞ && dimension(space(q)) == ∞
         p=pad(p,3plen+10*qlen+50)
         q=pad(q,3plen+10*qlen+50)
@@ -67,44 +69,73 @@ function plotptsvals(r::RatFun)
     return points(r.p),values(r.p)./values(r.q)
 end
 
-plot!{S,T<:Real}(plt::Plots.Plot,r::RatFun{S,T};kwds...)=
-                plot!(plt,plotptsvals(r)...;kwds...)
+@recipe function f{S,T<:Real}(g::RatFun{S,T})
+    plotptsvals(g)
+end
 
-plot!{S,T<:Real}(plt::Plots.Plot,x::AbstractVector{T},r::RatFun{S,T};kwds...)=
-                plot!(plt,x,evaluate(r,x);kwds...)
+@recipe function f{S,T<:Real}(x::AbstractVector{T},g::RatFun{S,T})
+    x,g(x)
+end
 
 
-function plot!{S1<:PiecewiseSpace,S2<:PiecewiseSpace,T1<:Real,T2<:Real}(plt::Plots.Plot,r::RatFun{S1,T1,S2,T2},kwds...)
+@recipe function f{S1<:PiecewiseSpace,S2<:PiecewiseSpace,T1<:Real,T2<:Real}(r::RatFun{S1,T1,S2,T2})
     vp = vec(r.p)
     vq = vec(r.q)
-    c=plt.plotargs[:color_palette][plt.n+1]
-    for k=1:length(vp)
-        plot!(plt,RatFun(vp[k],vq[k]),color=c,kwds...)
+
+    if !isempty(vp)
+        @series begin
+            primary --> true
+            RatFun(vp[1],vq[1])
+        end
     end
-    plt
+
+    for k=2:length(vp)
+        @series begin
+            primary := false
+            RatFun(vp[k],vq[k])
+        end
+    end
 end
 
 # For dirac space, we draw a dotted line extending to infinity
-function plot!{S1<:DiracSpace,T1<:Real,S2<:PointSpace,T2<:Real}(plt::Plots.Plot,r::RatFun{S1,T1,S2,T2};kwds...)
+@recipe function f{S1<:DiracSpace,T1<:Real,S2<:PointSpace,T2<:Real}(r::RatFun{S1,T1,S2,T2})
     p = r.p
     q = r.q
     pts=space(p).points
     n=length(pts)
     ws=pad(p.coefficients./q.coefficients,length(pts))
-    plt=plot!(plt,ones(2)*pts[1],[0,1]*ws[1];kwds...)
-    c=plt.plotargs[:color_palette][plt.n]
-    plot!(plt,ones(2)*pts[2:end]',[0,1]*ws[2:end]';color=c,kwds...)
-    plot!(plt,ones(2)*pts',[1,2]*ws';color=c,linestyle=:dot,kwds...)
+    @series begin
+        primary --> true
+        ones(2)*pts[1],[0,1]*ws[1]
+    end
+
+    @series begin
+        primary := false
+        ones(2)*pts[2:end]',[0,1]*ws[2:end]'
+    end
+
+    @series begin
+        primary := false
+        linestyle := :dot
+        ones(2)*pts',[1,2]*ws'
+    end
 end
 
 # for PointSpace, we draw just a line
-function plot!{S1<:PointSpace,T1<:Real,S2<:PointSpace,T2<:Real}(plt::Plots.Plot,r::RatFun{S1,T1,S2,T2};kwds...)
+@recipe function f{S1<:PointSpace,T1<:Real,S2<:PointSpace,T2<:Real}(r::RatFun{S1,T1,S2,T2})
     p = r.p
     q = r.q
     pts=space(p).points
     n=length(pts)
     ws=pad(p.coefficients./q.coefficients,length(pts))
-    plt=plot!(plt,ones(2)*pts[1],[0,1]*ws[1];kwds...)
-    c=plt.plotargs[:color_palette][plt.n]
-    plot!(plt,ones(2)*pts[2:end]',[0,1]*ws[2:end]';color=c,kwds...)
+
+    @series begin
+        primary --> true
+        ones(2)*pts[1],[0,1]*ws[1]
+    end
+
+    @series begin
+        primary := false
+        ones(2)*pts[2:end]',[0,1]*ws[2:end]'
+    end
 end
