@@ -78,7 +78,7 @@ function Base.eig(Jin::SymTriToeplitz)
 
         x=Fun(identity,Ultraspherical{1}())
 
-        U=SpaceOperator(C,AnySpace(),space(x))
+        U=SpaceOperator(C,ℓ⁰,space(x))
         return x,U
     end
 
@@ -109,7 +109,7 @@ function Base.eig(Jin::SymTriToeplitz)
 
         x=Fun(identity,PointSpace(λ[1])⊕Ultraspherical{1}())
 
-        U=SpaceOperator(C*Q,AnySpace(),space(x))
+        U=SpaceOperator(C*Q,ℓ⁰,space(x))
         return x,U
     else
         Q=BandedUnitary(reverse!(Qret))
@@ -117,7 +117,7 @@ function Base.eig(Jin::SymTriToeplitz)
 
         x=Fun(identity,mapreduce(PointSpace,⊕,λ)⊕Ultraspherical{1}())
 
-        U=SpaceOperator(C*Q,AnySpace(),space(x))
+        U=SpaceOperator(C*Q,ℓ⁰,space(x))
         return x,U
     end
 end

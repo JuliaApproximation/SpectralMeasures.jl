@@ -31,8 +31,13 @@ immutable SymTriOperator{T} <: TridiagonalOperator{T}
     dv::Vector{T}
     ev::Vector{T}
 end
-SymTriOperator(A::Vector,B::Vector)=SymTriOperator{promote_type(eltype(A),eltype(B))}(A,B)
+SymTriOperator(A::Vector,B::Vector) =
+    SymTriOperator{promote_type(eltype(A),eltype(B))}(A,B)
 
+
+for OP in (:domainspace,:rangespace)
+    @eval $OP(::SymTriOperator) = ℓ⁰
+end
 
 function getindex(S::SymTriOperator,k::Integer,j::Integer)
     if k ≤ length(S.dv) && k == j
@@ -90,6 +95,11 @@ function SymTriToeplitz(T::ToeplitzOperator)
     end
 end
 
+
+for OP in (:domainspace,:rangespace)
+    @eval $OP(::SymTriToeplitz) = ℓ⁰
+end
+
 function Base.getindex(S::SymTriToeplitz,kr::UnitCount{Int},jr::UnitCount{Int})
     k=first(kr)
     @assert k==first(jr)
@@ -132,7 +142,12 @@ immutable PertToeplitz{S} <: Operator{S}
     K::FiniteOperator{BandedMatrix{S},S}
 end
 
-bandinds(P::PertToeplitz)=min(bandinds(P.T,1),bandinds(P.K,1)),max(bandinds(P.T,2),bandinds(P.K,2))
+for OP in (:domainspace,:rangespace)
+    @eval $OP(::PertToeplitz) = ℓ⁰
+end
+
+bandinds(P::PertToeplitz) =
+    min(bandinds(P.T,1),bandinds(P.K,1)),max(bandinds(P.T,2),bandinds(P.K,2))
 
 getindex(P::PertToeplitz,k::Integer,j::Integer) =
     P.T[k,j]+P.K[k,j]

@@ -54,8 +54,8 @@ ApproxFun.plot(ν)
 sum(μ)
 sum(ν)
 
-length(μ)
-length(ν)
+ncoefficients(μ)
+ncoefficients(ν)
 
 # Can you make this work, Sheehan? MW
 ApproxFun.plot(μ-ν)

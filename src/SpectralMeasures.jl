@@ -5,11 +5,11 @@ import Base:+,-,*,/,.*,.-,./,.+,getindex
 
 import ApproxFun:BandedOperator, ToeplitzOperator, DiracSpace, plot, IdentityOperator,
             TridiagonalOperator,addentries!,setdomain, SavedBandedOperator, resizedata!, bandinds, PointSpace,
-            BandedMatrix, bzeros, TimesOperator, BlockOperator, SpaceOperator, AnySpace, AbstractCount, UnitCount,
-            SubBandedMatrix, linsolve, MatrixSpace, ∞
+            BandedMatrix, bzeros, TimesOperator, BlockOperator, SpaceOperator, AbstractCount, UnitCount,
+            SubBandedMatrix, linsolve, MatrixSpace, ∞, ℓ⁰, domainspace, rangespace
 
-export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs, connectionCoeffsOperator, applyConversion,
-        SymTriOperator, SymTriToeplitz
+export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs,
+            connectionCoeffsOperator, applyConversion, SymTriOperator, SymTriToeplitz
 
 export DiscreteLaplacian, jacobioperator, ql
 
@@ -84,7 +84,7 @@ function spectralmeasureU(a,b)
   # Finds C such that J*C = C*Toeplitz([0,1/2])
   C = connectionCoeffsOperator(a,b)
   c = Fun(C.T.nonnegative,Taylor)
-  f = Fun(C*(C'*[1]),Ultraspherical{1}())
+  f = Fun((C*(C'*[1])).coefficients,Ultraspherical{1}())
 
   # Compute continuous part of measure
   finv = (1./f)
