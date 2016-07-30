@@ -106,7 +106,6 @@ Q*[.1]
 
 typeof(Q)
 
-
 
 
 Q.op.ops[1].op
