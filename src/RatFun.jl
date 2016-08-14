@@ -102,9 +102,11 @@ end
         ones(2)*pts[1],[0,1]*ws[1]
     end
 
-    @series begin
-        primary := false
-        ones(2)*pts[2:end]',[0,1]*ws[2:end]'
+    if length(ws) > 1
+        @series begin
+            primary := false
+            ones(2)*pts[2:end]',[0,1]*ws[2:end]'
+        end
     end
 
     @series begin
