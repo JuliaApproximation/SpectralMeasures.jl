@@ -36,13 +36,6 @@ for op = (:+,:.+,:-,:.-)
   @eval $op(r1::RatFun,r2::RatFun) = RatFun($op((r1.p.*r2.q),(r2.p.*r1.q)),r1.q.*r2.q)
 end
 
-plot(r::RatFun;grid=true,kwds...)=plot!(plot(grid=grid),r;kwds...)
-plot!(f::RatFun;kwds...)=plot!(current(),f;kwds...)
-
-plot(x::AbstractVector,r::RatFun;grid=true,kwds...)=plot!(plot(grid=grid),x,r;kwds...)
-plot!(x::AbstractVector,f::RatFun;kwds...)=plot!(current(),x,r;kwds...)
-
-
 # The padding in this function can be improved
 # No support for functions with poles within the domain
 function plotptsvals(r::RatFun)

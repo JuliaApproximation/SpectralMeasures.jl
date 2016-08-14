@@ -3,8 +3,8 @@ using Base, Compat, ApproxFun, Plots
 
 import Base:+,-,*,/,.*,.-,./,.+,getindex
 
-import ApproxFun:BandedOperator, ToeplitzOperator, DiracSpace, plot, IdentityOperator,
-            TridiagonalOperator,addentries!,setdomain, SavedBandedOperator, resizedata!, bandinds, PointSpace,
+import ApproxFun:Operator, ToeplitzOperator, DiracSpace, plot, IdentityOperator,
+            TridiagonalOperator, setdomain, resizedata!, bandinds, PointSpace,
             BandedMatrix, bzeros, TimesOperator, BlockOperator, SpaceOperator, AbstractCount, UnitCount,
             SubBandedMatrix, linsolve, MatrixSpace, ∞, ℓ⁰, domainspace, rangespace
 
@@ -40,8 +40,8 @@ function spectralmeasureRat(a,b)
      cprime = differentiate(c)
      eigs=real(map(joukowsky,z))
      weights = (z-1./z).^2./(z.*real(cprime(z)).*real(c(1./z)))
-     p = Fun([2/pi],JacobiWeight(.5,.5,Ultraspherical{1}())) + Fun(weights,DiracSpace(eigs))
-     q = f + Fun(ones(length(eigs)),PointSpace(eigs))
+     p = Fun(weights,DiracSpace(eigs)) + Fun([2/pi],JacobiWeight(.5,.5,Ultraspherical{1}()))
+     q = Fun(ones(length(eigs)),PointSpace(eigs)) + f
      μ = RatFun(p,q)
   else
     μ = RatFun(Fun([2/pi],JacobiWeight(.5,.5,Ultraspherical{1}())),f)
@@ -157,7 +157,7 @@ function connectionCoeffsOperator(a,b)
   T+FiniteOperator(K)
 end
 
-# Converts coefficients a^J to coefficients a^D
+# Converts coefficients a^J to coefficients a^D using Clenshaw
 function applyConversion(J::SymTriToeplitz,D::SymTriToeplitz,v::Vector)
   N = length(v)
   b = zeros(N); b1 = zeros(N); b2 = zeros(N)
