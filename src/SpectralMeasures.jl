@@ -9,7 +9,7 @@ import ApproxFun:Operator, ToeplitzOperator, DiracSpace, plot, IdentityOperator,
             SubBandedMatrix, linsolve, MatrixSpace, ∞, ℓ⁰, domainspace, rangespace
 
 export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs,
-            connectionCoeffsOperator, applyConversion, SymTriOperator, SymTriToeplitz
+            connectionCoeffsOperator, applyConversion, SymTriOperator, SymTriToeplitz, principalResolvent, discResolvent
 
 export DiscreteLaplacian, jacobioperator, ql
 
@@ -100,6 +100,38 @@ function spectralmeasureU(a,b)
   else
     μ
   end
+end
+
+function principalResolvent(a,b)
+  # Chop the a and b down
+  a = chop!(a); b = .5+chop!(b-.5)
+  n = max(length(a),length(b)+1)
+  a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
+
+  # Compute the necessary polynomials
+  C = SpectralMeasures.connectionCoeffsOperator(a,b)
+  Cmu = SpectralMeasures.connectionCoeffsOperator(a[2:end],b[2:end])
+  f = Fun(C'*(C*[1]),Ultraspherical{1}())
+  fmu = Fun(Cmu'*((C*[1])[2:end])/b[1],Ultraspherical{1}())
+
+  # Return the resolvent
+  x->(2*sqrt(x-1).*sqrt(x+1)-2*x-fmu(x))./f(x)
+end
+
+function discResolvent(a,b)
+  # Chop the a and b down
+  a = chop!(a); b = .5+chop!(b-.5)
+  n = max(length(a),length(b)+1)
+  a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
+
+  # Compute the necessary polynomials
+  C = SpectralMeasures.connectionCoeffsOperator(a,b)
+  Cmu = SpectralMeasures.connectionCoeffsOperator(a[2:end],b[2:end])
+  c = Fun([C.T[1,1];C.T.negative],Taylor)
+  cmu = Fun([0;Cmu.T[1,1];Cmu.T.negative]/b[1],Taylor)
+
+  # Return the rational function
+  x->-cmu(x)./c(x)
 end
 
 function discreteEigs(a,b)

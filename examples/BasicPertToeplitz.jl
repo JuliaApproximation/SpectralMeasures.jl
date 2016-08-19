@@ -51,6 +51,8 @@ a = 1.0
 J1 = SymTriToeplitz([a],[.5],0.0,0.5)
 C1 = connectionCoeffsOperator(J1)
 Δ*C1-C1*J1
+10.0*I
+Q,L = ql(J1-10.0*I)
 
 d,U = eig(J1)
 
