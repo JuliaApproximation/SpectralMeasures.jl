@@ -6,7 +6,7 @@ import Base:+,-,*,/,.*,.-,./,.+,getindex
 import ApproxFun:Operator, ToeplitzOperator, DiracSpace, plot, IdentityOperator,
             TridiagonalOperator, setdomain, resizedata!, bandinds, PointSpace,
             BandedMatrix, bzeros, TimesOperator, BlockOperator, SpaceOperator, AbstractCount, UnitCount,
-            SubBandedMatrix, linsolve, MatrixSpace, ∞, ℓ⁰, domainspace, rangespace
+            linsolve, MatrixSpace, ∞, ℓ⁰, domainspace, rangespace
 
 export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs,
             connectionCoeffsOperator, applyConversion, SymTriOperator, SymTriToeplitz, principalResolvent, discResolvent
@@ -17,7 +17,6 @@ include("helper.jl")
 include("HessenbergUnitary.jl")
 include("PertToeplitz.jl")
 include("ql.jl")
-# include("plot.jl")
 include("RatFun.jl")
 
 spectralmeasure(a,b) = spectralmeasureRat(a,b)
@@ -25,7 +24,7 @@ spectralmeasure(a,b) = spectralmeasureRat(a,b)
 function spectralmeasureRat(a,b)
   # Chop the a and b down
   a = chop!(a); b = .5+chop!(b-.5)
-  n = max(length(a),length(b)+1)
+  n = max(2,length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
 
   # Finds C such that J*C = C*Toeplitz([0,1/2])
@@ -36,7 +35,6 @@ function spectralmeasureRat(a,b)
   # Check for discrete eigenvalues
   z = sort(real(filter!(z->abs(z)<1 && isreal(z) && !isapprox(abs(z),1) ,complexroots(c))))
   if length(z) > 0
-    #error("Can't deal with discrete spectrum until PointsSpace is fully implemented.")
      cprime = differentiate(c)
      eigs=real(map(joukowsky,z))
      weights = (z-1./z).^2./(z.*real(cprime(z)).*real(c(1./z)))
@@ -52,7 +50,7 @@ end
 function spectralmeasureT(a,b)
   # Chop the a and b down
   a = chop!(a); b = .5+chop!(b-.5)
-  n = max(length(a),length(b)+1)
+  n = max(2,length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
 
   # Finds C such that J*C = C*Toeplitz([0,1/2])
@@ -78,13 +76,13 @@ end
 function spectralmeasureU(a,b)
   # Chop the a and b down
   a = chop!(a); b = .5+chop!(b-.5)
-  n = max(length(a),length(b)+1)
+  n = max(2,length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
 
   # Finds C such that J*C = C*Toeplitz([0,1/2])
   C = connectionCoeffsOperator(a,b)
   c = Fun(C.T.nonnegative,Taylor)
-  f = Fun((C*(C'*[1])).coefficients,Ultraspherical{1}())
+  f = Fun((C*(C'*[1])),Ultraspherical{1}())
 
   # Compute continuous part of measure
   finv = (1./f)
@@ -105,30 +103,30 @@ end
 function principalResolvent(a,b)
   # Chop the a and b down
   a = chop!(a); b = .5+chop!(b-.5)
-  n = max(length(a),length(b)+1)
+  n = max(2,length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
 
   # Compute the necessary polynomials
-  C = SpectralMeasures.connectionCoeffsOperator(a,b)
-  Cmu = SpectralMeasures.connectionCoeffsOperator(a[2:end],b[2:end])
-  f = Fun(C'*(C*[1]),Ultraspherical{1}())
-  fmu = Fun(Cmu'*((C*[1])[2:end])/b[1],Ultraspherical{1}())
+  C = connectionCoeffsOperator(a,b)
+  Cmu = connectionCoeffsOperator(a[2:end],b[2:end]) # Technically not Cmu from the paper
+  f = Fun((C*(C'*[1])),Ultraspherical{1}())
+  fmu = Fun(Cmu*((C'*[1]).coefficients[2:end])/b[1],Ultraspherical{1}())
 
   # Return the resolvent
-  x->(2*sqrt(x-1).*sqrt(x+1)-2*x-fmu(x))./f(x)
+  x->(2*sqrt(complex(x-1)).*sqrt(complex(x+1))-2*x-extrapolate(fmu,x))./extrapolate(f,x)
 end
 
 function discResolvent(a,b)
   # Chop the a and b down
   a = chop!(a); b = .5+chop!(b-.5)
-  n = max(length(a),length(b)+1)
+  n = max(2,length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
 
   # Compute the necessary polynomials
   C = SpectralMeasures.connectionCoeffsOperator(a,b)
-  Cmu = SpectralMeasures.connectionCoeffsOperator(a[2:end],b[2:end])
-  c = Fun([C.T[1,1];C.T.negative],Taylor)
-  cmu = Fun([0;Cmu.T[1,1];Cmu.T.negative]/b[1],Taylor)
+  Cmu = SpectralMeasures.connectionCoeffsOperator(a[2:end],b[2:end]) # Technically not Cmu from the paper
+  c = Fun(C.T.nonnegative,Taylor)
+  cmu = Fun([0;Cmu.T.nonnegative]/b[1],Taylor)
 
   # Return the rational function
   x->-cmu(x)./c(x)
@@ -136,7 +134,7 @@ end
 
 function discreteEigs(a,b)
   a = chop!(a); b = .5+chop!(b-.5)
-  n = max(length(a),length(b)+1)
+  n = max(2,length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
   # Finds C such that C*J = Toeplitz([0,1/2])*C
   C = connectionCoeffsOperator(a,b)
@@ -147,7 +145,7 @@ end
 #Finds C such that C'(U_k(s)) =  (P_k(s)),
 # where P_k has Jacobi coeffs a,b and U_k is Chebyshev U
 function connectionCoeffsOperator(a,b)
-  n = max(length(a),length(b)+1)
+  n = max(2,length(a),length(b)+1)
   N = 2*n #This is sufficient only because we go from Chebyshev U
   a = [a;zeros(N-length(a))]; b = [b;.5+zeros(N-length(b))]
   ToeplitzVec = zeros(N)
