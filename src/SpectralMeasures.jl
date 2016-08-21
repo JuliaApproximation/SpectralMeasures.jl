@@ -30,7 +30,7 @@ function spectralmeasureRat(a,b)
   # Finds C such that J*C = C*Toeplitz([0,1/2])
   C = connectionCoeffsOperator(a,b)
   c = Fun(C.T.nonnegative,Taylor)
-  f = Fun(C*(C'*[1]),Ultraspherical{1}())
+  f = Fun(C*(C'*[1]),Ultraspherical(1))
 
   # Check for discrete eigenvalues
   z = sort(real(filter!(z->abs(z)<1 && isreal(z) && !isapprox(abs(z),1) ,complexroots(c))))
@@ -38,11 +38,11 @@ function spectralmeasureRat(a,b)
      cprime = differentiate(c)
      eigs=real(map(joukowsky,z))
      weights = (z-1./z).^2./(z.*real(cprime(z)).*real(c(1./z)))
-     p = Fun(weights,DiracSpace(eigs)) + Fun([2/pi],JacobiWeight(.5,.5,Ultraspherical{1}()))
+     p = Fun(weights,DiracSpace(eigs)) + Fun([2/pi],JacobiWeight(.5,.5,Ultraspherical(1)))
      q = Fun(ones(length(eigs)),PointSpace(eigs)) + f
      μ = RatFun(p,q)
   else
-    μ = RatFun(Fun([2/pi],JacobiWeight(.5,.5,Ultraspherical{1}())),f)
+    μ = RatFun(Fun([2/pi],JacobiWeight(.5,.5,Ultraspherical(1))),f)
   end
   μ
 end
@@ -58,8 +58,8 @@ function spectralmeasureT(a,b)
   c = Fun(C.T.nonnegative,Taylor)
 
   # Compute continuous part of measure
-  coeffs = Fun(x->(2/pi)*(1-x.^2)./abs(c(x+im*sqrt(1-x.^2))).^2,Ultraspherical{0}()).coefficients
-  μ = Fun(coeffs,JacobiWeight(-.5,-.5,Ultraspherical{0}()))
+  coeffs = Fun(x->(2/pi)*(1-x.^2)./abs(c(x+im*sqrt(1-x.^2))).^2,Ultraspherical(0)).coefficients
+  μ = Fun(coeffs,JacobiWeight(-.5,-.5,Ultraspherical(0)))
 
   # Check for discrete eigenvalues
   z = sort(real(filter!(z->abs(z)<1 && isreal(z) && !isapprox(abs(z),1),complexroots(c))))
@@ -82,7 +82,7 @@ function spectralmeasureU(a,b)
   # Finds C such that J*C = C*Toeplitz([0,1/2])
   C = connectionCoeffsOperator(a,b)
   c = Fun(C.T.nonnegative,Taylor)
-  f = Fun((C*(C'*[1])),Ultraspherical{1}())
+  f = Fun((C*(C'*[1])),Ultraspherical(1))
 
   # Compute continuous part of measure
   finv = (1./f)
@@ -109,8 +109,8 @@ function principalResolvent(a,b)
   # Compute the necessary polynomials
   C = connectionCoeffsOperator(a,b)
   Cmu = connectionCoeffsOperator(a[2:end],b[2:end]) # Technically not Cmu from the paper
-  f = Fun((C*(C'*[1])),Ultraspherical{1}())
-  fmu = Fun(Cmu*((C'*[1]).coefficients[2:end])/b[1],Ultraspherical{1}())
+  f = Fun((C*(C'*[1])),Ultraspherical(1))
+  fmu = Fun(Cmu*((C'*[1]).coefficients[2:end])/b[1],Ultraspherical(1))
 
   # Return the resolvent
   x->(2*sqrt(complex(x-1)).*sqrt(complex(x+1))-2*x-extrapolate(fmu,x))./extrapolate(f,x)

@@ -18,7 +18,7 @@ using Plots; Plots.gr(legend=false,linewidth=2,xlims=(-2,2),ylims=(0,2))
 #
 #  In LightTable, "drag" k to see how the perturbation affects the spectral measure
 
-k = 0
+k = 22
   plot(spectralmeasure([k/20],[.5]))
 
 
@@ -38,7 +38,7 @@ k = 0
 #  In LightTable, "drag" k to see how the perturbation affects the spectral measure
 
 
-k = 4
+k = 29
   plot(spectralmeasure([0.],[.5+k/20]/sqrt(2)))
 
 
