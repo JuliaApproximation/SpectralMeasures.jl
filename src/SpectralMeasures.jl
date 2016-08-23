@@ -13,9 +13,9 @@ export connectionCoeffsOperator, applyConversion, SymTriOperator, SymTriToeplitz
 
 export DiscreteLaplacian, jacobioperator, ql
 
-include("helper.jl")
 include("HessenbergUnitary.jl")
 include("PertToeplitz.jl")
+include("helper.jl")
 include("ql.jl")
 include("RatFun.jl")
 
