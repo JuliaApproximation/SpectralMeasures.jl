@@ -1,45 +1,42 @@
-using ApproxFun
-using SpectralMeasures
-using Plots; Plots.gr(legend=false,linewidth=2,xlims=(-2,2),ylims=(0,2))
+using ApproxFun, SpectralMeasures, Plots; Plots.gr(legend=false,linewidth=2,xlims=(-2,2),ylims=(0,2))
 
 ## 1by1 perturbation of Toeplitz
-# J1 = [a/2 .5            ]
+# J1 = [α/2 .5            ]
 #      [ .5  0 .5         ]
 #      [    .5  0 .5      ]
 #      [       .5  0 .5   ]
 #      [          ....... ]
 #
 #  We have several points of interest
-#   a = 0 : Chebyshev of the 2nd Kind (semicircle)
-#   a = -1 : Chebyshev of the 3rd kind
-#   a = 1 : Chebyshev of the 4th kind
-#  |a|≦ 1 : purely continuous spectrum
-#  |a|> 1 : A single eigenvalue
+#   α = 0 : Chebyshev of the 2nd Kind (semicircle)
+#   α = -1 : Chebyshev of the 3rd kind
+#   α = 1 : Chebyshev of the 4th kind
+#  |α|≦ 1 : purely continuous spectrum
+#  |α|> 1 : A single eigenvalue
 #
 #  In LightTable, "drag" k to see how the perturbation affects the spectral measure
 
-k = 22
-  plot(spectralmeasure([k/20],[.5]))
+k = 3
+  plot(spectralmeasure([k/20],[.5]),title="\\alpha = $(k/10)")
 
 
 ## Basic 2by2 perturbation of Toeplitz
-# J2 = [  0  b/⎷2            ]
-#      [b/⎷2  0  .5          ]
+# J2 = [  0  β/⎷2            ]
+#      [β/⎷2  0  .5          ]
 #      [     .5   0  .5      ]
 #      [         .5   0 .5   ]
 #      [            ........ ]
 #
 #  We have several points of interest
-#   b = 1/⎷2 : Chebyshev of the 2nd Kind
-#   b = 1 : Chebyshev of the 1st kind
-#  |b|≦ 1 : purely continuous spectrum
-#  |b|> 1 : 2 eigenvalues
+#   β = 1/⎷2 : Chebyshev of the 2nd Kind
+#   β = 1 : Chebyshev of the 1st kind
+#  |β|≦ 1 : purely continuous spectrum
+#  |β|> 1 : 2 eigenvalues
 #
 #  In LightTable, "drag" k to see how the perturbation affects the spectral measure
 
-
-k = 29
-  plot(spectralmeasure([0.],[.5+k/20]/sqrt(2)))
+k = 5
+  plot(spectralmeasure([0.],[.5+k/20]/sqrt(2)),title="\\beta=$(.5+k/20)")
 
 
 ####################
