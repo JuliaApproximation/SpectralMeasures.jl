@@ -8,8 +8,8 @@ import ApproxFun:Operator, ToeplitzOperator, DiracSpace, plot, IdentityOperator,
             BandedMatrix, bzeros, TimesOperator, BlockOperator, SpaceOperator, AbstractCount, UnitCount,
             linsolve, MatrixSpace, ∞, ℓ⁰, domainspace, rangespace
 
-export spectralmeasure, spectralmeasureRat, spectralmeasureU, spectralmeasureT, discreteEigs,
-            connectionCoeffsOperator, applyConversion, SymTriOperator, SymTriToeplitz, principalResolvent, discResolvent
+export spectralmeasure, discreteEigs, principalResolvent, discResolvent
+export connectionCoeffsOperator, applyConversion, SymTriOperator, SymTriToeplitz
 
 export DiscreteLaplacian, jacobioperator, ql
 
@@ -19,9 +19,7 @@ include("PertToeplitz.jl")
 include("ql.jl")
 include("RatFun.jl")
 
-spectralmeasure(a,b) = spectralmeasureRat(a,b)
-
-function spectralmeasureRat(a,b)
+function spectralmeasure(a,b)
   # Chop the a and b down
   a = chop!(a); b = .5+chop!(b-.5)
   n = max(2,length(a),length(b)+1)
@@ -45,59 +43,6 @@ function spectralmeasureRat(a,b)
     μ = RatFun(Fun([2/pi],JacobiWeight(.5,.5,Ultraspherical(1))),f)
   end
   μ
-end
-
-function spectralmeasureT(a,b)
-  # Chop the a and b down
-  a = chop!(a); b = .5+chop!(b-.5)
-  n = max(2,length(a),length(b)+1)
-  a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
-
-  # Finds C such that J*C = C*Toeplitz([0,1/2])
-  C = connectionCoeffsOperator(a,b)
-  c = Fun(C.T.nonnegative,Taylor)
-
-  # Compute continuous part of measure
-  coeffs = Fun(x->(2/pi)*(1-x.^2)./abs(c(x+im*sqrt(1-x.^2))).^2,Ultraspherical(0)).coefficients
-  μ = Fun(coeffs,JacobiWeight(-.5,-.5,Ultraspherical(0)))
-
-  # Check for discrete eigenvalues
-  z = sort(real(filter!(z->abs(z)<1 && isreal(z) && !isapprox(abs(z),1),complexroots(c))))
-  if length(z) > 0
-    cprime = differentiate(c)
-    eigs=real(map(joukowsky,z))
-    weights = (z-1./z).^2./(z.*real(cprime(z)).*real(c(1./z)))
-    μ + Fun(weights,DiracSpace(eigs))
-  else
-    μ
-  end
-end
-
-function spectralmeasureU(a,b)
-  # Chop the a and b down
-  a = chop!(a); b = .5+chop!(b-.5)
-  n = max(2,length(a),length(b)+1)
-  a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
-
-  # Finds C such that J*C = C*Toeplitz([0,1/2])
-  C = connectionCoeffsOperator(a,b)
-  c = Fun(C.T.nonnegative,Taylor)
-  f = Fun((C*(C'*[1])),Ultraspherical(1))
-
-  # Compute continuous part of measure
-  finv = (1./f)
-  μ = Fun((2/pi)*finv.coefficients,JacobiWeight(.5,.5,space(finv)))
-
-  # Check for discrete eigenvalues
-  z = sort(real(filter!(z->abs(z)<1 && isreal(z) && !isapprox(abs(z),1),complexroots(c))))
-  if length(z) > 0
-    cprime = differentiate(c)
-    eigs=real(map(joukowsky,z))
-    weights = (z-1./z).^2./(z.*real(cprime(z)).*real(c(1./z)))
-    μ + Fun(weights,DiracSpace(eigs))
-  else
-    μ
-  end
 end
 
 function principalResolvent(a,b)
@@ -185,20 +130,6 @@ function connectionCoeffsOperator(a,b)
     end
   end
   T+FiniteOperator(K)
-end
-
-# Converts coefficients a^J to coefficients a^D using Clenshaw
-function applyConversion(J::SymTriToeplitz,D::SymTriToeplitz,v::Vector)
-  N = length(v)
-  b = zeros(N); b1 = zeros(N); b2 = zeros(N)
-  for k = N:-1:1
-    # before: b = b_k+1, b1 = b_k+2, (and b2 = b_k+3 is to be forgotten)
-    b2 = pad((D-J[k,k]*I)*b,N)/J[k,k+1]-b1*(J[k,k+1]/J[k+1,k+2])
-    b2[1] += v[k]
-    b2, b1, b = b1, b, b2
-    # after: b = b_k, b1 = b_k+1, b2 = b_k+2
-  end
-  b
 end
 
 end  #Module
