@@ -5,14 +5,14 @@ using Plots; Plots.gr(legend=false,linewidth=2, xlims=(-1.2,1.2),ylims=(0,1))
 Δ = DiscreteLaplacian()
 
 # Legendre polynomials
-n=100
+n=1
   bLeg = (1:n-1)./sqrt(4*(1:n-1).^2-1)
   plot(spectralmeasure(zeros(n),bLeg),title="n = $(n)")
 
 
 # Ultraspherical polynomials
+γ = 0.6
 n= 100
-  γ = 0.6
   bUlt = .5*sqrt(((1:n).*(2γ+(0:n-1)))./((γ+(0:n-1)).*(γ+(1:n))))
   plot(spectralmeasure(zeros(n),bUlt),title="n = $(n), \\gamma = $(γ)")
 
