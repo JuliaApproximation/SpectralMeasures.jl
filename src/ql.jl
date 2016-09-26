@@ -2,17 +2,17 @@
 # returns the parameters for the limiting Toeplitz
 function givenstail(t0::Real,t1::Real)
     @assert t0^2-4t1^2≥0
-    s∞ = (t0 - sqrt(t0^2-4t1^2))/(2t1)
-    l0 = (t0 + sqrt(t0^2-4t1^2))/2
+    s∞ = (-t0 + sign(t0)*sqrt(t0^2-4t1^2))/(2t1)
+    l0 = (-t0 -sign(t0)*sqrt(t0^2-4t1^2))/2
     if s∞^2 > 1
         s∞ = (t0 + sqrt(t0^2-4t1^2))/(2t1)
         l0 = (t0 - sqrt(t0^2-4t1^2))/2
     end
     c∞ = -sqrt(1-s∞^2)
     α = t1*c∞
-    β = c∞*t0 - s∞*α
+    β = c∞*t0 + s∞*α
     l1 = 2t1
-    l2 = t1*s∞
+    l2 = -t1*s∞
     c∞,s∞,ToeplitzOperator([l1,l2],[l0]),α,β
 end
 
