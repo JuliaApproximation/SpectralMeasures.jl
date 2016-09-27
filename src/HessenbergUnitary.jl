@@ -205,6 +205,10 @@ getindex(Q::BandedUnitary,k::Integer,j::Integer)=TimesOperator(Q.ops)[k,j]
 bandinds(Q::BandedUnitary)=bandinds(TimesOperator(Q.ops))
 
 
+domainspace(::BandedUnitary) = ℓ⁰
+rangespace(::BandedUnitary) = ℓ⁰
+
+
 function *(Q::BandedUnitary,v::Vector)
     ret=v
     for k=length(Q.ops):-1:1

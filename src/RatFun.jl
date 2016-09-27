@@ -14,7 +14,7 @@ function evaluate(r::RatFun,x)
     (r.p)(x)./(r.q)(x)
 end
 
-Base.call(r::RatFun,x) = evaluate(r,x)
+@compat (r::RatFun)(x) = evaluate(r,x)
 
 for op = (:*,:.*)
     @eval $op(r1::RatFun,r2::RatFun)=RatFun($op(r1.p,r2.p),$op(r1.q,r2.q))
@@ -26,7 +26,6 @@ reciprocal(r::RatFun) = RatFun(r.q,r.p)
 
 (./)(r1::RatFun,r2::RatFun)=r1.*reciprocal(r2)
 (./)(a,r::RatFun)=a.*reciprocal(r)
-(./)(r::RatFun,a)=reciprocal(r).*a
 
 (/)(r1::RatFun,r2::RatFun)=r1*reciprocal(r2)
 (/)(a,r::RatFun)=a*reciprocal(r)

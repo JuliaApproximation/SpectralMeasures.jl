@@ -51,100 +51,23 @@ ApproxFun.plot(ν)
 
 
 # Can you make this work, Sheehan? MW
-ApproxFun.plot(μ-ν)
+#ApproxFun.plot(μ-ν)
 
 
 L=DiscreteLaplacian()
 K=SymTriOperator(-ones(5),zeros(5))
 
 J=L+0.5K
-x,Q=eig(J)
-
-@which eig(J)
-
-@which ql(J-3.0*I)
 A=J-3.0*I
-@which ql(A.dv,A.ev,A.a,A.b)
+
 Q,L=ql(J-3.0*I)
 
-norm(L[1:100,1:100]  -[L[k,j] for k=1:100,j=1:100])
+@test norm((Q*L-A)[1:30,1:30]) < 100eps()
 
-@which ql(J-3.0*I)
+@test isa(L*Q,SpectralMeasures.SymTriToeplitz)
 
-full(Q[1:100,1:100])*full(L[1:100,1:100])  |>chopm
-[(v=Q*[zeros(k-1);1.0] ;
-    norm(v- Q[1:length(v),k])) for k=1:100]  |>norm
-using SO
+x,Q=eig(J)
 
-show(Q*L)
-
-n=max(size(L.K.matrix,1),length(Q.s)+3)
-
-bandinds(L)==(-2,0)
-
-#if bandinds(L)==(-2,0)
-     # We check if L*Q is tridiagin al
-tol=1E-14*(maximum(L.T)+maximum(L.K))
-istri=true
-
-show(L)
-
-k=n
-abs(L[k,k-2]*hc(Q,k-1)+L[k,k-1]*hs(Q,k-2)*hc(Q,k)+L[k,k]*hs(Q,k-2)*hs(Q,k-1)*hc(Q,k+1))
-
-for k=3:n
-    @show k
-    if abs(L[k,k-2]*hc(Q,k-1)+L[k,k-1]*hs(Q,k-2)*hc(Q,k)+L[k,k]*hs(Q,k-2)*hs(Q,k-1)*hc(Q,k+1))>tol
-        istri=false
-        break
-    end
-end
-
-istri
-if istri
-    issym=true
-    if !isapprox(-L[1,1]*hs(Q,1),L[2,1]*hc(Q,1)*hc(Q,2)+L[2,2]*hc(Q,1)*hc(Q,3)*hs(Q,1);atol=tol)
-        issym=false
-    end
-
-    if issym
-        for k=2:n+1  # kth row
-            if !isapprox(-L[k+1,k-1]*hs(Q,k-1)+L[k+1,k]*hc(Q,k)*hc(Q,k+1)+L[k+1,k+1]*hc(Q,k)*hc(Q,k+2)*hs(Q,k),
-            -L[k,k]*hs(Q,k);atol=tol)
-                issym=false
-                break
-            end
-        end
-    end
-
-    if issym
-       # result is SymTriToeplitxz
-
-        ev=Array(Float64,max(min(size(L.K.matrix,1),size(L.K.matrix,2)),
-                             length(Q.s)))
-        for k=1:length(ev)
-            ev[k]=-L[k,k]*hs(Q,k)
-        end
-
-        dv=Array(Float64,max(length(Q.s)+1,size(L.K.matrix,1)))
-        dv[1]=hc(Q,1)*hc(Q,2)*L[1,1]
-        for k=2:length(dv)
-            dv[k]=-hs(Q,k-1)*L[k,k-1]+hc(Q,k)*hc(Q,k+1)*L[k,k]
-        end
-
-        t1=-L.T[1,1]*Q.s∞
-        t0=-Q.s∞*L.T[2,1]+Q.c∞^2*L.T[1,1]
-
-        si=Q.sign?1:-1
-        return SymTriToeplitz(si*dv,si*ev,si*t0,si*t1)
-    end
-end
-#end
-
-# default constructor
-TimesOperator(L,Q)
-
-bandinds(L)
 # check some ApproxFun bugs
 n=100
 QM=full(Q[1:n,1:n])
@@ -159,42 +82,18 @@ b=Q.op.ops[end]\[1.]
 
 
 @time u=Q\(exp(im*x)*(Q*[1.]))
-@test_approx_eq u expm(im*full(J[1:200,1:200]))[1:length(u)]
+@test_approx_eq u.coefficients expm(im*full(J[1:200,1:200]))[1:ncoefficients(u)]
 
 t=10.0
-    @time u=Q\(exp(im*t*x)*(Q*[1.]))  # 0.04s
-    scatter([real(u) imag(u)])
+@time u=Q\(exp(im*t*x)*(Q*[1.]))  # 0.04s
+#scatter([real(u) imag(u)])
 
 
 t=100000.0
-    @time u=Q\(exp(im*t*x)*(Q*[1.]))  # 0.04s
-    scatter([real(u) imag(u)])
+@time u=Q\(exp(im*t*x)*(Q*[1.]))  # 0.04s
+#scatter([real(u) imag(u)])
 
-
-n=100
-    J[1:n,1:n]
-n=10000
-    @time eig(SymTridiagonal(J,1:n,1:n))
-
-
-@time exp(im*t*x)
-Q*[.1]
-
-
-typeof(Q)
-
-
-
-Q.op.ops[1].op
-Q.op.ops[1].mat11
-
-Q.op.ops[1]
 @time Q\[1.,2.,3.,4.,5.,6.]
 @time v=Q.op.ops[1]\[1.,2.,3.,4.,5.,6.]
 
-Qt.ops
 Qt=(Q.op.ops[2]')
-Qt.ops[1]*(Qt.ops[2]*(Qt.ops[3]*v.coefficients))
-@which Qt*v
-Profile.print()
-v=exp(im*t*x)*(Q*[1.])

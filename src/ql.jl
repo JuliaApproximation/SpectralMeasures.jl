@@ -2,19 +2,20 @@
 # returns the parameters for the limiting Toeplitz
 function givenstail(t0::Real,t1::Real)
     @assert t0^2-4t1^2≥0
-    s∞ = (-t0 + sign(t0)*sqrt(t0^2-4t1^2))/(2t1)
-    l0 = (-t0 -sign(t0)*sqrt(t0^2-4t1^2))/2
+    s∞ = (t0 - sqrt(t0^2-4t1^2))/(2t1)
+    l0 = (t0 + sqrt(t0^2-4t1^2))/2
     if s∞^2 > 1
         s∞ = (t0 + sqrt(t0^2-4t1^2))/(2t1)
         l0 = (t0 - sqrt(t0^2-4t1^2))/2
     end
     c∞ = -sqrt(1-s∞^2)
     α = t1*c∞
-    β = c∞*t0 + s∞*α
+    β = c∞*t0 - s∞*α
     l1 = 2t1
-    l2 = -t1*s∞
+    l2 = t1*s∞
     c∞,s∞,ToeplitzOperator([l1,l2],[l0]),α,β
 end
+
 
 
 
@@ -76,7 +77,7 @@ function Base.eig(Jin::SymTriToeplitz)
     if length(λapprox) == 0
         C=connectionCoeffsOperator(J)
 
-        x=Fun(identity,Ultraspherical{1}())
+        x=Fun(identity,Ultraspherical(1))
 
         U=SpaceOperator(C,ℓ⁰,space(x))
         return x,U
@@ -107,19 +108,17 @@ function Base.eig(Jin::SymTriToeplitz)
         Q=Qret[1]
         C=BlockOperator(eye(length(λ)),connectionCoeffsOperator(J))
 
-        x=Fun(identity,PointSpace(λ[1])⊕Ultraspherical{1}())
+        x=Fun(identity,PointSpace(λ[1])⊕Ultraspherical(1))
 
         U=SpaceOperator(C*Q,ℓ⁰,space(x))
         return x,U
     else
         Q=BandedUnitary(reverse!(Qret))
-        C=BlockOperator(eye(length(λ)),connectionCoeffsOperator(J))
+        C=SpaceOperator(BlockOperator(eye(length(λ)),connectionCoeffsOperator(J)),ℓ⁰,ℓ⁰)
 
-        x=Fun(identity,mapreduce(PointSpace,⊕,λ)⊕Ultraspherical{1}())
+        x=Fun(identity,mapreduce(PointSpace,⊕,λ)⊕Ultraspherical(1))
 
         U=SpaceOperator(C*Q,ℓ⁰,space(x))
         return x,U
     end
 end
-
-Base.eigvals(Jin::SymTriToeplitz)=domain(eig(Jin)[1])
