@@ -102,6 +102,11 @@ Base.ctranspose{T<:Real}(Q::HessenbergUnitary{'U',T})=HessenbergUnitary('L',Q.si
 bandinds(Q::HessenbergUnitary{'L'}) = -Q.band,1
 bandinds(Q::HessenbergUnitary{'U'}) = -1,Q.band
 
+domainspace(::HessenbergUnitary) = ℓ⁰
+rangespace(::HessenbergUnitary) = ℓ⁰
+
+
+
 
 hc(c,c∞,k) = k≤length(c)?c[k]:c∞
 hs(s,s∞,k) = k≤length(s)?s[k]:s∞

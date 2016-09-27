@@ -184,7 +184,7 @@ for OP in (:ql,:(Base.eigvals),:(Base.eig))
 end
 
 
-ql(A::SymTriToeplitz)=ql(A.dv,A.ev,A.a,A.b)
+ql(A::SymTriToeplitz) = ql(A.dv,A.ev,A.a,A.b)
 
 function spectralmeasure(A::SymTriToeplitz)
     if isapprox(A.a,0.) && isapprox(A.b,0.5)
