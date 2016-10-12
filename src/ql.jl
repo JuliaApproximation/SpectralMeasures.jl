@@ -21,7 +21,7 @@ end
 
 function ql(a,b,t0,t1)
     if t0^2<4t1^2
-        error("A QL decomposition only exists outside the continuous spectrum")
+        error("A QL decomposition only exists outside the essential spectrum")
     end
     # The Givens rotations coming from infinity (with parameters c∞ and s∞) leave us with the almost triangular
     # a[n-1]  b[n-1]   0    0    0
