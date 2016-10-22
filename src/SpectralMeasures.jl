@@ -11,7 +11,7 @@ import ApproxFun:Operator, ToeplitzOperator, DiracSpace, plot, IdentityOperator,
 export spectralmeasure, discreteEigs, principalResolvent, discResolvent
 export connectionCoeffsOperator, applyConversion, SymTriOperator, SymTriToeplitz
 export triplePlot
-export DiscreteLaplacian, jacobioperator, ql
+export FreeJacobiOperator, jacobioperator, ql
 
 include("HessenbergUnitary.jl")
 include("PertToeplitz.jl")
@@ -137,17 +137,17 @@ function triplePlot(a,b,Z=linspace(-3, 3, 300).+linspace(3,-3,300)'*im)
   μ = spectralmeasure(a,b)
   R = principalResolvent(a,b)
   r = discResolvent(a,b)
-  
+
   # Create the subplots
   p1 = plot(μ,xlims=(-2,2),ylims=(0,1.5))
   p2 = plot(portrait(R(Z),PTstepmod),xlims=(-3,3),ylims=(-3,3),aspect_ratio=1)
   plot!([-1.,1.],[0.,0.],linewidth=3,color=:black)
   p3 = plot(portrait(r(Z),PTstepmod),xlims=(-3,3),ylims=(-3,3),aspect_ratio=1)
   plot!(cos(linspace(0,2pi,100)),sin(linspace(0,2pi,100)),linewidth=3,color=:black)
-  
+
   # Plot the subplots
   l = @layout [a{0.7w}; b c]
   plot(p1,p2,p3,layout=l)
 end
-    
+
 end  #Module

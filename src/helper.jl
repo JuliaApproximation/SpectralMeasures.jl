@@ -38,7 +38,7 @@ end
 jacobioperator(a,b) = jacobioperator(a,b,0,.5)
 
 
-DiscreteLaplacian()=ToeplitzOperator([0.5],[0.,0.5])
+FreeJacobiOperator()=SymTriToeplitz([0.],[.5],0.,.5)
 
 
 ## tridiagonal ql
