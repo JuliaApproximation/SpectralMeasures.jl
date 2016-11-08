@@ -52,8 +52,8 @@ function getindex(S::SymTriOperator,k::Integer,j::Integer)
 end
 
 
-*(c::Number,A::SymTriOperator)=SymTriOperator(c*A.dv,c*A.ev)
-*(A::SymTriOperator,c::Number)=SymTriOperator(c*A.dv,c*A.ev)
+*(c::Number,A::SymTriOperator) = SymTriOperator(c*A.dv,c*A.ev)
+*(A::SymTriOperator,c::Number) = SymTriOperator(c*A.dv,c*A.ev)
 
 function Base.SymTridiagonal(S::SymTriOperator,kr::UnitRange,jr::UnitRange)
     n=last(kr)
@@ -80,6 +80,10 @@ SymTriToeplitz(dv::Vector,ev::Vector,a,b) =
 function SymTriToeplitz(T::ToeplitzOperator,K::SymTriOperator)
     @assert bandinds(T)==(-1,1) && issym(T)
     SymTriToeplitz(K.dv+T.nonnegative[1],K.ev+T.nonnegative[2],T.nonnegative...)
+end
+
+function SymTriToeplitz{TT}(K::SymTriOperator{TT})
+    SymTriToeplitz(K.dv,K.ev,zero(TT),zero(TT))
 end
 
 
@@ -119,6 +123,8 @@ function getindex(S::SymTriToeplitz,k::Integer,j::Integer)
         end
 end
 
+
+
 function Base.SymTridiagonal(S::SymTriToeplitz,kr::UnitRange,jr::UnitRange)
     n=last(kr)
     @assert n==last(jr)
@@ -156,24 +162,33 @@ getindex(P::PertToeplitz,k::AbstractCount,j::AbstractCount) =
     P.T[k,j]+P.K[k,j]
 
 
-
-+(T::ToeplitzOperator,K::FiniteOperator)=PertToeplitz(T,K)
-+(T::ToeplitzOperator,K::SymTriOperator)=SymTriToeplitz(T,K)
-+(K::Union{FiniteOperator,SymTriOperator},T::ToeplitzOperator)=T+K
-
 for OP in (:+,:-)
     @eval begin
+        function $OP(A::SymTriToeplitz,B::SymTriToeplitz)
+            n_dv = max(length(A.dv),length(B.dv))
+            n_ev = max(length(A.ev),length(B.ev))
+            SymTriToeplitz($OP([A.dv;fill(A.a,n_dv-length(A.dv))],
+                               [B.dv;fill(B.a,n_dv-length(B.dv))]),
+                               $OP([A.ev;fill(A.b,n_ev-length(A.ev))],
+                                   [B.ev;fill(B.b,n_ev-length(B.ev))]),
+                            $OP(A.a,B.a),$OP(A.b,B.b))
+        end
+        $OP(T::ToeplitzOperator,K::FiniteOperator) = PertToeplitz(T,$OP(K))
+        $OP(T::ToeplitzOperator,K::SymTriOperator) = SymTriToeplitz(T,$OP(K))
+        $OP(S::SymTriToeplitz,K::SymTriOperator) = $OP(S,SymTriToeplitz(K))
+        $OP(K::Union{FiniteOperator,SymTriOperator},T::ToeplitzOperator) = $OP(T)+K
+
         $OP(A::SymTriToeplitz,c::UniformScaling) =
             SymTriToeplitz($OP(A.dv,c.λ),A.ev,$OP(A.a,c.λ),A.b)
     end
 end
 
--(A::SymTriToeplitz)=SymTriToeplitz(-A.dv,-A.ev,-A.a,-A.b)
-+(c::UniformScaling,A::SymTriToeplitz)=SymTriToeplitz(c.λ+A.dv,A.ev,c.λ+A.a,A.b)
--(c::UniformScaling,A::SymTriToeplitz)=SymTriToeplitz(c.λ-A.dv,-A.ev,c.λ-A.a,-A.b)
+-(A::SymTriToeplitz) = SymTriToeplitz(-A.dv,-A.ev,-A.a,-A.b)
++(c::UniformScaling,A::SymTriToeplitz) = SymTriToeplitz(c.λ+A.dv,A.ev,c.λ+A.a,A.b)
+-(c::UniformScaling,A::SymTriToeplitz) = SymTriToeplitz(c.λ-A.dv,-A.ev,c.λ-A.a,-A.b)
 
-*(c::Number,A::SymTriToeplitz)=SymTriToeplitz(c*A.dv,c*A.ev,c*A.a,c*A.b)
-/(A::SymTriToeplitz,c::Number)=(1/c)*A
+*(c::Number,A::SymTriToeplitz) = SymTriToeplitz(c*A.dv,c*A.ev,c*A.a,c*A.b)
+/(A::SymTriToeplitz,c::Number) = (1/c)*A
 
 
 

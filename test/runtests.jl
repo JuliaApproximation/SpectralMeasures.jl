@@ -54,13 +54,17 @@ ApproxFun.plot(ν)
 #ApproxFun.plot(μ-ν)
 
 
-L=DiscreteLaplacian()
+L=FreeJacobiOperator()
 K=SymTriOperator(-ones(5),zeros(5))
 
 J=L+0.5K
-A=J-3.0*I
+@test isa(J,SymTriToeplitz)
+@test full(J[1:3,1:6]) == [-0.5  0.5  0   0 0 0;
+                            0.5 -0.5  0.5 0 0 0;
+                            0    0.5 -0.5 0.5 0 0]
 
-Q,L=ql(J-3.0*I)
+A=J-3.0*I
+Q,L=ql(A)
 
 @test norm((Q*L-A)[1:30,1:30]) < 100eps()
 
