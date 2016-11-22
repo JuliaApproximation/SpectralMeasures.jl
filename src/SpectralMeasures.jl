@@ -27,7 +27,7 @@ function spectralmeasure(a,b)
 
   # Finds C such that J*C = C*Toeplitz([0,1/2])
   C = connectionCoeffsOperator(a,b)
-  c = Fun(C.T.nonnegative,Taylor)
+  c = Fun(Taylor,C.T.nonnegative)
   f = Fun(C*(C'*[1]),Ultraspherical(1))
 
   # Check for discrete eigenvalues
@@ -36,11 +36,11 @@ function spectralmeasure(a,b)
      cprime = differentiate(c)
      eigs=real(map(joukowsky,z))
      weights = (z-1./z).^2./(z.*real(cprime(z)).*real(c(1./z)))
-     p = Fun(weights,DiracSpace(eigs)) + Fun([2/pi],JacobiWeight(.5,.5,Ultraspherical(1)))
-     q = Fun(ones(length(eigs)),PointSpace(eigs)) + f
+     p = Fun(DiracSpace(eigs),weights) + Fun(JacobiWeight(.5,.5,Ultraspherical(1)),[2/pi])
+     q = Fun(PointSpace(eigs),ones(length(eigs))) + f
      μ = RatFun(p,q)
   else
-    μ = RatFun(Fun([2/pi],JacobiWeight(.5,.5,Ultraspherical(1))),f)
+    μ = RatFun(Fun(JacobiWeight(.5,.5,Ultraspherical(1)),[2/pi]),f)
   end
   μ
 end
@@ -55,7 +55,7 @@ function principalResolvent(a,b)
   C = connectionCoeffsOperator(a,b)
   Cmu = connectionCoeffsOperator(a[2:end],b[2:end]) # Technically not Cmu from the paper
   f = Fun((C*(C'*[1])),Ultraspherical(1))
-  fmu = Fun(Cmu*((C'*[1]).coefficients[2:end])/b[1],Ultraspherical(1))
+  fmu = Fun(Ultraspherical(1),Cmu*((C'*[1]).coefficients[2:end])/b[1])
 
   # Return the resolvent
   x->(2*sqrt(complex(x-1)).*sqrt(complex(x+1))-2*x-extrapolate(fmu,x))./extrapolate(f,x)
@@ -70,8 +70,8 @@ function discResolvent(a,b)
   # Compute the necessary polynomials
   C = SpectralMeasures.connectionCoeffsOperator(a,b)
   Cmu = SpectralMeasures.connectionCoeffsOperator(a[2:end],b[2:end]) # Technically not Cmu from the paper
-  c = Fun(C.T.nonnegative,Taylor)
-  cmu = Fun([0;Cmu.T.nonnegative]/b[1],Taylor)
+  c = Fun(Taylor,C.T.nonnegative)
+  cmu = Fun(Taylor,[0;Cmu.T.nonnegative]/b[1])
 
   # Return the rational function
   x->-cmu(x)./c(x)
@@ -83,7 +83,7 @@ function discreteEigs(a,b)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
   # Finds C such that C*J = Toeplitz([0,1/2])*C
   C = connectionCoeffsOperator(a,b)
-  Tfun = Fun(C.T.nonnegative,Taylor)
+  Tfun = Fun(Taylor,C.T.nonnegative)
   sort(real(map(joukowsky,filter!(z->abs(z)<1 && isreal(z) && !isapprox(abs(z),1),complexroots(Tfun)))))
 end
 

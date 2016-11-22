@@ -211,7 +211,7 @@ function spectralmeasure(A::SymTriToeplitz)
 
         np=isa(sp,DiracSpace)?length(sp.points):0  # number of points
 
-        Fun([μ.coefficients[1:np];μ.coefficients[np+1:end]/c],setdomain(space(μ),c*domain(μ)))
+        Fun(setdomain(space(μ),c*domain(μ)),[μ.coefficients[1:np];μ.coefficients[np+1:end]/c])
     else
         μ=spectralmeasure(A-A.a*I)
         setdomain(μ,domain(μ)+A.a)

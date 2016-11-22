@@ -7,7 +7,7 @@ linsolve(Q::UnitaryOperator,v::Number;opts...) = Q'*v
 linsolve(Q::UnitaryOperator,v::Array;opts...) = Q'*v
 linsolve{S,T,DD,Q}(A::UnitaryOperator,b::Fun{MatrixSpace{S,T,DD,1},Q};kwds...) =
     Q'*b
-linsolve(Q::UnitaryOperator,v::Fun;opts...) = Fun(Q'*v.coefficients,space(v))
+linsolve(Q::UnitaryOperator,v::Fun;opts...) = Fun(space(v),Q'*v.coefficients)
 
 
 
