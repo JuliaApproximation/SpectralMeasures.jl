@@ -95,7 +95,13 @@ t=100000.0
 @time u=Q\(exp(im*t*x)*(Q*[1.]))  # 0.04s
 #scatter([real(u) imag(u)])
 
-@time Q\[1.,2.,3.,4.,5.,6.]
-@time v=Q.op.ops[1]\[1.,2.,3.,4.,5.,6.]
+@time linsolve_coefficients(Q,[1.,2.,3.,4.,5.,6.])
+@time v=linsolve_coefficients(Q.op.ops[1],[1.,2.,3.,4.,5.,6.])
 
-Qt=(Q.op.ops[2]')
+
+linsolve(Q,Fun(rangespace(Q),[1.,2.,3.,4.,5.,6.]))
+
+
+Q'*Fun(rangespace(Q),[1.,2.,3.,4.,5.,6.])
+
+@time Q.op.ops[1]\(Q.op.ops[end]\[1.,2.,3.,4.,5.,6.])
