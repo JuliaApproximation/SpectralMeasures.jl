@@ -94,8 +94,10 @@ function HessenbergUnitary(uplo::Char,sign,c,s,c∞,s∞)
 end
 
 
-Base.ctranspose{T<:Real}(Q::HessenbergUnitary{'L',T})=HessenbergUnitary('U',Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
-Base.ctranspose{T<:Real}(Q::HessenbergUnitary{'U',T})=HessenbergUnitary('L',Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
+Base.ctranspose{T<:Real}(Q::HessenbergUnitary{'L',T}) =
+    HessenbergUnitary('U',Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
+Base.ctranspose{T<:Real}(Q::HessenbergUnitary{'U',T}) =
+    HessenbergUnitary('L',Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
 
 
 
@@ -214,5 +216,5 @@ function *(Q::BandedUnitary,v::Vector)
     for k=length(Q.ops):-1:1
         ret=Q.ops[k]*ret
     end
-    ret
+    Fun(rangespace(Q),ret)
 end

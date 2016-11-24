@@ -1,5 +1,5 @@
 using Plots, ApproxFun, SpectralMeasures, Base.Test
-
+    import ApproxFun: linsolve_coefficients
 ############
 ### Tests
 ############
@@ -77,12 +77,10 @@ n=100
 QM=full(Q[1:n,1:n])
 @test_approx_eq pad((Q*[1.] ).coefficients,n) QM[:,1]
 
-
-@test_approx_eq Q.op.ops[end][1:n,1:n]\[1.;zeros(n-1)] pad(Q.op.ops[end]\[1.],n)
+@test_approx_eq Q.op.ops[end][1:n,1:n]\[1.;zeros(n-1)] coefficient(Q.op.ops[end]\[1.],1:n)
 
 b=Q.op.ops[end]\[1.]
-
-@test_approx_eq Q.op.ops[1][1:n,1:n]\pad(b,n) pad((Q.op.ops[1]\b).coefficients,n)
+@test_approx_eq Q.op.ops[1][1:n,1:n]\coefficient(b,1:n) coefficient((Q.op.ops[1]\b),1:n)
 
 
 @time u=Q\(exp(im*x)*(Q*[1.]))
