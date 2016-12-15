@@ -1,5 +1,5 @@
 using Plots, ApproxFun, SpectralMeasures, Base.Test
-    import ApproxFun: linsolve_coefficients
+    import ApproxFun: A_ldiv_B_coefficients
 ############
 ### Tests
 ############
@@ -95,11 +95,11 @@ t=100000.0
 @time u=Q\(exp(im*t*x)*(Q*[1.]))  # 0.04s
 #scatter([real(u) imag(u)])
 
-@time linsolve_coefficients(Q,[1.,2.,3.,4.,5.,6.])
-@time v=linsolve_coefficients(Q.op.ops[1],[1.,2.,3.,4.,5.,6.])
+@time A_ldiv_B_coefficients(Q,[1.,2.,3.,4.,5.,6.])
+@time v=A_ldiv_B_coefficients(Q.op.ops[1],[1.,2.,3.,4.,5.,6.])
 
 
-linsolve(Q,Fun(rangespace(Q),[1.,2.,3.,4.,5.,6.]))
+Q\Fun(rangespace(Q),[1.,2.,3.,4.,5.,6.])
 
 
 Q'*Fun(rangespace(Q),[1.,2.,3.,4.,5.,6.])
