@@ -26,16 +26,18 @@ function spectralmeasure(a,b)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
 
   # Finds C such that J*C = C*Toeplitz([0,1/2])
-  C = connectionCoeffsOperator(a,b)
+  C = SpectralMeasures.connectionCoeffsOperator(a,b)
   c = Fun(Taylor,C.T.nonnegative)
   f = Fun(C*(C'*[1]),Ultraspherical(1))
 
   # Check for discrete eigenvalues
   z = sort(real(filter!(z->abs(z)<1 && isreal(z) && !isapprox(abs(z),1) ,complexroots(c))))
   if length(z) > 0
+     Cmu = SpectralMeasures.connectionCoeffsOperator(a[2:end],b[2:end]) # Technically not Cmu from the paper
+     cmu = Fun(Taylor,[0;Cmu.T.nonnegative]/b[1]) # this is cmu from the paper
      cprime = differentiate(c)
      eigs=real(map(joukowsky,z))
-     weights = (z-1./z).^2./(z.*real(cprime(z)).*real(c(1./z)))
+     weights = .5*(1-1./z.^2).*(real(cmu(z))./real(cprime(z)))
      p = Fun(DiracSpace(eigs),weights) + Fun(JacobiWeight(.5,.5,Ultraspherical(1)),[2/pi])
      q = Fun(PointSpace(eigs),ones(length(eigs))) + f
      μ = RatFun(p,q)
@@ -71,7 +73,7 @@ function discResolvent(a,b)
   C = SpectralMeasures.connectionCoeffsOperator(a,b)
   Cmu = SpectralMeasures.connectionCoeffsOperator(a[2:end],b[2:end]) # Technically not Cmu from the paper
   c = Fun(Taylor,C.T.nonnegative)
-  cmu = Fun(Taylor,[0;Cmu.T.nonnegative]/b[1])
+  cmu = Fun(Taylor,[0;Cmu.T.nonnegative]/b[1]) # this is the cmu from the paper
 
   # Return the rational function
   x->-cmu(x)./c(x)
