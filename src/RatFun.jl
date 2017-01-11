@@ -1,14 +1,14 @@
 import ApproxFun:evaluate,dimension
 import Plots:plot,plot!
 
-export RatFun, reciprocal
+export RatFun, inv
 
 immutable RatFun{S1,T1,S2,T2}
     p::Fun{S1,T1}
     q::Fun{S2,T2}
 end
 
-domain(r::RatFun)=domain(r.p)
+domain(r::RatFun) = domain(r.p)
 
 function evaluate(r::RatFun,x)
     (r.p)(x)./(r.q)(x)
@@ -22,14 +22,16 @@ for op = (:*,:.*)
     @eval $op(a::Union{Number,Fun},r::RatFun) = RatFun($op(a,r.p),r.q)
 end
 
-reciprocal(r::RatFun) = RatFun(r.q,r.p)
+Base.inv(r::RatFun) = RatFun(r.q,r.p)
 
-(./)(r1::RatFun,r2::RatFun)=r1.*reciprocal(r2)
-(./)(a,r::RatFun)=a.*reciprocal(r)
+Base.vec(r::RatFun) = RatFun.(vec(r.p),vec(r.q))
 
-(/)(r1::RatFun,r2::RatFun)=r1*reciprocal(r2)
-(/)(a,r::RatFun)=a*reciprocal(r)
-(./)(r::RatFun,a)=reciprocal(r)*a
+(./)(r1::RatFun,r2::RatFun)=r1.*inv(r2)
+(./)(a,r::RatFun)=a.*inv(r)
+
+(/)(r1::RatFun,r2::RatFun)=r1*inv(r2)
+(/)(a,r::RatFun)=a*inv(r)
+(./)(r::RatFun,a)=inv(r)*a
 
 for op = (:+,:.+,:-,:.-)
   @eval $op(r1::RatFun,r2::RatFun) = RatFun($op((r1.p.*r2.q),(r2.p.*r1.q)),r1.q.*r2.q)
