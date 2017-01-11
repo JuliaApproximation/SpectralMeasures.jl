@@ -37,6 +37,8 @@ for op = (:+,:.+,:-,:.-)
   @eval $op(r1::RatFun,r2::RatFun) = RatFun($op((r1.p.*r2.q),(r2.p.*r1.q)),r1.q.*r2.q)
 end
 
+Base.convert(::Type{Fun},r::RatFun) = r.p/r.q
+
 # The padding in this function can be improved
 # No support for functions with poles within the domain
 function plotptsvals(r::RatFun)
