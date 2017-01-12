@@ -1,5 +1,6 @@
 module SpectralMeasures
 using Base, Compat, ApproxFun, Plots, ComplexPhasePortrait
+using ValidatedNumerics, ValidatedNumerics.RootFinding
 
 import Base:+,-,*,/,.*,.-,./,.+,getindex
 
@@ -8,7 +9,7 @@ import ApproxFun: Operator, ToeplitzOperator, DiracSpace, plot, IdentityOperator
             BandedMatrix, bzeros, TimesOperator, BlockOperator, SpaceOperator, AbstractCount, UnitCount,
             MatrixSpace, ∞, ℓ⁰, domainspace, rangespace, domain
 
-export spectralMeasure, discreteEigs, principalResolvent, discResolvent
+export spectralMeasure, discreteEigs, principalResolvent, discResolvent, validatedSpectrum
 export connectionCoeffsOperator, applyConversion, SymTriOperator, SymTriToeplitz
 export triplePlot
 export freeJacobiOperator, jacobioperator, ql
@@ -152,6 +153,33 @@ function triplePlot(a,b,Z=linspace(-3, 3, 300).+linspace(3,-3,300)'*im)
   # Plot the subplots
   l = @layout [a{0.7w}; b c]
   plot(p1,p2,p3,layout=l)
+end
+
+function validatedSpectrum(a,b)
+  # Chop the a and b down
+  a = chop!(a); b = .5+chop!(b-.5)
+  n = max(2,length(a),length(b)+1)
+  a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
+
+  # Finds C such that J*C = C*Toeplitz([0,1/2])
+  C = SpectralMeasures.connectionCoeffsOperator(a,b)
+  c = Fun(Taylor,C.T.nonnegative)
+
+  rts = find_roots(x->c(x),-1,1)
+  if length(rts) > 0
+     eigs=real(map(x->joukowsky(x.interval),rts))
+     eigserrs = map(midpoint_radius,eigs)
+     spectrum = ApproxFun.Interval(-1,1)
+     maxerr = 0
+     for (eig,err) in eigserrs
+       maxerr = max(maxerr,err)
+       spectrum = ApproxFun.Point(eig) ∪ spectrum
+     end
+  else
+    spectrum = ApproxFun.Interval(-1,1)
+    maxerr = 0
+  end
+  spectrum, maxerr
 end
 
 end  #Module

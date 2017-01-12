@@ -121,7 +121,8 @@ connectionCoeffsMatrix(a,b,N) = connectionCoeffsMatrix(a,b,[],[],N)
 # Converts coefficients a^J to coefficients a^D using Clenshaw
 function applyConversion(J::SymTriToeplitz,D::SymTriToeplitz,v::Vector)
   N = length(v)
-  b = zeros(N); b1 = zeros(N); b2 = zeros(N)
+  T = eltype(b)
+  b = zeros(T,N); b1 = zeros(T,N); b2 = zeros(T,N)
   for k = N:-1:1
     # before: b = b_k+1, b1 = b_k+2, (and b2 = b_k+3 is to be forgotten)
     b2 = pad((D-J[k,k]*I)*b,N)/J[k,k+1]-b1*(J[k,k+1]/J[k+1,k+2])
