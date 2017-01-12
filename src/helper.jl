@@ -38,7 +38,7 @@ end
 jacobioperator(a,b) = jacobioperator(a,b,0,.5)
 
 
-FreeJacobiOperator() = SymTriToeplitz([0.],[.5],0.,.5)
+freeJacobiOperator() = SymTriToeplitz([0.],[.5],0.,.5)
 
 
 ## tridiagonal ql
@@ -101,7 +101,7 @@ function connectionCoeffsMatrix(a,b,c,d,N)
     c = [c;zeros(N-length(c))]; d = [d;.5+zeros(N-length(d))]
   end
 
-  C = zeros(N,N)
+  C = zeros(eltype(a),N,N)
   C[1,1] = 1
   C[1,2] = (c[1]-a[1])/b[1]
   C[2,2] = d[1]/b[1]

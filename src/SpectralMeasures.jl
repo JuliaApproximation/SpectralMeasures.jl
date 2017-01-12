@@ -8,10 +8,10 @@ import ApproxFun: Operator, ToeplitzOperator, DiracSpace, plot, IdentityOperator
             BandedMatrix, bzeros, TimesOperator, BlockOperator, SpaceOperator, AbstractCount, UnitCount,
             MatrixSpace, ∞, ℓ⁰, domainspace, rangespace, domain
 
-export spectralmeasure, discreteEigs, principalResolvent, discResolvent
+export spectralMeasure, discreteEigs, principalResolvent, discResolvent
 export connectionCoeffsOperator, applyConversion, SymTriOperator, SymTriToeplitz
 export triplePlot
-export FreeJacobiOperator, jacobioperator, ql
+export freeJacobiOperator, jacobioperator, ql
 
 include("HessenbergUnitary.jl")
 include("PertToeplitz.jl")
@@ -19,7 +19,7 @@ include("helper.jl")
 include("ql.jl")
 include("RatFun.jl")
 
-function spectralmeasure(a,b)
+function spectralMeasure(a,b)
   # Chop the a and b down
   a = chop!(a); b = .5+chop!(b-.5)
   n = max(2,length(a),length(b)+1)
@@ -95,8 +95,10 @@ function connectionCoeffsOperator(a,b)
   n = max(2,length(a),length(b)+1)
   N = 2*n #This is sufficient only because we go from Chebyshev U
   a = [a;zeros(N-length(a))]; b = [b;.5+zeros(N-length(b))]
-  ToeplitzVec = zeros(N)
-  K = bzeros(Float64,n,N,0,N+1)
+
+  elType = eltype(a)
+  ToeplitzVec = zeros(elType,N)
+  K = bzeros(elType,n,N,0,N+1)
   K[1,1] = 1
   K[1,2] = -a[1]/b[1]
   K[2,2] = .5/b[1]
@@ -125,7 +127,7 @@ function connectionCoeffsOperator(a,b)
     ToeplitzVec[2*(j-n)-1] = K[N+1-j,j-1]
     ToeplitzVec[2*(j-n)] = K[N+1-j,j]
   end
-  T = ToeplitzOperator(Float64[],chop!(ToeplitzVec))
+  T = ToeplitzOperator(elType[],chop!(ToeplitzVec))
   for j = 1:N
     for i = 1:min(j,N+1-j)
       K[i,j]-=T[i,j]
