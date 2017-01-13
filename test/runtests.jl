@@ -5,7 +5,7 @@ using Plots, ApproxFun, SpectralMeasures, Base.Test
 ############
 
 # Chebyshev U
-a = []; b=[]
+a = Float64[]; b= Float64[]
 @time μ=spectralmeasure(a,b)
 @test_approx_eq μ(-.99:.01:.99) sqrt(1-(-.99:.01:.99).^2)*2/π
 
