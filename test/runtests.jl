@@ -54,7 +54,7 @@ ApproxFun.plot(ν)
 #ApproxFun.plot(μ-ν)
 
 
-L=FreeJacobiOperator()
+L=freejacobioperator()
 K=SymTriOperator(-ones(5),zeros(5))
 
 J=L+0.5K
