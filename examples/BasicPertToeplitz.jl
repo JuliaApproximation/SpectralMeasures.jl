@@ -46,7 +46,7 @@ k = 5
 
 a = 1.0
 J1 = SymTriToeplitz([a],[.5],0.0,0.5)
-C1 = connectionCoeffsOperator(J1)
+C1 = connection_coeffs_operator(J1)
 Δ*C1-C1*J1
 10.0*I
 Q,L = ql(J1-10.0*I)
@@ -58,5 +58,5 @@ d,U = eig(J1)
 b = .5 + 0.1
 J2 = SymTriToeplitz([0.],[b],0.0,0.5)
 
-C2 = connectionCoeffsOperator(J2)
+C2 = connection_coeffs_operator(J2)
 Δ*C2-C2*J2

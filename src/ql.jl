@@ -64,18 +64,18 @@ function ql(a,b,t0,t1)
     Q,TL+FiniteOperator(L)
 end
 
-discreteEigs(J::SymTriToeplitz) = 2*J.b*discreteEigs(.5*(J.dv-J.a)/J.b,.5*J.ev/J.b) + J.a
+discreteeigs(J::SymTriToeplitz) = 2*J.b*discreteeigs(.5*(J.dv-J.a)/J.b,.5*J.ev/J.b) + J.a
 
-connectionCoeffsOperator(J::SymTriToeplitz) = connectionCoeffsOperator(.5*(J.dv-J.a)/J.b,.5*J.ev/J.b)
+connection_coeffs_operator(J::SymTriToeplitz) = connection_coeffs_operator(.5*(J.dv-J.a)/J.b,.5*J.ev/J.b)
 
 function Base.eig(Jin::SymTriToeplitz)
     Qret=Array(HessenbergUnitary{'U',Float64},0)
-    λapprox=sort(discreteEigs(Jin))
+    λapprox=sort(discreteeigs(Jin))
 
     J=Jin
 
     if length(λapprox) == 0
-        C=connectionCoeffsOperator(J)
+        C=connection_coeffs_operator(J)
 
         x=Fun(identity,Ultraspherical(1))
 
@@ -106,7 +106,7 @@ function Base.eig(Jin::SymTriToeplitz)
 
     if length(λ) == 1
         Q=Qret[1]
-        C=BlockOperator(eye(length(λ)),connectionCoeffsOperator(J))
+        C=BlockOperator(eye(length(λ)),connection_coeffs_operator(J))
 
         x=Fun(identity,PointSpace(λ[1])⊕Ultraspherical(1))
 
@@ -114,7 +114,7 @@ function Base.eig(Jin::SymTriToeplitz)
         return x,U
     else
         Q=BandedUnitary(reverse!(Qret))
-        C=SpaceOperator(BlockOperator(eye(length(λ)),connectionCoeffsOperator(J)),ℓ⁰,ℓ⁰)
+        C=SpaceOperator(BlockOperator(eye(length(λ)),connection_coeffs_operator(J)),ℓ⁰,ℓ⁰)
 
         x=Fun(identity,mapreduce(PointSpace,⊕,λ)⊕Ultraspherical(1))
 

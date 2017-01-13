@@ -9,10 +9,10 @@ import ApproxFun: Operator, ToeplitzOperator, DiracSpace, plot, IdentityOperator
             BandedMatrix, bzeros, TimesOperator, BlockOperator, SpaceOperator, AbstractCount, UnitCount,
             MatrixSpace, ∞, ℓ⁰, domainspace, rangespace, domain
 
-export spectralMeasure, discreteEigs, principalResolvent, discResolvent, validatedSpectrum
-export connectionCoeffsOperator, applyConversion, SymTriOperator, SymTriToeplitz
-export triplePlot
-export freeJacobiOperator, jacobioperator, ql
+export spectralmeasure, discreteeigs, principal_resolvent, disc_resolvent, validated_spectrum
+export connection_coeffs_operator, apply_conversion, SymTriOperator, SymTriToeplitz
+export tripleplot
+export freejacobioperator, jacobioperator, ql
 
 include("HessenbergUnitary.jl")
 include("PertToeplitz.jl")
@@ -20,21 +20,21 @@ include("helper.jl")
 include("ql.jl")
 include("RatFun.jl")
 
-function spectralMeasure(a,b)
+function spectralmeasure(a,b)
   # Chop the a and b down
   a = chop!(a); b = .5+chop!(b-.5)
   n = max(2,length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
 
   # Finds C such that J*C = C*Toeplitz([0,1/2])
-  C = SpectralMeasures.connectionCoeffsOperator(a,b)
+  C = SpectralMeasures.connection_coeffs_operator(a,b)
   c = Fun(Taylor,C.T.nonnegative)
   f = Fun(C*(C'*[1]),Ultraspherical(1))
 
   # Check for discrete eigenvalues
   z = sort(real(filter!(z->abs(z)<1 && isreal(z) && !isapprox(abs(z),1) ,complexroots(c))))
   if length(z) > 0
-     Cmu = SpectralMeasures.connectionCoeffsOperator(a[2:end],b[2:end]) # Technically not Cmu from the paper
+     Cmu = SpectralMeasures.connection_coeffs_operator(a[2:end],b[2:end]) # Technically not Cmu from the paper
      cmu = Fun(Taylor,[0;Cmu.T.nonnegative]/b[1]) # this is cmu from the paper
      cprime = differentiate(c)
      eigs=real(map(joukowsky,z))
@@ -48,15 +48,15 @@ function spectralMeasure(a,b)
   μ
 end
 
-function principalResolvent(a,b)
+function principal_resolvent(a,b)
   # Chop the a and b down
   a = chop!(a); b = .5+chop!(b-.5)
   n = max(2,length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
 
   # Compute the necessary polynomials
-  C = connectionCoeffsOperator(a,b)
-  Cmu = connectionCoeffsOperator(a[2:end],b[2:end]) # Technically not Cmu from the paper
+  C = connection_coeffs_operator(a,b)
+  Cmu = connection_coeffs_operator(a[2:end],b[2:end]) # Technically not Cmu from the paper
   f = Fun((C*(C'*[1])),Ultraspherical(1))
   fmu = Fun(Ultraspherical(1),Cmu*((C'*[1]).coefficients[2:end])/b[1])
 
@@ -64,15 +64,15 @@ function principalResolvent(a,b)
   x->(2*sqrt(complex(x-1)).*sqrt(complex(x+1))-2*x-extrapolate(fmu,x))./extrapolate(f,x)
 end
 
-function discResolvent(a,b)
+function disc_resolvent(a,b)
   # Chop the a and b down
   a = chop!(a); b = .5+chop!(b-.5)
   n = max(2,length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
 
   # Compute the necessary polynomials
-  C = SpectralMeasures.connectionCoeffsOperator(a,b)
-  Cmu = SpectralMeasures.connectionCoeffsOperator(a[2:end],b[2:end]) # Technically not Cmu from the paper
+  C = SpectralMeasures.connection_coeffs_operator(a,b)
+  Cmu = SpectralMeasures.connection_coeffs_operator(a[2:end],b[2:end]) # Technically not Cmu from the paper
   c = Fun(Taylor,C.T.nonnegative)
   cmu = Fun(Taylor,[0;Cmu.T.nonnegative]/b[1]) # this is the cmu from the paper
 
@@ -80,19 +80,19 @@ function discResolvent(a,b)
   x->-cmu(x)./c(x)
 end
 
-function discreteEigs(a,b)
+function discreteeigs(a,b)
   a = chop!(a); b = .5+chop!(b-.5)
   n = max(2,length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
   # Finds C such that C*J = Toeplitz([0,1/2])*C
-  C = connectionCoeffsOperator(a,b)
+  C = connection_coeffs_operator(a,b)
   Tfun = Fun(Taylor,C.T.nonnegative)
   sort(real(map(joukowsky,filter!(z->abs(z)<1 && isreal(z) && !isapprox(abs(z),1),complexroots(Tfun)))))
 end
 
 #Finds C such that C'(U_k(s)) =  (P_k(s)),
 # where P_k has Jacobi coeffs a,b and U_k is Chebyshev U
-function connectionCoeffsOperator(a,b)
+function connection_coeffs_operator(a,b)
   n = max(2,length(a),length(b)+1)
   N = 2*n #This is sufficient only because we go from Chebyshev U
   a = [a;zeros(N-length(a))]; b = [b;.5+zeros(N-length(b))]
@@ -137,11 +137,11 @@ function connectionCoeffsOperator(a,b)
   T+FiniteOperator(K)
 end
 
-function triplePlot(a,b,Z=linspace(-3, 3, 300).+linspace(3,-3,300)'*im)
+function tripleplot(a,b,Z=linspace(-3, 3, 300).+linspace(3,-3,300)'*im)
   # Build the measure and resolvents
   μ = spectralmeasure(a,b)
-  R = principalResolvent(a,b)
-  r = discResolvent(a,b)
+  R = principal_resolvent(a,b)
+  r = disc_resolvent(a,b)
 
   # Create the subplots
   p1 = plot(μ,xlims=(-2,2),ylims=(0,1.5))
@@ -155,14 +155,14 @@ function triplePlot(a,b,Z=linspace(-3, 3, 300).+linspace(3,-3,300)'*im)
   plot(p1,p2,p3,layout=l)
 end
 
-function validatedSpectrum(a,b)
+function validated_spectrum(a,b)
   # Chop the a and b down
   a = chop!(a); b = .5+chop!(b-.5)
   n = max(2,length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
 
   # Finds C such that J*C = C*Toeplitz([0,1/2])
-  C = SpectralMeasures.connectionCoeffsOperator(a,b)
+  C = SpectralMeasures.connection_coeffs_operator(a,b)
   c = Fun(Taylor,C.T.nonnegative)
 
   rts = find_roots(x->c(x),-1,1)

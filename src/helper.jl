@@ -38,7 +38,7 @@ end
 jacobioperator(a,b) = jacobioperator(a,b,0,.5)
 
 
-freeJacobiOperator() = SymTriToeplitz([0.],[.5],0.,.5)
+freejacobioperator() = SymTriToeplitz([0.],[.5],0.,.5)
 
 
 ## tridiagonal ql
@@ -119,7 +119,7 @@ end
 connectionCoeffsMatrix(a,b,N) = connectionCoeffsMatrix(a,b,[],[],N)
 
 # Converts coefficients a^J to coefficients a^D using Clenshaw
-function applyConversion(J::SymTriToeplitz,D::SymTriToeplitz,v::Vector)
+function apply_conversion(J::SymTriToeplitz,D::SymTriToeplitz,v::Vector)
   N = length(v)
   T = eltype(b)
   b = zeros(T,N); b1 = zeros(T,N); b2 = zeros(T,N)
