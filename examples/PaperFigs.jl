@@ -160,3 +160,31 @@ end
   PyPlot.savefig("Figs/discresolventJacobin=$(n).png",transparent=true,bbox_inches="tight")
   clf()
 end
+
+
+
+
+# Random
+mkdir("Figs")
+for n in [1,2,3,10,50,100]
+  srand(200)
+  aRand = 3*(2rand(n)-1)./(1:n).^2
+  Plots.plot(spectralmeasure(aRand,Float64[]),title="Random, n = $(n)",xlims=(-1.5,1.5),ylims=(0,1),yticks=[0,.25,.5,.75,1])
+  Plots.savefig("Figs/spectralmeasurerandomn=$(n).pdf")
+
+  R = principal_resolvent(aRand,Float64[])
+  save("Figs/principalresolventrandomn=$(n).png", portrait(R(Z),PTstepmod))
+  imshow(imread("Figs/principalresolventrandomn=$(n).png"),extent=[-3,3,-3,3])
+  PyPlot.plot([-1.,1.],[0.,0.],linewidth=2,color=:black)
+  PyPlot.grid("on")
+  PyPlot.savefig("Figs/principalresolventrandomn=$(n).png",transparent=true,bbox_inches="tight")
+  clf()
+
+  r = disc_resolvent(aRand,Float64[])
+  save("Figs/discresolventrandomn=$(n).png", portrait(r(Z),PTstepmod))
+  imshow(imread("Figs/discresolventrandomn=$(n).png"),extent=[-3,3,-3,3])
+  PyPlot.plot(cos(linspace(0,2pi,100)),sin(linspace(0,2pi,100)),linewidth=2,color=:black)
+  PyPlot.grid("on")
+  PyPlot.savefig("Figs/discresolventrandomn=$(n).png",transparent=true,bbox_inches="tight")
+  clf()
+end

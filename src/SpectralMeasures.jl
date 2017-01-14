@@ -58,7 +58,7 @@ function principal_resolvent(a,b)
   C = connection_coeffs_operator(a,b)
   Cmu = connection_coeffs_operator(a[2:end],b[2:end]) # Technically not Cmu from the paper
   f = Fun((C*(C'*[1])),Ultraspherical(1))
-  fmu = Fun(Ultraspherical(1),Cmu*((C'*[1]).coefficients[2:end])/b[1])
+  fmu = Fun(Ultraspherical(1),coefficients(Cmu*((C'*[1]).coefficients[2:end])/b[1]))
 
   # Return the resolvent
   x->(2*sqrt(complex(x-1)).*sqrt(complex(x+1))-2*x-extrapolate(fmu,x))./extrapolate(f,x)
