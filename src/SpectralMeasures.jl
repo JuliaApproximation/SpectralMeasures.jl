@@ -4,7 +4,7 @@ using ValidatedNumerics, ValidatedNumerics.RootFinding
 
 import Base:+,-,*,/,.*,.-,./,.+,getindex
 
-import ApproxFun: Operator, ToeplitzOperator, DiracSpace, plot, IdentityOperator,
+import ApproxFun: Operator, ToeplitzOperator, DiracSpace, IdentityOperator,
             TridiagonalOperator, setdomain, resizedata!, bandinds, PointSpace,
             BandedMatrix, bzeros, TimesOperator, BlockOperator, SpaceOperator, AbstractCount, UnitCount,
             MatrixSpace, ∞, ℓ⁰, domainspace, rangespace, domain

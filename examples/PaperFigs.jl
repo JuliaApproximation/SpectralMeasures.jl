@@ -6,6 +6,7 @@ using ComplexPhasePortrait, PyPlot, FileIO; pygui(false) # PyPlot is good for We
 
 x = linspace(-3, 3, 1000)
   Z = x' .+ flipdim(x, 1)*im
+  Z = Z'
 
 mkdir("Figs")
 
@@ -188,3 +189,13 @@ for n in [1,2,3,10,50,100]
   PyPlot.savefig("Figs/discresolventrandomn=$(n).png",transparent=true,bbox_inches="tight")
   clf()
 end
+
+
+
+
+
+ds=[(a = -ones(k);
+    d = domain(spectralmeasure(a,Float64[]));
+    isa(d,Segment) ? 0 : length(d.domains[1]))  for k=1:50]
+
+Plots.plot(ds)
