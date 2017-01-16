@@ -199,3 +199,16 @@ ds=[(a = -ones(k);
     isa(d,Segment) ? 0 : length(d.domains[1]))  for k=1:50]
 
 Plots.plot(ds)
+
+
+spectralmeasure(-ones(BigFloat,5),BigFloat[])
+
+
+Plots.plot(spectralmeasure([cos(π*k)/(2π) for k=1:100],Float64[]))
+
+1/π
+
+n=200
+    A = diagm([cos(π*k)/(2π) for k=1:n])
+    A[diagind(A,-1)] = A[diagind(A,1)] = 0.5
+    Plots.scatter(eigvals(A),zeros(n))

@@ -21,10 +21,11 @@ include("ql.jl")
 include("RatFun.jl")
 
 function spectralmeasure(a,b)
+    TT = promote_type(eltype(a),eltype(b))
   # Chop the a and b down
-  a = chop!(a); b = .5+chop!(b-.5)
+  a = chop!(a); b = 0.5+chop!(b-0.5)
   n = max(2,length(a),length(b)+1)
-  a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
+  a = [a;zeros(TT,n-length(a))]; b = [b;0.5+zeros(TT,n-length(b))]
 
   # Finds C such that J*C = C*Toeplitz([0,1/2])
   C = SpectralMeasures.connection_coeffs_operator(a,b)
@@ -32,18 +33,19 @@ function spectralmeasure(a,b)
   f = Fun(C*(C'*[1]),Ultraspherical(1))
 
   # Check for discrete eigenvalues
-  z = sort(real(filter!(z->abs(z)<1 && isreal(z) && !isapprox(abs(z),1) ,complexroots(c))))
+  z = sort(real(filter!(z->abs(z)<1 && abs(imag(z)) ≤ 10eps(TT)  && !isapprox(abs(z),1),
+                        complexroots(c))))
   if length(z) > 0
      Cmu = SpectralMeasures.connection_coeffs_operator(a[2:end],b[2:end]) # Technically not Cmu from the paper
      cmu = Fun(Taylor,[0;Cmu.T.nonnegative]/b[1]) # this is cmu from the paper
      cprime = differentiate(c)
      eigs=real(map(joukowsky,z))
-     weights = .5*(1-1./z.^2).*(real(cmu(z))./real(cprime(z)))
-     p = Fun(DiracSpace(eigs),weights) + Fun(JacobiWeight(.5,.5,Ultraspherical(1)),[2/pi])
-     q = Fun(PointSpace(eigs),ones(length(eigs))) + f
+     weights = 0.5*(1-1./z.^2).*(real(cmu(z))./real(cprime(z)))
+     p = Fun(DiracSpace(eigs),weights) + Fun(JacobiWeight(0.5,0.5,Ultraspherical(1)),[2/TT(pi)])
+     q = Fun(PointSpace(eigs),ones(TT,length(eigs))) + f
      μ = RatFun(p,q)
   else
-    μ = RatFun(Fun(JacobiWeight(.5,.5,Ultraspherical(1)),[2/pi]),f)
+    μ = RatFun(Fun(JacobiWeight(0.5,0.5,Ultraspherical(1)),[2/TT(pi)]),f)
   end
   μ
 end
