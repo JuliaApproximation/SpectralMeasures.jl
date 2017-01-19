@@ -1,12 +1,11 @@
 ## These are the figures that appear in a first draft of the paper
-# "Spectra of Jacobi operators via connection coefficients" by Marcus Webb and Sheehan Olver (2016)
+# "Spectra of Jacobi operators via connection coefficients" by Marcus Webb and Sheehan Olver (2017)
 
 using ApproxFun, SpectralMeasures, Plots; Plots.gr(linewidth=3,legend=false)
 using ComplexPhasePortrait, PyPlot, FileIO; pygui(false) # PyPlot is good for Wegert Plots
 
-x = linspace(-3, 3, 1000)
-  Z = x' .+ flipdim(x, 1)*im
-  Z = Z'
+x = linspace(-3, 3, 300)
+  Z = x .+ flipdim(x,1)'*im
 
 mkdir("Figs")
 
@@ -167,9 +166,10 @@ end
 
 # Random
 mkdir("Figs")
+srand(200)
+longaRand = 3*(2rand(100)-1)./(1:100).^2
 for n in [1,2,3,10,50,100]
-  srand(200)
-  aRand = 3*(2rand(n)-1)./(1:n).^2
+  aRand = longaRand[1:n]
   Plots.plot(spectralmeasure(aRand,Float64[]),title="Random, n = $(n)",xlims=(-1.5,1.5),ylims=(0,1),yticks=[0,.25,.5,.75,1])
   Plots.savefig("Figs/spectralmeasurerandomn=$(n).pdf")
 
@@ -204,7 +204,12 @@ Plots.plot(ds)
 spectralmeasure(-ones(BigFloat,5),BigFloat[])
 
 
-Plots.plot(spectralmeasure([cos(π*k)/(2π) for k=1:100],Float64[]))
+a = [20*(exp(-5*(k-10)^2)).*cos(k^2)/k for k=1:300]
+  Plots.plot(spectralmeasure(a,Float64[]),xlims=(-3,3))
+
+discreteeigs(a,[])
+
+tripleplot(a,Float64[])
 
 1/π
 
@@ -212,3 +217,33 @@ n=200
     A = diagm([cos(π*k)/(2π) for k=1:n])
     A[diagind(A,-1)] = A[diagind(A,1)] = 0.5
     Plots.scatter(eigvals(A),zeros(n))
+
+
+# Various attempts at double well. It doesn't look particularly interesting for the spectral measures.
+# There are big regions of zero in the measure which mean there are enormous coefficients in the
+# denominator polynomial. This is not good for numerical computation. The results are nonsense
+# if we don't use BigFloat. We might need to stress that we will be working on making
+# the computations stable for a future publication.
+# The regions of zero are determined by the height of the potential
+# First one has zero in [.5,1] and [0,.25], second one in [0,1], [0,.25] etc.
+# If you make the height of the potential bigger than 2 then it appears to break :S
+
+V = zeros(BigFloat,100); V[1:10] = -.5; V[30:50]=.25
+  m = spectralmeasure(V,BigFloat[])
+  Plots.plot(pts,m(pts),ylims=(0,5))
+
+V = zeros(BigFloat,100); V[1:10] = -1.; V[30:50]=.25
+  m = spectralmeasure(V,BigFloat[])
+  Plots.plot(pts,m(pts),ylims=(0,5))
+
+V = zeros(BigFloat,100); V[1:20] = -.5; V[30:50]=.25
+  m = spectralmeasure(V,BigFloat[])
+  Plots.plot(pts,m(pts),ylims=(0,5))
+
+V = zeros(BigFloat,100); V[10:20] = -.5; V[40:50]=.25
+  m = spectralmeasure(V,BigFloat[])
+  Plots.plot(pts,m(pts),ylims=(0,5))
+
+V = zeros(BigFloat,100); V[1:50] = -.5; V[60:90]=.25
+  m = spectralmeasure(V,BigFloat[])
+  Plots.plot(pts,m(pts),ylims=(0,5))
