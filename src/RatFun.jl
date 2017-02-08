@@ -47,16 +47,16 @@ function plotptsvals(r::RatFun)
     plen = ncoefficients(p)
     qlen = ncoefficients(q)
     if dimension(space(p)) == ∞ && dimension(space(q)) == ∞
-        p=pad(p,10plen+10*qlen+200)
-        q=pad(q,10plen+10*qlen+200)
+        p=pad(p,10plen+10*qlen+1000)
+        q=pad(q,10plen+10*qlen+1000)
         r = RatFun(p,q)
     elseif dimension(space(p)) == ∞ && dimension(space(q)) < ∞
-        p=pad(p,10plen+10*dimension(space(q))+200)
-        q=pad(q,10plen+10*dimension(space(q))+200)
+        p=pad(p,10plen+10*dimension(space(q))+1000)
+        q=pad(q,10plen+10*dimension(space(q))+1000)
         r = RatFun(p,q)
     elseif dimension(space(q)) == ∞ && dimension(space(p)) < ∞
-        q=pad(q,dimension(space(p))+10qlen+200)
-        p=pad(p,dimension(space(p))+10qlen+200)
+        q=pad(q,dimension(space(p))+10qlen+1000)
+        p=pad(p,dimension(space(p))+10qlen+1000)
         r = RatFun(p,q)
     else
         p=pad(p,dimension(space(p))+dimension(space(q)))

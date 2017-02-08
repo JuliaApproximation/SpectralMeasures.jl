@@ -191,33 +191,17 @@ for n in [1,2,3,10,50,100]
 end
 
 
+a = zeros(100); a[1] = 1
+  Plots.plot(spectralmeasure(a,Float64[]),title="\\alpha=[1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
+  Plots.savefig("Figs/spectralmeasuredelta1.pdf")
 
+a = zeros(100); a[3] = 1
+  Plots.plot(spectralmeasure(a,Float64[]),title="\\alpha=[0,0,1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
+    Plots.savefig("Figs/spectralmeasuredelta3.pdf")
 
-
-ds=[(a = -ones(k);
-    d = domain(spectralmeasure(a,Float64[]));
-    isa(d,Segment) ? 0 : length(d.domains[1]))  for k=1:50]
-
-Plots.plot(ds)
-
-
-spectralmeasure(-ones(BigFloat,5),BigFloat[])
-
-
-a = [20*(exp(-5*(k-10)^2)).*cos(k^2)/k for k=1:300]
-  Plots.plot(spectralmeasure(a,Float64[]),xlims=(-3,3))
-
-discreteeigs(a,[])
-
-tripleplot(a,Float64[])
-
-1/π
-
-n=200
-    A = diagm([cos(π*k)/(2π) for k=1:n])
-    A[diagind(A,-1)] = A[diagind(A,1)] = 0.5
-    Plots.scatter(eigvals(A),zeros(n))
-
+a = zeros(100); a[5] = 1
+  Plots.plot(spectralmeasure(a,Float64[]),title="\\alpha=[0,0,0,0,1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
+  Plots.savefig("Figs/spectralmeasuredelta5.pdf")
 
 # Various attempts at double well. It doesn't look particularly interesting for the spectral measures.
 # There are big regions of zero in the measure which mean there are enormous coefficients in the
@@ -227,6 +211,8 @@ n=200
 # The regions of zero are determined by the height of the potential
 # First one has zero in [.5,1] and [0,.25], second one in [0,1], [0,.25] etc.
 # If you make the height of the potential bigger than 2 then it appears to break :S
+
+pts = linspace(-1,1,2000)
 
 V = zeros(BigFloat,100); V[1:10] = -.5; V[30:50]=.25
   m = spectralmeasure(V,BigFloat[])
