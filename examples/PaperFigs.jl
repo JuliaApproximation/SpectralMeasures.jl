@@ -195,9 +195,9 @@ a = zeros(100); a[1] = 1
   Plots.plot(spectralmeasure(a,Float64[]),title="\\alpha=[1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
   Plots.savefig("Figs/spectralmeasuredelta1.pdf")
 
-a = zeros(100); a[3] = 1
-  Plots.plot(spectralmeasure(a,Float64[]),title="\\alpha=[0,0,1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
-    Plots.savefig("Figs/spectralmeasuredelta3.pdf")
+a = zeros(100); a[2] = 1
+  Plots.plot(spectralmeasure(a,Float64[]),title="\\alpha=[0,1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
+    Plots.savefig("Figs/spectralmeasuredelta2.pdf")
 
 a = zeros(100); a[5] = 1
   Plots.plot(spectralmeasure(a,Float64[]),title="\\alpha=[0,0,0,0,1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
