@@ -72,12 +72,14 @@ function Base.eig(Jin::SymTriToeplitz)
     Qret=Array(HessenbergUnitary{'U',Float64},0)
     λapprox=sort(discreteeigs(Jin))
 
+    ctsspec = ApproxFun.Interval(Jin.a-2*abs(Jin.b),Jin.a+2*abs(Jin.b))
+
     J=Jin
 
     if length(λapprox) == 0
         C=connection_coeffs_operator(J)
 
-        x=Fun(identity,Ultraspherical(1))
+        x=Fun(identity,Ultraspherical(1,ctsspec))
 
         U=SpaceOperator(C,ℓ⁰,space(x))
         return x,U
@@ -105,20 +107,20 @@ function Base.eig(Jin::SymTriToeplitz)
     end
 
     if length(λ) == 1
-        Q=Qret[1]
-        C=BlockOperator(eye(length(λ)),connection_coeffs_operator(J))
+         Q=Qret[1]
+         C=BlockOperator(eye(length(λ)),connection_coeffs_operator(J))
 
-        x=Fun(identity,PointSpace(λ[1])⊕Ultraspherical(1))
+         x=Fun(identity,PointSpace(λ[1])⊕Ultraspherical(1,ctsspec))
 
-        U=SpaceOperator(C*Q,ℓ⁰,space(x))
-        return x,U
+         U=SpaceOperator(C*Q,SequenceSpace(),space(x))
+         return x,U
     else
         Q=BandedUnitary(reverse!(Qret))
-        C=SpaceOperator(BlockOperator(eye(length(λ)),connection_coeffs_operator(J)),ℓ⁰,ℓ⁰)
+        C=SpaceOperator(BlockOperator(eye(length(λ)),connection_coeffs_operator(J)),SequenceSpace(),SequenceSpace())
 
-        x=Fun(identity,mapreduce(PointSpace,⊕,λ)⊕Ultraspherical(1))
+        x=Fun(identity,mapreduce(PointSpace,⊕,λ)⊕Ultraspherical(1,ctsspec))
 
-        U=SpaceOperator(C*Q,ℓ⁰,space(x))
+        U=SpaceOperator(C*Q,SequenceSpace(),space(x))
         return x,U
     end
 end

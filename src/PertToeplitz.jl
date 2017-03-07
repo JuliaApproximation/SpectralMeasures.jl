@@ -201,21 +201,9 @@ end
 
 ql(A::SymTriToeplitz) = ql(A.dv,A.ev,A.a,A.b)
 
-function spectralmeasure(A::SymTriToeplitz)
-    if isapprox(A.a,0.) && isapprox(A.b,0.5)
-        spectralmeasure(A.dv,A.ev)
-    elseif isapprox(A.a,0.)
-        c=2*A.b
-        μ=spectralmeasure(A/c)
-        sp=space(μ)
-
-        np=isa(sp,DiracSpace)?length(sp.points):0  # number of points
-
-        Fun(setdomain(space(μ),c*domain(μ)),[μ.coefficients[1:np];μ.coefficients[np+1:end]/c])
-    else
-        μ=spectralmeasure(A-A.a*I)
-        setdomain(μ,domain(μ)+A.a)
-    end
+function spectralmeasure(J::SymTriToeplitz)
+  μ = spectralmeasure(.5*(J.dv-J.a)/J.b,.5*J.ev/J.b)
+  2*J.b*setdomain(μ,domain(μ) + J.a)
 end
 
 Base.eigvals(A::SymTriToeplitz)=domain(spectralmeasure(A))
