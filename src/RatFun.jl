@@ -11,7 +11,7 @@ end
 domain(r::RatFun) = domain(r.p)
 
 function evaluate(r::RatFun,x)
-    (r.p)(x)./(r.q)(x)
+    (r.p)(x)/(r.q)(x)
 end
 
 @compat (r::RatFun)(x) = evaluate(r,x)
@@ -34,7 +34,7 @@ Base.vec(r::RatFun) = RatFun.(vec(r.p),vec(r.q))
 (./)(r::RatFun,a)=inv(r)*a
 
 for op = (:+,:.+,:-,:.-)
-  @eval $op(r1::RatFun,r2::RatFun) = RatFun($op((r1.p.*r2.q),(r2.p.*r1.q)),r1.q.*r2.q)
+  @eval $op(r1::RatFun,r2::RatFun) = RatFun($op((r1.p*r2.q),(r2.p*r1.q)),r1.q*r2.q)
 end
 
 Base.convert(::Type{Fun},r::RatFun) = r.p/r.q

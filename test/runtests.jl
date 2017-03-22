@@ -7,19 +7,19 @@ using Plots, ApproxFun, SpectralMeasures, Base.Test
 # Chebyshev U
 a = Float64[]; b= Float64[]
 @time μ=spectralmeasure(a,b)
-@test_approx_eq μ(-.99:.01:.99) sqrt(1-(-.99:.01:.99).^2)*2/π
+@test_approx_eq μ.(-.99:.01:.99) sqrt.(1.-(-.99:.01:.99).^2)*2/π
 
 
 # Chebyshev T
 a = [0.]; b=[1/sqrt(2),.5]
 @time μ=spectralmeasure(a,b)
-@test_approx_eq μ(-.99:.01:.99) sqrt(1-(-.99:.01:.99).^2).^(-1)/π
+@test_approx_eq μ.(-.99:.01:.99) sqrt.(1.-(-.99:.01:.99).^2).^(-1)/π
 
 
 # Legendre
 n=100;a=zeros(n); b=(1:n-1)./sqrt(4*(1:n-1).^2-1)
 μ=spectralmeasure(a,b)
-@test_approx_eq_eps μ(-.99:.01:.99) 0.5ones(-.99:.01:.99) 0.001
+@test_approx_eq_eps μ.(-.99:.01:.99) 0.5ones(-.99:.01:.99) 0.001
 
 # A strange hump
 n=10;a=zeros(n); b=sqrt(1:(n-1))/sqrt(n)*0.5
@@ -37,17 +37,17 @@ x=Fun()
 ν=(1-x)^α*(x+1)^β
 ν/=sum(ν)
 
-@test_approx_eq_eps μ(-.99:.01:.99) ν(-.99:.01:.99) 0.0001
+@test_approx_eq_eps μ.(-.99:.01:.99) ν.(-.99:.01:.99) 0.0001
 
 # Simplest perturbation
 k = 17
-  a = [k/20];b=[]
+  a = [k/20];b=Float64[]
   μ=spectralmeasure(a,b)
-  ApproxFun.plot(μ)
+  plot(μ)
 k = -19
-a = [k/20];b=[]
+a = [k/20];b=Float64[]
 ν=spectralmeasure(a,b)
-ApproxFun.plot(ν)
+plot(ν)
 
 
 # Can you make this work, Sheehan? MW
