@@ -3,12 +3,13 @@ abstract UnitaryOperator{T} <: Operator{T}
 Base.inv(Q::UnitaryOperator) = Q'
 Base.transpose{T<:Real}(Q::UnitaryOperator{T}) = Q'
 
-\(Q::UnitaryOperator,v::Number;opts...) = Q'*v
-\(Q::UnitaryOperator,v::Array;opts...) = Q'*v
-\{S,T,DD,Q}(A::UnitaryOperator,b::Fun{MatrixSpace{S,T,DD,1},Q};kwds...) =
-    Q'*b
-\(Q::UnitaryOperator,v::Fun;opts...) = Fun(space(v),Q'*v.coefficients)
 
+Ac_mul_B_coefficients(Q::UnitaryOperator,v::AbstractVector;opts...) =
+    A_mul_B_coefficients(Q',v;opts...)
+
+
+A_ldiv_B_coefficients(Q::UnitaryOperator,v::AbstractVector;opts...) =
+    Ac_mul_B_coefficients(Q,v;opts...)
 
 
 
@@ -143,7 +144,7 @@ function hessuni_getindex{T}(sgn::Bool,c::AbstractVector{T},s::AbstractVector{T}
     end
 end
 
-function *(Q::HessenbergUnitary{'U'},v::Vector)
+function A_mul_B_coefficients(Q::HessenbergUnitary{'U'},v::Vector;opts...)
     si=Q.sign?1:-1
 
     ret = pad!(si*v,length(v)+1)
@@ -158,7 +159,7 @@ function *(Q::HessenbergUnitary{'U'},v::Vector)
 end
 
 
-function *(Q::HessenbergUnitary{'L'},v::Vector)
+function A_mul_B_coefficients(Q::HessenbergUnitary{'L'},v::Vector;tolerance=eps())
     N =  max(length(v),length(Q.s))+1
     si=Q.sign?1:-1
     ret = pad!(si*v,N)
@@ -172,7 +173,7 @@ function *(Q::HessenbergUnitary{'L'},v::Vector)
 
     # After this point, ret is monotonically decreasing to zero
     i = N
-    while abs(ret[i]) > eps()
+    while abs(ret[i]) > tolerance
         push!(ret,(Q.s∞)*ret[i])
         ret[i] *= Q.c∞
         i += 1
@@ -201,20 +202,20 @@ immutable BandedUnitary{uplo,T} <: UnitaryOperator{T}
 end
 
 
-Base.ctranspose(Q::BandedUnitary)=BandedUnitary(reverse!(map(ctranspose,Q.ops)))
+Base.ctranspose(Q::BandedUnitary) = BandedUnitary(reverse!(map(ctranspose,Q.ops)))
 
-getindex(Q::BandedUnitary,k::Integer,j::Integer)=TimesOperator(Q.ops)[k,j]
-bandinds(Q::BandedUnitary)=bandinds(TimesOperator(Q.ops))
+getindex(Q::BandedUnitary,k::Integer,j::Integer) = TimesOperator(Q.ops)[k,j]
+bandinds(Q::BandedUnitary) = bandinds(TimesOperator(Q.ops))
 
 
 domainspace(::BandedUnitary) = ℓ⁰
 rangespace(::BandedUnitary) = ℓ⁰
 
 
-function *(Q::BandedUnitary,v::Vector)
+function A_mul_B_coefficients(Q::BandedUnitary,v::Vector)
     ret=v
     for k=length(Q.ops):-1:1
-        ret=Q.ops[k]*ret
+        ret=A_mul_B_coefficients(Q.ops[k],ret)
     end
-    Fun(rangespace(Q),ret)
+    ret
 end

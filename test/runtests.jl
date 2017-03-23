@@ -72,6 +72,24 @@ Q,L=ql(A)
 
 x,Q=eig(J)
 
+
+
+@time Q\(Q*[1.0])
+
+
+eig(J)
+
+v=Q.op.ops[2]'*[1.0]
+
+
+
+
+
+
+@time Q.op.ops[1]\v
+
+@time Ac_mul_B_coefficients(Q.op.ops[2],[1.0])
+
 # check some ApproxFun bugs
 n=100
 QM=full(Q[1:n,1:n])

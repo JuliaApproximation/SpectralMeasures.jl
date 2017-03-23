@@ -68,6 +68,41 @@ discreteeigs(J::SymTriToeplitz) = 2*J.b*discreteeigs(.5*(J.dv-J.a)/J.b,.5*J.ev/J
 
 connection_coeffs_operator(J::SymTriToeplitz) = connection_coeffs_operator(.5*(J.dv-J.a)/J.b,.5*J.ev/J.b)
 
+
+
+immutable SpectralMap{CC,QQ,RS,T} <: Operator{T}
+    C::CC
+    Q::QQ
+    rangespace::RS
+end
+
+SpectralMap{T}(C::Operator{T},Q::Operator{T},rs) =
+    SpectralMap{typeof(C),typeof(Q),typeof(rs),T}(C,Q,rs)
+
+
+domainspace(::SpectralMap) = SequenceSpace()
+rangespace(S::SpectralMap) = S.rangespace
+
+
+A_ldiv_B_coefficients(S::SpectralMap,v::AbstractVector;opts...) =
+    A_ldiv_B_coefficients(S.Q,A_ldiv_B_coefficients(S.C,v);opts...)
+
+A_mul_B_coefficients(S::SpectralMap,v::AbstractVector;opts...) =
+    A_mul_B_coefficients(S.C,A_mul_B_coefficients(S.Q,v;opts...))
+
+function getindex(S::SpectralMap,k::Integer,j::Integer)
+    v = A_mul_B_coefficients(S,[zeros(j-1);1])
+    k ≤ length(v) && return v[k]
+    zero(eltype(S))
+end
+
+
+isbanded(S::SpectralMap) = true
+function bandinds(S::SpectralMap)
+    bi = bandinds(S.Q)
+    bi[1],bi[2]+bandinds(S.C,2)
+end
+
 function Base.eig(Jin::SymTriToeplitz)
     Qret=Array(HessenbergUnitary{'U',Float64},0)
     λapprox=sort(discreteeigs(Jin))
@@ -112,7 +147,7 @@ function Base.eig(Jin::SymTriToeplitz)
 
          x=Fun(identity,PointSpace(λ[1])⊕Ultraspherical(1,ctsspec))
 
-         U=SpaceOperator(C*Q,SequenceSpace(),space(x))
+         U=SpectralMap(C,Q,space(x))
          return x,U
     else
         Q=BandedUnitary(reverse!(Qret))
@@ -120,7 +155,7 @@ function Base.eig(Jin::SymTriToeplitz)
 
         x=Fun(identity,mapreduce(PointSpace,⊕,λ)⊕Ultraspherical(1,ctsspec))
 
-        U=SpaceOperator(C*Q,SequenceSpace(),space(x))
+        U=SpectralMap(C,Q,space(x))
         return x,U
     end
 end

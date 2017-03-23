@@ -6,7 +6,8 @@ import Base:+,-,*,/,.*,.-,./,.+,getindex
 import ApproxFun: Operator, ToeplitzOperator, DiracSpace, IdentityOperator,
             TridiagonalOperator, setdomain, resizedata!, bandinds, PointSpace,
             BandedMatrix, bzeros, TimesOperator, BlockOperator, SpaceOperator, AbstractCount, UnitCount,
-            MatrixSpace, ∞, ℓ⁰, domainspace, rangespace, domain
+            MatrixSpace, ∞, ℓ⁰, domainspace, rangespace, domain, A_mul_B_coefficients,
+            A_ldiv_B_coefficients
 
 export spectralmeasure, discreteeigs, principal_resolvent, disc_resolvent, validated_spectrum
 export connection_coeffs_operator, apply_conversion, SymTriOperator, SymTriToeplitz
