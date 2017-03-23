@@ -73,53 +73,17 @@ Q,L=ql(A)
 x,Q=eig(J)
 
 
-
-@time Q\(Q*[1.0])
-
-
-eig(J)
-
-v=Q.op.ops[2]'*[1.0]
+@time v=(Q*[1.0])
 
 
 
-
-
-
-@time Q.op.ops[1]\v
-
-@time Ac_mul_B_coefficients(Q.op.ops[2],[1.0])
 
 # check some ApproxFun bugs
 n=100
 QM=full(Q[1:n,1:n])
 @test_approx_eq pad((Q*[1.] ).coefficients,n) QM[:,1]
 
-@test_approx_eq Q.op.ops[end][1:n,1:n]\[1.;zeros(n-1)] coefficient(Q.op.ops[end]\[1.],1:n)
+@test_approx_eq Q.Q[1:n,1:n]\[1.;zeros(n-1)] coefficient(Q.Q\[1.],1:n)
 
-b=Q.op.ops[end]\[1.]
-@test_approx_eq Q.op.ops[1][1:n,1:n]\coefficient(b,1:n) coefficient((Q.op.ops[1]\b),1:n)
-
-
-@time u=Q\(exp(im*x)*(Q*[1.]))
-@test_approx_eq u.coefficients expm(im*full(J[1:200,1:200]))[1:ncoefficients(u)]
-
-t=10.0
-@time u=Q\(exp(im*t*x)*(Q*[1.]))  # 0.04s
-#scatter([real(u) imag(u)])
-
-
-t=100000.0
-@time u=Q\(exp(im*t*x)*(Q*[1.]))  # 0.04s
-#scatter([real(u) imag(u)])
-
-@time A_ldiv_B_coefficients(Q,[1.,2.,3.,4.,5.,6.])
-@time v=A_ldiv_B_coefficients(Q.op.ops[1],[1.,2.,3.,4.,5.,6.])
-
-
-Q\Fun(rangespace(Q),[1.,2.,3.,4.,5.,6.])
-
-
-Q'*Fun(rangespace(Q),[1.,2.,3.,4.,5.,6.])
-
-@time Q.op.ops[1]\(Q.op.ops[end]\[1.,2.,3.,4.,5.,6.])
+b=Q.Q\[1.]
+@test_approx_eq Q.C[1:n,1:n]\coefficient(b,1:n) coefficient((Q.C\b),1:n)
