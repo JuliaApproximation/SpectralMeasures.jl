@@ -61,7 +61,7 @@ function ql(a,b,t0,t1)
             end
         end
     end
-    Q,TL+FiniteOperator(L)
+    Q,TL+FiniteOperator(L,ℓ⁰,ℓ⁰)
 end
 
 discreteeigs(J::SymTriToeplitz) = 2*J.b*discreteeigs(.5*(J.dv-J.a)/J.b,.5*J.ev/J.b) + J.a
@@ -128,7 +128,7 @@ function Base.eig(Jin::SymTriToeplitz)
 
         Q,L=ql(J-μ*I)
         push!(Qret,deflate(Q',k-1))
-        J=(L*Q+μ*I)
+        J=L*Q+μ*I
 
          while abs(J[1,2]) > tol
              # μ=J[1,1] DO NOT DO THIS. IF MU IS NOT ACCURATE, J[1,1] CAN BE AN INVALID SHIFT (MW)
@@ -143,17 +143,16 @@ function Base.eig(Jin::SymTriToeplitz)
 
     if length(λ) == 1
          Q=Qret[1]
-         C=BlockOperator(eye(length(λ)),connection_coeffs_operator(J))
 
          x=Fun(identity,PointSpace(λ[1])⊕Ultraspherical(1,ctsspec))
+         C=SpaceOperator(InterlaceOperator(Diagonal([eye(length(λ)),connection_coeffs_operator(J)])),SequenceSpace(),space(x))
 
          U=SpectralMap(C,Q,space(x))
          return x,U
     else
         Q=BandedUnitary(reverse!(Qret))
-        C=SpaceOperator(BlockOperator(eye(length(λ)),connection_coeffs_operator(J)),SequenceSpace(),SequenceSpace())
-
         x=Fun(identity,mapreduce(PointSpace,⊕,λ)⊕Ultraspherical(1,ctsspec))
+        C=SpaceOperator(InterlaceOperator(Diagonal([eye(length(λ)),connection_coeffs_operator(J)])),SequenceSpace(),space(x))
 
         U=SpectralMap(C,Q,space(x))
         return x,U

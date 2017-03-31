@@ -1,5 +1,4 @@
 import ApproxFun:evaluate,dimension
-import Plots:plot,plot!
 
 export RatFun, inv
 
