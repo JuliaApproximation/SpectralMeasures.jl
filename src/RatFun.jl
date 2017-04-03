@@ -8,6 +8,7 @@ immutable RatFun{S1,T1,S2,T2}
 end
 
 domain(r::RatFun) = domain(r.p)
+setdomain(r::RatFun,d) = RatFun(setdomain(r.p,d),setdomain(r.q,d))
 
 function evaluate(r::RatFun,x)
     (r.p)(x)/(r.q)(x)
