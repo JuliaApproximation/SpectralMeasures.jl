@@ -31,7 +31,9 @@ Base.vec(r::RatFun) = RatFun.(vec(r.p),vec(r.q))
 
 (/)(r1::RatFun,r2::RatFun)=r1*inv(r2)
 (/)(a,r::RatFun)=a*inv(r)
-(./)(r::RatFun,a)=inv(r)*a
+
+(/)(r::RatFun,a)=RatFun(r.p,r.q*a)
+(./)(r::RatFun,a)=r./a
 
 for op = (:+,:.+,:-,:.-)
   @eval $op(r1::RatFun,r2::RatFun) = RatFun($op((r1.p*r2.q),(r2.p*r1.q)),r1.q*r2.q)
