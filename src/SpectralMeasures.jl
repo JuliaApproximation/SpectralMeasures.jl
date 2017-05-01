@@ -1,5 +1,5 @@
 module SpectralMeasures
-using Base, Compat, ApproxFun, RecipesBase
+using Base, Compat, ApproxFun, RecipesBase, RatFun
 
 import Base:+,-,*,/,.*,.-,./,.+,getindex
 
@@ -18,7 +18,6 @@ include("HessenbergUnitary.jl")
 include("PertToeplitz.jl")
 include("helper.jl")
 include("ql.jl")
-include("RatFun.jl")
 
 function spectralmeasure(a,b)
     TT = promote_type(eltype(a),eltype(b))
@@ -43,9 +42,9 @@ function spectralmeasure(a,b)
      weights = 0.5*(1-1./z.^2).*(real(cmu(z))./real(cprime(z)))
      p = Fun(DiracSpace(eigs),weights) + Fun(JacobiWeight(0.5,0.5,Ultraspherical(1)),[2/TT(pi)])
      q = Fun(PointSpace(eigs),ones(TT,length(eigs))) + f
-     μ = RatFun(p,q)
+     μ = RationalFun(p,q)
   else
-    μ = RatFun(Fun(JacobiWeight(0.5,0.5,Ultraspherical(1)),[2/TT(pi)]),f)
+    μ = RationalFun(Fun(JacobiWeight(0.5,0.5,Ultraspherical(1)),[2/TT(pi)]),f)
   end
   μ
 end
