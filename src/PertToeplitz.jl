@@ -1,15 +1,16 @@
 ## New ToeplitzOperator routines
 
 
-ToeplitzOperator(L::UniformScaling)=ToeplitzOperator(eltype(L)[],[L.λ])
+ToeplitzOperator(L::UniformScaling) = ToeplitzOperator(eltype(L)[],[L.λ])
 
-Base.issym(T::ToeplitzOperator)=length(T.negative)==length(T.nonnegative)-1&&T.negative==T.nonnegative[2:end]
+Base.issymmetric(T::ToeplitzOperator) =
+    length(T.negative)==length(T.nonnegative)-1&&T.negative==T.nonnegative[2:end]
 
 
 for OP in (:+,:-)
     @eval begin
-        $OP(A::ToeplitzOperator,c::UniformScaling)=$OP(A,ToeplitzOperator(c))
-        $OP(c::UniformScaling,A::ToeplitzOperator)=$OP(ToeplitzOperator(c),A)
+        $OP(A::ToeplitzOperator,c::UniformScaling) = $OP(A,ToeplitzOperator(c))
+        $OP(c::UniformScaling,A::ToeplitzOperator) = $OP(ToeplitzOperator(c),A)
         function $OP(A::ToeplitzOperator,B::ToeplitzOperator)
             n=max(length(A.negative),length(B.negative))
             m=max(length(A.nonnegative),length(B.nonnegative))

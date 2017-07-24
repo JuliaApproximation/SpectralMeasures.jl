@@ -1,4 +1,4 @@
-abstract UnitaryOperator{T} <: Operator{T}
+abstract type UnitaryOperator{T} <: Operator{T} end
 
 Base.inv(Q::UnitaryOperator) = Q'
 Base.transpose{T<:Real}(Q::UnitaryOperator{T}) = Q'
@@ -21,7 +21,8 @@ immutable HessenbergUnitary{uplo,T} <: UnitaryOperator{T}
     s∞::T
     band::Int
 
-    function HessenbergUnitary(sgn::Bool,c::Vector{T},s::Vector{T},c∞::T,s∞::T,bnd::Int)
+    function HessenbergUnitary{uplo,T}(sgn::Bool,c::Vector{T},s::Vector{T},
+                                       c∞::T,s∞::T,bnd::Int) where {uplo,T}
         @assert isapprox(s∞^2+c∞^2,1)
         @assert length(c)==length(s)+1
 
