@@ -1,7 +1,7 @@
 abstract type UnitaryOperator{T} <: Operator{T} end
 
 Base.inv(Q::UnitaryOperator) = Q'
-Base.transpose{T<:Real}(Q::UnitaryOperator{T}) = Q'
+Base.transpose(Q::UnitaryOperator{T}) where {T<:Real} = Q'
 
 
 Ac_mul_B_coefficients(Q::UnitaryOperator,v::AbstractVector;opts...) =
@@ -13,7 +13,7 @@ A_ldiv_B_coefficients(Q::UnitaryOperator,v::AbstractVector;opts...) =
 
 
 
-immutable HessenbergUnitary{uplo,T} <: UnitaryOperator{T}
+struct HessenbergUnitary{uplo,T} <: UnitaryOperator{T}
     sign::Bool
     c::Vector{T}
     s::Vector{T}
@@ -96,9 +96,9 @@ function HessenbergUnitary(uplo::Char,sign,c,s,c∞,s∞)
 end
 
 
-Base.ctranspose{T<:Real}(Q::HessenbergUnitary{'L',T}) =
+Base.ctranspose(Q::HessenbergUnitary{'L',T}) where {T<:Real} =
     HessenbergUnitary('U',Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
-Base.ctranspose{T<:Real}(Q::HessenbergUnitary{'U',T}) =
+Base.ctranspose(Q::HessenbergUnitary{'U',T}) where {T<:Real} =
     HessenbergUnitary('L',Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
 
 
@@ -126,9 +126,9 @@ getindex(Q::HessenbergUnitary{'L'},k::Integer,j::Integer) =
 getindex(Q::HessenbergUnitary{'U'},k::Integer,j::Integer) =
     hessuni_getindex(Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,k,j)
 
-function hessuni_getindex{T}(sgn::Bool,c::AbstractVector{T},s::AbstractVector{T},
-                                c∞::T,s∞::T,
-                                k::Integer,j::Integer)
+function hessuni_getindex(sgn::Bool,c::AbstractVector{T},s::AbstractVector{T},
+                             c∞::T,s∞::T,
+                             k::Integer,j::Integer) where T
     si=sgn?1:-1
 
     if k>j+1
@@ -184,21 +184,21 @@ end
 
 
 
--{uplo}(Q::HessenbergUnitary{uplo})=
+-(Q::HessenbergUnitary{uplo}) where {uplo}=
     HessenbergUnitary{uplo,eltype(Q)}(!Q.sign,Q.c,Q.s,
                                           Q.c∞,
                                           Q.s∞,Q.band)
 
 
 
-deflate{uplo}(Q::HessenbergUnitary{uplo})=HessenbergUnitary(uplo,Q.sign,
+deflate(Q::HessenbergUnitary{uplo}) where {uplo}=HessenbergUnitary(uplo,Q.sign,
                                                                   [(Q.sign?1:(-1))*sign(Q.c[1]);Q.c],
                                                                   [0;Q.s],Q.c∞,Q.s∞,Q.band)
 
 deflate(Q::HessenbergUnitary,k::Integer)=k==0?Q:deflate(deflate(Q),k-1)
 
 
-immutable BandedUnitary{uplo,T} <: UnitaryOperator{T}
+struct BandedUnitary{uplo,T} <: UnitaryOperator{T}
     ops::Vector{HessenbergUnitary{uplo,T}}
 end
 
