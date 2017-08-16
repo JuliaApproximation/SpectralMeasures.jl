@@ -12,7 +12,7 @@ function givenstail(t₀::Real,t₁::Real)
     γ¹ = t₁*c
     γ⁰ = c*t₀ + s*γ¹
     l¹ = 2t₁  # = c*γ¹ - st₁
-    l² = t₁*s
+    l² = -t₁*s
     c,s,ToeplitzOperator([l¹,l²],[l⁰]),γ¹,γ⁰
 end
 
@@ -30,14 +30,14 @@ function ql(a,b,t0,t1)
     #   0      l2     l1   l0    0
     #   0       0     l2   l1   l0
 
-    c∞,s∞,TL,α,β=givenstail(t0,t1)
 
-
-    if TL[1,1] < 0
-        # we want positive on L
+    if t0 < 0
+        # we want positive on the diagonal
         Q,L=ql(-a,-b,-t0,-t1)
         return -Q,L
     end
+
+    c∞,s∞,TL,α,β=givenstail(t0,t1)
 
     # Here we construct this matrix as L
     n = max(length(a),length(b)+1)
@@ -49,7 +49,7 @@ function ql(a,b,t0,t1)
     c,s,L=tridql!(J)
 
 
-    Q=HessenbergUnitary('L',true,c,s,c∞,-s∞)
+    Q=HessenbergUnitary('L',true,c,s,c∞,s∞)
 
 
     for j=1:n+1

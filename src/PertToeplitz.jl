@@ -71,8 +71,8 @@ struct SymTriToeplitz{T} <: TridiagonalOperator{T}
     a::T
     b::T
 
-    SymTriToeplitz(dv::Vector{T},ev::Vector{T},a::T,b::T) = new(dv,ev,a,b)
-    SymTriToeplitz(dv::Vector,ev::Vector,a,b) = new(Vector{T}(dv),Vector{T}(ev),T(a),T(b))
+    SymTriToeplitz{T}(dv::Vector{T},ev::Vector{T},a::T,b::T) where T = new(dv,ev,a,b)
+    SymTriToeplitz{T}(dv::Vector,ev::Vector,a,b) where T = new(Vector{T}(dv),Vector{T}(ev),T(a),T(b))
 end
 
 SymTriToeplitz(dv::Vector,ev::Vector,a,b) =
