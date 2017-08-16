@@ -70,13 +70,13 @@ connection_coeffs_operator(J::SymTriToeplitz) = connection_coeffs_operator(.5*(J
 
 
 
-immutable SpectralMap{CC,QQ,RS,T} <: Operator{T}
+struct SpectralMap{CC,QQ,RS,T} <: Operator{T}
     C::CC
     Q::QQ
     rangespace::RS
 end
 
-SpectralMap{T}(C::Operator{T},Q::Operator{T},rs) =
+SpectralMap(C::Operator{T},Q::Operator{T},rs) where {T} =
     SpectralMap{typeof(C),typeof(Q),typeof(rs),T}(C,Q,rs)
 
 

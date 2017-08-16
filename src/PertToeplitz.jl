@@ -28,7 +28,7 @@ end
 
 
 
-immutable SymTriOperator{T} <: TridiagonalOperator{T}
+struct SymTriOperator{T} <: TridiagonalOperator{T}
     dv::Vector{T}
     ev::Vector{T}
 end
@@ -65,7 +65,7 @@ end
 
 
 # Represents a SymTriOperator + Symmetric ToeplitzOperator
-immutable SymTriToeplitz{T} <: TridiagonalOperator{T}
+struct SymTriToeplitz{T} <: TridiagonalOperator{T}
     dv::Vector{T}
     ev::Vector{T}
     a::T
@@ -83,7 +83,7 @@ function SymTriToeplitz(T::ToeplitzOperator,K::SymTriOperator)
     SymTriToeplitz(K.dv+T.nonnegative[1],K.ev+T.nonnegative[2],T.nonnegative...)
 end
 
-function SymTriToeplitz{TT}(K::SymTriOperator{TT})
+function SymTriToeplitz(K::SymTriOperator{TT}) where TT
     SymTriToeplitz(K.dv,K.ev,zero(TT),zero(TT))
 end
 
@@ -144,7 +144,7 @@ end
 
 
 ## represents T + K where T is Toeplitz and K is finite-dimensional
-immutable PertToeplitz{S} <: Operator{S}
+struct PertToeplitz{S} <: Operator{S}
     T::ToeplitzOperator{S}
     K::FiniteOperator{BandedMatrix{S},S}
 end
