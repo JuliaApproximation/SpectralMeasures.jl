@@ -5,8 +5,8 @@ function givenstail(t₀::Real,t₁::Real)
     s = (-t₀ + sqrt(t₀^2-4t₁^2))/(2t₁)
     l⁰ = (t₀ + sqrt(t₀^2-4t₁^2))/2
     # if s∞^2 > 1
-    #     s∞ = (t0 + sqrt(t0^2-4t1^2))/(2t1)
-    #     l0 = (t0 - sqrt(t0^2-4t1^2))/2
+    #     s∞ = (t₀ + sqrt(t₀^2-4t₁^2))/(2t₁)
+    #     l0 = (t₀ - sqrt(t₀^2-4t₁^2))/2
     # end
     c = -sqrt(1-s^2)
     γ¹ = t₁*c
@@ -19,33 +19,33 @@ end
 
 
 
-function ql(a,b,t0,t1)
-    if t0^2<4t1^2
+function ql(a,b,t₀,t₁)
+    if t₀^2<4t₁^2
         error("A QL decomposition only exists outside the essential spectrum")
     end
     # The Givens rotations coming from infinity (with parameters c∞ and s∞) leave us with the almost triangular
     # a[n-1]  b[n-1]   0    0    0
-    # b[n-1]   a[n]   t1    0    0
-    #   0       α      β    0    0
+    # b[n-1]   a[n]   t₁    0    0
+    #   0       γ¹      γ⁰    0    0
     #   0      l2     l1   l0    0
     #   0       0     l2   l1   l0
 
 
-    if t0 < 0
+    if t₀ < 0
         # we want positive on the diagonal
-        Q,L=ql(-a,-b,-t0,-t1)
+        Q,L=ql(-a,-b,-t₀,-t₁)
         return -Q,L
     end
 
-    c∞,s∞,TL,α,β=givenstail(t0,t1)
+    c∞,s∞,TL,γ¹,γ⁰=givenstail(t₀,t₁)
 
     # Here we construct this matrix as L
     n = max(length(a),length(b)+1)
-    J = jacobimatrix(a,b,t0,t1,n+1)
-    J[n,n+1] = t1
+    J = jacobimatrix(a,b,t₀,t₁,n+1)
+    J[n,n+1] = t₁
     #    L[n+1,n+2] = 0
-    J[n+1,n+1]=β
-    J[n+1,n]=α
+    J[n+1,n+1]=γ⁰
+    J[n+1,n]=γ¹
     c,s,L=tridql!(J)
 
 

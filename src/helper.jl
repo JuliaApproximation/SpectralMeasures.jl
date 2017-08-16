@@ -47,8 +47,8 @@ function tridql!(L::Matrix)
     n=size(L,1)
 
   # Now we do QL for the compact part in the top left
-    cc=Array(eltype(L),n)
-    ss=Array(eltype(L),n-1)
+    cc=Array{eltype(L)}(n)
+    ss=Array{eltype(L)}(n-1)
 
     for i = n:-1:2
         nrm=sqrt(L[i-1,i]^2+L[i,i]^2)
@@ -74,8 +74,8 @@ function tridql!(J::BandedMatrix)
     L=BandedMatrix(copy(J.data),J.m,2,0)
 
   # Now we do QL for the compact part in the top left
-    cc=Array(eltype(J),n)
-    ss=Array(eltype(J),n-1)
+    cc=Array{eltype(J)}(n)
+    ss=Array{eltype(J)}(n-1)
 
     for i = n:-1:2
         nrm=sqrt(J[i-1,i]^2+J[i,i]^2)
