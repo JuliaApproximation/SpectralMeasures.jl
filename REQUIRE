@@ -1,4 +1,4 @@
+julia 0.6
 ApproxFun
 Compat
 RecipesBase
-julia 0.4
