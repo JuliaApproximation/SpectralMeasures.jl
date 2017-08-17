@@ -1,5 +1,5 @@
 module SpectralMeasures
-using Base, Compat, ApproxFun, RecipesBase, RatFun
+using Base, Compat, ApproxFun, RecipesBase, RatFun, BandedMatrices
 
 import Base:+,-,*,/,.*,.-,./,.+,getindex
 

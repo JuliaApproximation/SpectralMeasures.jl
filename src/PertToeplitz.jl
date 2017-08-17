@@ -243,13 +243,13 @@ function *(L::PertToeplitz,Q::HessenbergUnitary{'L'})
             if issym
                # result is SymTriToeplitxz
 
-                ev=Array(Float64,max(min(size(L.K.matrix,1),size(L.K.matrix,2)),
+                ev=Array{Float64}(max(min(size(L.K.matrix,1),size(L.K.matrix,2)),
                                      length(Q.s)))
                 for k=1:length(ev)
                     ev[k]=-L[k,k]*hs(Q,k)
                 end
 
-                dv=Array(Float64,max(length(Q.s)+1,size(L.K.matrix,1)))
+                dv=Array{Float64}(max(length(Q.s)+1,size(L.K.matrix,1)))
                 dv[1]=hc(Q,1)*hc(Q,2)*L[1,1]
                 for k=2:length(dv)
                     dv[k]=-hs(Q,k-1)*L[k,k-1]+hc(Q,k)*hc(Q,k+1)*L[k,k]

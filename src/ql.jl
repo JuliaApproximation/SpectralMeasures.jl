@@ -17,7 +17,9 @@ function givenstail(t₀::Real,t₁::Real)
 end
 
 
-function ql(a,b,t₀,t₁)
+ql(a,b,t₀,t₁) = ql!(copy(a),copy(b),t₀,t₁)
+
+function ql!(a,b,t₀,t₁)
     if t₀^2 < 4t₁^2
         error("A QL decomposition only exists outside the essential spectrum")
     end
@@ -35,12 +37,19 @@ function ql(a,b,t₀,t₁)
         return -Q,L
     end
 
-
-
-
+    # match dimensions in paper: a has n perts and b has n-1 perts
     n = max(length(a), length(b)+1)
-    a = pad(a,n); b = pad(b,n-1);
+    if n > length(a)
+        m = length(a)
+        a = resize!(a,n)
+        a[m+1:end] .= t₀
+    end
 
+    if n > length(b)+1
+        m = length(b)
+        b = resize!(b,n-1)
+        b[m+1:end] .= t₁
+    end
     c∞,s∞,l⁰,l¹,l²,γ¹∞,γ⁰∞ = givenstail(t₀,t₁)
     # use recurrence for c. If we have a_0,…,a_N,t0,t0…, then
     # we only need c_-1,c_0,c_1,…,c_{N-1}.
@@ -148,7 +157,7 @@ function Base.eig(Jin::SymTriToeplitz)
         return x,U
     end
 
-    λ=Array(Float64,0)
+    λ=Array{Float64}(0)
 
     tol=1E-14
     for k=1:length(λapprox)

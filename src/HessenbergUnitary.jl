@@ -191,7 +191,7 @@ end
 
 
 
-deflate(Q::HessenbergUnitary{uplo}) where {uplo}=HessenbergUnitary(uplo,Q.sign,
+deflate(Q::HessenbergUnitary{uplo}) where {uplo}=HessenbergUnitary(Val{uplo},Q.sign,
                                                                   [(Q.sign?1:(-1))*sign(Q.c[1]);Q.c],
                                                                   [0;Q.s],Q.c∞,Q.s∞,Q.band)
 
