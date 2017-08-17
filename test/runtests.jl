@@ -22,7 +22,7 @@ n=100;a=zeros(n); b=(1:n-1)./sqrt.(4*(1:n-1).^2-1)
 @test μ.(-.99:.01:.99) ≈ 0.5ones(-.99:.01:.99) atol=0.001
 
 # A strange hump
-n=10;a=zeros(n); b=sqrt(1:(n-1))/sqrt(n)*0.5
+n=10;a=zeros(n); b=sqrt.(1:(n-1))./(2sqrt(n))
 @time μ=spectralmeasure(a,b)
 @test μ(0.1) ≈ 2.031454229315879 atol=1E-9 # empirical
 

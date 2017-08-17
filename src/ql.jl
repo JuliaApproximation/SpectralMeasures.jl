@@ -13,14 +13,12 @@ function givenstail(t₀::Real,t₁::Real)
     γ⁰ = c*t₀ + s*γ¹
     l¹ = 2t₁  # = c*γ¹ - st₁
     l² = -t₁*s
-    c,s,ToeplitzOperator([l¹,l²],[l⁰]),γ¹,γ⁰
+    c,s,l⁰,l¹,l²,γ¹,γ⁰
 end
 
 
-
-
 function ql(a,b,t₀,t₁)
-    if t₀^2<4t₁^2
+    if t₀^2 < 4t₁^2
         error("A QL decomposition only exists outside the essential spectrum")
     end
     # The Givens rotations coming from infinity (with parameters c∞ and s∞) leave us with the almost triangular
@@ -37,36 +35,66 @@ function ql(a,b,t₀,t₁)
         return -Q,L
     end
 
-    c∞,s∞,TL,γ¹,γ⁰=givenstail(t₀,t₁)
-
-    # Here we construct this matrix as L
-    n = max(length(a),length(b)+1)
-    J = jacobimatrix(a,b,t₀,t₁,n+1)
-    J[n,n+1] = t₁
-    #    L[n+1,n+2] = 0
-    J[n+1,n+1]=γ⁰
-    J[n+1,n]=γ¹
-    c,s,L=tridql!(J)
 
 
-    Q=HessenbergUnitary('L',true,c,s,c∞,s∞)
+
+    n = max(length(a), length(b)+1)
+    a = pad(a,n); b = pad(b,n-1);
+
+    c∞,s∞,l⁰,l¹,l²,γ¹∞,γ⁰∞ = givenstail(t₀,t₁)
+    # use recurrence for c. If we have a_0,…,a_N,t0,t0…, then
+    # we only need c_-1,c_0,c_1,…,c_{N-1}.
+    c=Array{eltype(c∞)}(n)
+    s=Array{eltype(c∞)}(n-1)
+
+    # ranges from 1 to N
+    γ¹ = Array{eltype(c∞)}(n-1)
+    γ¹[n-1] = c∞*b[n-1]  # k = N
+
+    # ranges from 0 to N
+    γ⁰ = Array{eltype(c∞)}(n)
+    γ⁰[n] = c∞*a[n] + s∞*γ¹∞  # k = N
 
 
-    for j=1:n+1
-        L[j,j]-=TL.nonnegative[1]
-        if j ≤ n
-            L[j+1,j]-=TL.negative[1]
-            if j ≤ n-1
-                L[j+2,j]-=TL.negative[2]
-            end
-        end
+    k=n-1
+    nrm = 1/sqrt(γ⁰[k+1]^2+b[k]^2)
+    c[k+1] = γ⁰[k+1]*nrm  # K = N-1
+    s[k] = -b[k]*nrm # K = N-1
+
+    @inbounds for k=n-2:-1:1
+        γ¹[k] = c[k+2]*b[k]  # k = N-1
+        γ⁰[k+1] = c[k+2]*a[k+1] + s[k+1]*γ¹[k+1]  # k = N
+        nrm = 1/sqrt(γ⁰[k+1]^2+b[k]^2)
+        c[k+1] = γ⁰[k+1]*nrm  # K = N-1
+        s[k] = -b[k]*nrm # K = N-1
     end
-    Q,TL+FiniteOperator(L,ℓ⁰,ℓ⁰)
+
+    γ⁰[1] = c[2]*a[1] + s[1]*γ¹[1]  # k = 0
+
+
+    c[1] = sign(γ⁰[1])  # k = -1
+
+    Q = HessenbergUnitary(Val{'L'},true,c,s,c∞,s∞)
+
+    L = BandedMatrix(eltype(c∞),n+1,n,2,0)
+
+    L[1,1] = abs(γ⁰[1]) - l⁰
+    @views L[band(0)][2:end] .=  (-).(b./s) .- l⁰
+    @views L[band(-1)][1:end-1] .=  c[2:end].*γ¹ .- s.*a[1:end-1] .- l¹
+    view(L,band(-1))[end] .= c∞*γ¹∞ - s∞*a[end] - l¹
+    @views L[band(-2)][1:end-1] .= (-).(s[2:end].*b[1:end-1]) .- l²
+    view(L,band(-2))[end] .= -s∞*b[end] - l²
+
+    Q,ToeplitzOperator([l¹,l²],[l⁰])+FiniteOperator(L,ℓ⁰,ℓ⁰)
 end
 
-discreteeigs(J::SymTriToeplitz) = 2*J.b*discreteeigs(.5*(J.dv-J.a)/J.b,.5*J.ev/J.b) + J.a
 
-connection_coeffs_operator(J::SymTriToeplitz) = connection_coeffs_operator(.5*(J.dv-J.a)/J.b,.5*J.ev/J.b)
+
+discreteeigs(J::SymTriToeplitz) =
+    2*J.b*discreteeigs(0.5*(J.dv-J.a)/J.b,0.5*J.ev/J.b) + J.a
+
+connection_coeffs_operator(J::SymTriToeplitz) =
+    connection_coeffs_operator(0.5*(J.dv-J.a)/J.b,0.5*J.ev/J.b)
 
 
 

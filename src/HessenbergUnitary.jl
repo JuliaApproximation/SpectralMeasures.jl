@@ -28,28 +28,28 @@ struct HessenbergUnitary{uplo,T} <: UnitaryOperator{T}
 
         @assert isapprox(abs(first(c)),1)
 
-        for (cc,ss) in zip(c[2:end],s)
-            @assert isapprox(cc^2+ss^2,1)
+        @inbounds for k=2:length(c)
+            @assert -100eps() ≤ c[k]^2+s[k-1]^2-1 ≤ 100eps()
         end
 
         new(sgn,c,s,c∞,s∞,bnd)
     end
 end
 
-function HessenbergUnitary(uplo::Char,sign,c,s,c∞,s∞,band)
+function HessenbergUnitary(::Type{Val{uplo}},sign,c,s,c∞,s∞,band) where {uplo}
     @assert uplo=='L' || uplo=='U'
     HessenbergUnitary{uplo,promote_type(eltype(c),eltype(s),
                                            typeof(c∞),typeof(s∞))}(sign,c,s,c∞,s∞,band)
 end
 
-function HessenbergUnitary(uplo::Char,sign,c,s,c∞,s∞)
+function HessenbergUnitary(::Type{Val{uplo}},sign,c,s,c∞,s∞) where {uplo}
     @assert isapprox(s∞^2+c∞^2,1)
     @assert length(c)==length(s)+1
 
     @assert isapprox(abs(first(c)),1)
 
-    for (cc,ss) in zip(c[2:end],s)
-        @assert isapprox(cc^2+ss^2,1)
+    @inbounds for k=2:length(c)
+        @assert -100eps() ≤ c[k]^2+s[k-1]^2-1 ≤ 100eps()
     end
 
     band=0
@@ -61,9 +61,9 @@ function HessenbergUnitary(uplo::Char,sign,c,s,c∞,s∞)
 
     # Compute the bandwidth of the matrix
     k=1
-    for j=1:n+2
+    @inbounds for j=1:n+2
         while abs(cur) > tol
-            cur*=k≤n?s[k]:s∞
+            cur*=k≤n ? s[k] : s∞
             k+=1
             band+=1
         end
@@ -79,27 +79,27 @@ function HessenbergUnitary(uplo::Char,sign,c,s,c∞,s∞)
             end
         else
             if j≤n-1
-                cur*=(k≤n?s[k]:s∞)*c[j+2]/(c[j]*s[j])
+                cur *= (k≤n ? s[k] : s∞)*c[j+2]/(c[j]*s[j])
             elseif j==n
-                cur*=(k≤n?s[k]:s∞)*c∞/(c[j]*s[j])
+                cur *= (k≤n ? s[k] : s∞)*c∞/(c[j]*s[j])
             elseif j==n+1
-                cur*=(k≤n?s[k]:s∞)*c∞/(c[j]*s∞)
+                cur *= (k≤n ? s[k] : s∞)*c∞/(c[j]*s∞)
             else
-                cur*=s∞*c∞/(c∞*s∞)
+                cur *= s∞*c∞/(c∞*s∞)
             end
         end
         k+=1
     end
 
 
-    HessenbergUnitary(uplo,sign,c,s,c∞,s∞,band)
+    HessenbergUnitary(Val{uplo},sign,c,s,c∞,s∞,band)
 end
 
 
 Base.ctranspose(Q::HessenbergUnitary{'L',T}) where {T<:Real} =
-    HessenbergUnitary('U',Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
+    HessenbergUnitary(Val{'U'},Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
 Base.ctranspose(Q::HessenbergUnitary{'U',T}) where {T<:Real} =
-    HessenbergUnitary('L',Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
+    HessenbergUnitary(Val{'L'},Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
 
 
 
