@@ -58,27 +58,31 @@ function ql!(a,b,t₀,t₁)
 
     # ranges from 1 to N
     γ¹ = Array{eltype(c∞)}(n-1)
-    γ¹[n-1] = c∞*b[n-1]  # k = N
 
     # ranges from 0 to N
     γ⁰ = Array{eltype(c∞)}(n)
+
     γ⁰[n] = c∞*a[n] + s∞*γ¹∞  # k = N
 
+    if n ≠ 1
+        γ¹[n-1] = c∞*b[n-1]  # k = N
 
-    k=n-1
-    nrm = 1/sqrt(γ⁰[k+1]^2+b[k]^2)
-    c[k+1] = γ⁰[k+1]*nrm  # K = N-1
-    s[k] = -b[k]*nrm # K = N-1
 
-    @inbounds for k=n-2:-1:1
-        γ¹[k] = c[k+2]*b[k]  # k = N-1
-        γ⁰[k+1] = c[k+2]*a[k+1] + s[k+1]*γ¹[k+1]  # k = N
+        k=n-1
         nrm = 1/sqrt(γ⁰[k+1]^2+b[k]^2)
         c[k+1] = γ⁰[k+1]*nrm  # K = N-1
         s[k] = -b[k]*nrm # K = N-1
-    end
 
-    γ⁰[1] = c[2]*a[1] + s[1]*γ¹[1]  # k = 0
+        @inbounds for k=n-2:-1:1
+            γ¹[k] = c[k+2]*b[k]  # k = N-1
+            γ⁰[k+1] = c[k+2]*a[k+1] + s[k+1]*γ¹[k+1]  # k = N
+            nrm = 1/sqrt(γ⁰[k+1]^2+b[k]^2)
+            c[k+1] = γ⁰[k+1]*nrm  # K = N-1
+            s[k] = -b[k]*nrm # K = N-1
+        end
+
+        γ⁰[1] = c[2]*a[1] + s[1]*γ¹[1]  # k = 0
+    end
 
 
     c[1] = sign(γ⁰[1])  # k = -1
@@ -92,7 +96,10 @@ function ql!(a,b,t₀,t₁)
     @views L[band(-1)][1:end-1] .=  c[2:end].*γ¹ .- s.*a[1:end-1] .- l¹
     view(L,band(-1))[end] .= c∞*γ¹∞ - s∞*a[end] - l¹
     @views L[band(-2)][1:end-1] .= (-).(s[2:end].*b[1:end-1]) .- l²
-    view(L,band(-2))[end] .= -s∞*b[end] - l²
+
+    if n ≠ 1
+        view(L,band(-2))[end] .= -s∞*b[end] - l²
+    end
 
     Q,ToeplitzOperator([l¹,l²],[l⁰])+FiniteOperator(L,ℓ⁰,ℓ⁰)
 end

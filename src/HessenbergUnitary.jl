@@ -53,9 +53,14 @@ function HessenbergUnitary(::Type{Val{uplo}},sign,c,s,c∞,s∞) where {uplo}
     end
 
     band=0
-    n=length(s)
+    n = length(s)
 
-    cur=c[1]*c[2]
+    if n ≥ 1
+        cur=c[1]*c[2]
+    else
+        cur=c[1]*c∞
+    end
+
     tol=eps()
 
 
