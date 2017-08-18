@@ -115,24 +115,33 @@ connection_coeffs_operator(J::SymTriToeplitz) =
 
 
 struct SpectralMap{CC,QQ,RS,T} <: Operator{T}
+    n::Int  # number of extra eigenvalues
     C::CC
     Q::QQ
     rangespace::RS
 end
 
-SpectralMap(C::Operator{T},Q::Operator{T},rs) where {T} =
-    SpectralMap{typeof(C),typeof(Q),typeof(rs),T}(C,Q,rs)
+SpectralMap(n::Int,C::Operator{T},Q::Operator{T},rs) where {T} =
+    SpectralMap{typeof(C),typeof(Q),typeof(rs),T}(n,C,Q,rs)
 
 
 domainspace(::SpectralMap) = SequenceSpace()
 rangespace(S::SpectralMap) = S.rangespace
 
 
-A_ldiv_B_coefficients(S::SpectralMap,v::AbstractVector;opts...) =
-    A_ldiv_B_coefficients(S.Q,A_ldiv_B_coefficients(S.C,v);opts...)
+function A_ldiv_B_coefficients(S::SpectralMap,v::AbstractVector;opts...)
+    # leave first entries n alone
+    r = copy(v)
+    r[S.n+1:end] .= A_ldiv_B_coefficients(S.C,v[S.n+1:end])
+    A_ldiv_B_coefficients(S.Q,r;opts...)
+end
 
-A_mul_B_coefficients(S::SpectralMap,v::AbstractVector;opts...) =
-    A_mul_B_coefficients(S.C,A_mul_B_coefficients(S.Q,v;opts...))
+function A_mul_B_coefficients(S::SpectralMap,v::AbstractVector;opts...)
+    r = A_mul_B_coefficients(S.Q,v;opts...)
+    # leave first entries n alone
+    r[S.n+1:end] .= A_mul_B_coefficients(S.C,r[S.n+1:end])
+    r
+end
 
 function getindex(S::SpectralMap,k::Integer,j::Integer)
     v = A_mul_B_coefficients(S,[zeros(j-1);1])
@@ -148,7 +157,7 @@ function bandinds(S::SpectralMap)
 end
 
 function Base.eig(Jin::SymTriToeplitz)
-    Qret=Array(HessenbergUnitary{'U',Float64},0)
+    Qret=Array{HessenbergUnitary{'U',Float64}}(0)
     λapprox=sort(discreteeigs(Jin))
 
     ctsspec = ApproxFun.Interval(Jin.a-2*abs(Jin.b),Jin.a+2*abs(Jin.b))
@@ -189,16 +198,14 @@ function Base.eig(Jin::SymTriToeplitz)
          Q=Qret[1]
 
          x=Fun(identity,PointSpace(λ[1])⊕Ultraspherical(1,ctsspec))
-         C=SpaceOperator(InterlaceOperator(Diagonal([eye(length(λ)),connection_coeffs_operator(J)])),SequenceSpace(),space(x))
 
-         U=SpectralMap(C,Q,space(x))
+         U=SpectralMap(length(λ),connection_coeffs_operator(J),Q,space(x))
          return x,U
     else
         Q=BandedUnitary(reverse!(Qret))
         x=Fun(identity,mapreduce(PointSpace,⊕,λ)⊕Ultraspherical(1,ctsspec))
-        C=SpaceOperator(InterlaceOperator(Diagonal([eye(length(λ)),connection_coeffs_operator(J)])),SequenceSpace(),space(x))
 
-        U=SpectralMap(C,Q,space(x))
+        U=SpectralMap(length(λ),connection_coeffs_operator(J),Q,space(x))
         return x,U
     end
 end

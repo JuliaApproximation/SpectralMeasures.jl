@@ -84,18 +84,9 @@ J=L+0.5K
 
 x,Q=eig(J)
 
+r = A_ldiv_B_coefficients(Q,A_mul_B_coefficients(Q,[1.0]))
+@test r ≈ [1;zeros(length(r)-1)]
+@test coefficients(Q\(Q*[1.0])) ≈ [1;zeros(length(r)-1)]
 
-@time v=(Q*[1.0])
-
-
-
-
-# check some ApproxFun bugs
-n=100
-QM=full(Q[1:n,1:n])
-@test pad((Q*[1.] ).coefficients,n) ≈ QM[:,1]
-
-@test Q.Q[1:n,1:n]\[1.;zeros(n-1)] ≈ coefficient(Q.Q\[1.],1:n)
-
-b=Q.Q\[1.]
-@test Q.C[1:n,1:n]\coefficient(b,1:n) ≈ pad(A_ldiv_B_coefficients(Q.C,b.coefficients),n)
+@test Q\(Q*[1.0]) ≈ Fun([1;zeros(length(r)-1)],domainspace(Q))
+@test Q\(x*(Q*[1.0])) ≈ J*[1.0]
