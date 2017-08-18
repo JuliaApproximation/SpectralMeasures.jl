@@ -197,13 +197,13 @@ function Base.eig(Jin::SymTriToeplitz)
     if length(λ) == 1
          Q=Qret[1]
 
-         x=Fun(identity,PointSpace(λ[1])⊕Ultraspherical(1,ctsspec))
+         x=Fun(identity,PointSpace(λ)⊕Ultraspherical(1,ctsspec))
 
          U=SpectralMap(length(λ),connection_coeffs_operator(J),Q,space(x))
          return x,U
     else
         Q=BandedUnitary(reverse!(Qret))
-        x=Fun(identity,mapreduce(PointSpace,⊕,λ)⊕Ultraspherical(1,ctsspec))
+        x=Fun(identity,PointSpace(λ)⊕Ultraspherical(1,ctsspec))
 
         U=SpectralMap(length(λ),connection_coeffs_operator(J),Q,space(x))
         return x,U
