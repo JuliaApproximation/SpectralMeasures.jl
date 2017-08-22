@@ -160,7 +160,7 @@ function Base.eig(Jin::SymTriToeplitz)
     Qret=Array{HessenbergUnitary{'U',Float64}}(0)
     λapprox=sort(discreteeigs(Jin))
 
-    ctsspec = ApproxFun.Interval(Jin.a-2*abs(Jin.b),Jin.a+2*abs(Jin.b))
+    ctsspec = ApproxFun.Segment(Jin.a-2Jin.b,Jin.a+2Jin.b)
 
     J=Jin
 

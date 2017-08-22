@@ -90,3 +90,27 @@ r = A_ldiv_B_coefficients(Q,A_mul_B_coefficients(Q,[1.0]))
 
 @test Q\(Q*[1.0]) ≈ Fun([1;zeros(length(r)-1)],domainspace(Q))
 @test Q\(x*(Q*[1.0])) ≈ J*[1.0]
+
+
+
+
+
+J=SymTriToeplitz(ones(0),Float64[],0.0,0.5) + 1.01I
+x,Q = eig(J)
+
+@test Q\(x*(Q*[1.0])) ≈ J*[1.0]
+
+J = -freejacobioperator()
+x,Q = eig(J)
+
+@test Q\(x*(Q*[1.0])) ≈ J*[1.0]
+
+
+J=SymTriToeplitz(ones(0),Float64[],0.0,-0.5) + 1.01I
+
+Q,L = ql(J)
+@test norm((Q*L-J)[1:100,1:100]) ≤ 100eps()
+
+
+@time x,Q = eig(J)
+@test Q\(x*(Q*[1.0])) ≈ J*[1.0]
