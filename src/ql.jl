@@ -155,10 +155,10 @@ function bandinds(S::SpectralMap)
     bi = bandinds(S.Q)
     bi[1],bi[2]+bandinds(S.C,2)
 end
-
-function Base.eig(Jin::SymTriToeplitz)
+Base.eig(Jin::SymTriToeplitz) = eigfromguess(Jin,discreteeigs(Jin))
+function eigfromguess(Jin::SymTriToeplitz,approxeigs)
     Qret=Array{HessenbergUnitary{'U',Float64}}(0)
-    λapprox=sort(discreteeigs(Jin))
+    λapprox=sort(approxeigs)
 
     ctsspec = ApproxFun.Segment(Jin.a-2Jin.b,Jin.a+2Jin.b)
 
