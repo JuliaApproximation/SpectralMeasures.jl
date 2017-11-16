@@ -121,15 +121,15 @@ function connection_coeffs_matrix(a::AbstractBlockArray, b::AbstractBlockArray, 
   k = blocksize(a,1,1)[1]
   N = nblocks(a,1)
   C = BlockArray(zeros(k*N,k*N),k*ones(Int64,N),k*ones(Int64,N))
-  setblock!(C,eye(k,k),1,1)
-  setblock!(C,(getblock(c,1,1)-getblock(a,1,1))/getblock(b,1,1)',1,2)
-  setblock!(C,getblock(d,1,1)'/getblock(b,1,1)',2,2)
+  C[Block(1,1)] = eye(k,k)
+  C[Block(1,2)] = (c[Block(1,1)]-a[Block(1,1)])*pinv(b[Block(1,1)]')
+  C[Block(2,2)] = d[Block(1,1)]'/b[Block(1,1)]'
   for j = 3:N
-    setblock!(C,(getblock(c,1,1)*getblock(C,1,j-1)-getblock(C,1,j-1)*getblock(a,j-1,1) + getblock(d,1,1)*getblock(C,2,j-1)-getblock(C,1,j-2)*getblock(b,j-2,1))/getblock(b,j-1,1)',1,j)
+    C[Block(1,j)] = (c[Block(1,1)]*C[Block(1,j-1)]-C[Block(1,j-1)]*a[Block(j-1,1)] + d[Block(1,1)]*C[Block(2,j-1)]-C[Block(1,j-2)]*b[Block(j-2,1)])/b[Block(j-1,1)]'
     for i = 2:j-1
-        setblock!(C,(getblock(d,i-1,1)'*getblock(C,i-1,j-1) + getblock(c,i,1)*getblock(C,i,j-1)-getblock(C,i,j-1)*getblock(a,j-1,1) +getblock(d,i,1)*getblock(C,i+1,j-1) - getblock(C,i,j-2)*getblock(b,j-2,1))/getblock(b,j-1,1)',i,j)
+        C[Block(i,j)] = (d[Block(i-1,1)]'*C[Block(i-1,j-1)] + c[Block(i,1)]*C[Block(i,j-1)]-C[Block(i,j-1)]*a[Block(j-1,1)] +d[Block(i,1)]*C[Block(i+1,j-1)] - C[Block(i,j-2)]*b[Block(j-2,1)])/b[Block(j-1,1)]'
     end
-    setblock!(C,(getblock(d,j-1,1)'*getblock(C,j-1,j-1))/getblock(b,j-1,1)',j,j)
+    C[Block(j,j)] = (d[Block(j-1,1)]'*C[Block(j-1,j-1)])/b[Block(j-1,1)]'
   end
   C
 end
