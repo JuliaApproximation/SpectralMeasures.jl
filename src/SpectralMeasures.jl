@@ -11,6 +11,7 @@ import ApproxFun: Operator, ToeplitzOperator, DiracSpace, IdentityOperator,
 
 export spectralmeasure, discreteeigs, principal_resolvent, disc_resolvent, validated_spectrum
 export connection_coeffs_operator, apply_conversion, SymTriOperator, SymTriToeplitz
+export connection_coeffs_matrix
 export tripleplot
 export freejacobioperator, jacobioperator, ql
 

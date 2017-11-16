@@ -95,7 +95,7 @@ end
 
 #Finds NxN truncation of C such that C'(Q_k(s)) =  (P_k(s)),
 # where P_k has Jacobi coeffs a,b and Q_k has Jacobi coeffs c,d
-function connectionCoeffsMatrix(a,b,c,d,N)
+function connection_coeffs_matrix(a,b,c,d,N)
   if N>max(length(a),length(b)+1,length(c),length(d)+1)
     a = [a;zeros(N-length(a))]; b = [b;.5+zeros(N-length(b))]
     c = [c;zeros(N-length(c))]; d = [d;.5+zeros(N-length(d))]
@@ -115,8 +115,27 @@ function connectionCoeffsMatrix(a,b,c,d,N)
   C
 end
 
+
+#Makes the matrix C which transforms the coefficients of an expansion in "right" matrix orthonormal polynomial with recurrence coeffs a,b (J) to those of an expansion in the "right" MOPs with recurrence coeffs c,d (D). So C is block-upper-triangular and CJ = DC (modulo the final column). The types of a,b,c,d must be BlockArrays which are like column vectors of length N whose entries are kxk blocks. The blocks of a and c should be symmetric.
+function connection_coeffs_matrix(a::BlockArray,b::BlockArray,c::BlockArray,d::BlockArray)
+  k = blocksize(a,1,1)[1]
+  N = nblocks(a,1)
+  C = BlockArray(zeros(k*N,k*N),k*ones(Int64,N),k*ones(Int64,N))
+  setblock!(C,eye(k,k),1,1)
+  setblock!(C,(getblock(c,1,1)-getblock(a,1,1))/getblock(b,1,1)',1,2)
+  setblock!(C,getblock(d,1,1)'/getblock(b,1,1)',2,2)
+  for j = 3:N
+    setblock!(C,(getblock(c,1,1)*getblock(C,1,j-1)-getblock(C,1,j-1)*getblock(a,j-1,1) + getblock(d,1,1)*getblock(C,2,j-1)-getblock(C,1,j-2)*getblock(b,j-2,1))/getblock(b,j-1,1)',1,j)
+    for i = 2:j-1
+        setblock!(C,(getblock(d,i-1,1)'*getblock(C,i-1,j-1) + getblock(c,i,1)*getblock(C,i,j-1)-getblock(C,i,j-1)*getblock(a,j-1,1) +getblock(d,i,1)*getblock(C,i+1,j-1) - getblock(C,i,j-2)*getblock(b,j-2,1))/getblock(b,j-1,1)',i,j)
+    end
+    setblock!(C,(getblock(d,j-1,1)'*getblock(C,j-1,j-1))/getblock(b,j-1,1)',j,j)
+  end
+  C
+end
+
 # This is for Chebyshev U
-connectionCoeffsMatrix(a,b,N) = connectionCoeffsMatrix(a,b,[],[],N)
+connection_coeffs_matrix(a,b,N) = connectionCoeffsMatrix(a,b,[],[],N)
 
 # Converts coefficients a^J to coefficients a^D using Clenshaw
 function apply_conversion(J::SymTriToeplitz,D::SymTriToeplitz,v::Vector)
