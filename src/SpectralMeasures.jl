@@ -1,5 +1,5 @@
 module SpectralMeasures
-using Base, Compat, ApproxFun, RecipesBase, RatFun, BandedMatrices
+using Base, Compat, ApproxFun, RecipesBase, RatFun, BandedMatrices, BlockArrays
 
 import Base:+,-,*,/,.*,.-,./,.+,getindex
 
@@ -8,6 +8,9 @@ import ApproxFun: Operator, ToeplitzOperator, DiracSpace, IdentityOperator,
             BandedMatrix, bzeros, TimesOperator, SpaceOperator, AbstractCount, UnitCount,
             MatrixSpace, ∞, ℓ⁰, domainspace, rangespace, domain, A_mul_B_coefficients,
             A_ldiv_B_coefficients, InterlaceOperator
+
+
+import BlockArrays: nblocks
 
 export spectralmeasure, discreteeigs, principal_resolvent, disc_resolvent, validated_spectrum
 export connection_coeffs_operator, apply_conversion, SymTriOperator, SymTriToeplitz
