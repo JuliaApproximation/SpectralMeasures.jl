@@ -32,13 +32,13 @@ jacobimatrix(a,b,N) = jacobimatrix(a,b,0,.5,N)
 function jacobioperator(a,b,t0,t1)
     n = max(length(a),length(b)+1)
     a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
-    SymTriToeplitz(ToeplitzOperator([t1],[t0,t1]),SymTriOperator(a-t0,b-t1))
+    SymTriPertToeplitz(ToeplitzOperator([t1],[t0,t1]),SymTriOperator(a-t0,b-t1))
 end
 
 jacobioperator(a,b) = jacobioperator(a,b,0,.5)
 
 
-freejacobioperator() = SymTriToeplitz([0.],[.5],0.,.5)
+freejacobioperator() = SymTriPertToeplitz([0.],[.5],0.,.5)
 
 
 ## tridiagonal ql
@@ -138,7 +138,7 @@ end
 connection_coeffs_matrix(a,b,N) = connectionCoeffsMatrix(a,b,[],[],N)
 
 # Converts coefficients a^J to coefficients a^D using Clenshaw
-function apply_conversion(J::SymTriToeplitz,D::SymTriToeplitz,v::Vector)
+function apply_conversion(J::SymTriPertToeplitz,D::SymTriPertToeplitz,v::Vector)
   N = length(v)
   T = eltype(b)
   b = zeros(T,N); b1 = zeros(T,N); b2 = zeros(T,N)

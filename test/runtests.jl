@@ -53,16 +53,13 @@ a = [k/20];b=Float64[]
 # plot(ν)
 
 
-# Can you make this work, Sheehan? MW
-#ApproxFun.plot(μ-ν)
-
 # check robustness to extra zerods
 for n=3:6,m=0:2
     L=freejacobioperator()
     K=SymTriOperator(-[ones(5);zeros(m)],zeros(n))
 
     J=L+0.5K
-    @test isa(J,SymTriToeplitz)
+    @test isa(J,SymTriPertToeplitz)
     @test full(J[1:3,1:6]) == [-0.5  0.5  0   0 0 0;
                                 0.5 -0.5  0.5 0 0 0;
                                 0    0.5 -0.5 0.5 0 0]
@@ -72,7 +69,7 @@ for n=3:6,m=0:2
 
     @test norm((Q*L-A)[1:30,1:30]) < 100eps()
 
-    @test isa(L*Q,SpectralMeasures.SymTriToeplitz)
+    @test isa(L*Q,SpectralMeasures.SymTriPertToeplitz)
 end
 
 
@@ -95,7 +92,7 @@ r = A_ldiv_B_coefficients(Q,A_mul_B_coefficients(Q,[1.0]))
 
 
 
-J=SymTriToeplitz(ones(0),Float64[],0.0,0.5) + 1.01I
+J=SymTriPertToeplitz(ones(0),Float64[],0.0,0.5) + 1.01I
 x,Q = eig(J)
 
 @test Q\(x*(Q*[1.0])) ≈ J*[1.0]
@@ -106,7 +103,7 @@ x,Q = eig(J)
 @test Q\(x*(Q*[1.0])) ≈ J*[1.0]
 
 
-J=SymTriToeplitz(ones(0),Float64[],0.0,-0.5) + 1.01I
+J=SymTriPertToeplitz(ones(0),Float64[],0.0,-0.5) + 1.01I
 
 Q,L = ql(J)
 @test norm((Q*L-J)[1:100,1:100]) ≤ 100eps()

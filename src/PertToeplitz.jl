@@ -25,9 +25,6 @@ end
 ## Symetric tridiagonal finite dimensional operators
 
 
-
-
-
 struct SymTriOperator{T} <: TridiagonalOperator{T}
     dv::Vector{T}
     ev::Vector{T}
@@ -65,36 +62,36 @@ end
 
 
 # Represents a SymTriOperator + Symmetric ToeplitzOperator
-struct SymTriToeplitz{T} <: TridiagonalOperator{T}
+struct SymTriPertToeplitz{T} <: TridiagonalOperator{T}
     dv::Vector{T}
     ev::Vector{T}
     a::T
     b::T
 
-    SymTriToeplitz{T}(dv::Vector{T},ev::Vector{T},a::T,b::T) where T = new(dv,ev,a,b)
-    SymTriToeplitz{T}(dv::Vector,ev::Vector,a,b) where T = new(Vector{T}(dv),Vector{T}(ev),T(a),T(b))
+    SymTriPertToeplitz{T}(dv::Vector{T},ev::Vector{T},a::T,b::T) where T = new(dv,ev,a,b)
+    SymTriPertToeplitz{T}(dv::Vector,ev::Vector,a,b) where T = new(Vector{T}(dv),Vector{T}(ev),T(a),T(b))
 end
 
-SymTriToeplitz(dv::Vector,ev::Vector,a,b) =
-    SymTriToeplitz{promote_type(eltype(dv),eltype(dv),typeof(a),typeof(b))}(dv,ev,a,b)
+SymTriPertToeplitz(dv::Vector,ev::Vector,a,b) =
+    SymTriPertToeplitz{promote_type(eltype(dv),eltype(dv),typeof(a),typeof(b))}(dv,ev,a,b)
 
-function SymTriToeplitz(T::ToeplitzOperator,K::SymTriOperator)
+function SymTriPertToeplitz(T::ToeplitzOperator,K::SymTriOperator)
     @assert bandinds(T)==(-1,1) && issym(T)
-    SymTriToeplitz(K.dv+T.nonnegative[1],K.ev+T.nonnegative[2],T.nonnegative...)
+    SymTriPertToeplitz(K.dv+T.nonnegative[1],K.ev+T.nonnegative[2],T.nonnegative...)
 end
 
-function SymTriToeplitz(K::SymTriOperator{TT}) where TT
-    SymTriToeplitz(K.dv,K.ev,zero(TT),zero(TT))
+function SymTriPertToeplitz(K::SymTriOperator{TT}) where TT
+    SymTriPertToeplitz(K.dv,K.ev,zero(TT),zero(TT))
 end
 
 
-function SymTriToeplitz(T::ToeplitzOperator)
+function SymTriPertToeplitz(T::ToeplitzOperator)
     @assert issym(T)
 
     if isdiag(T)
-        SymTriToeplitz(eltype(T)[],eltype(T)[],T.nonnegative[1],zero(eltype(T)))
+        SymTriPertToeplitz(eltype(T)[],eltype(T)[],T.nonnegative[1],zero(eltype(T)))
     elseif bandinds(T)==(-1,1)
-        SymTriToeplitz(eltype(T)[],eltype(T)[],T.nonnegative...)
+        SymTriPertToeplitz(eltype(T)[],eltype(T)[],T.nonnegative...)
     else
         error("Not a tridiagonal operator")
     end
@@ -102,17 +99,17 @@ end
 
 
 for OP in (:domainspace,:rangespace)
-    @eval $OP(::SymTriToeplitz) = ℓ⁰
+    @eval $OP(::SymTriPertToeplitz) = ℓ⁰
 end
 
-function Base.getindex(S::SymTriToeplitz,kr::UnitCount{Int},jr::UnitCount{Int})
+function Base.getindex(S::SymTriPertToeplitz,kr::UnitCount{Int},jr::UnitCount{Int})
     k=first(kr)
     @assert k==first(jr)
 
-    SymTriToeplitz(S.dv[k:end],S.ev[k:end],S.a,S.b)
+    SymTriPertToeplitz(S.dv[k:end],S.ev[k:end],S.a,S.b)
 end
 
-function getindex(S::SymTriToeplitz,k::Integer,j::Integer)
+function getindex(S::SymTriPertToeplitz,k::Integer,j::Integer)
         if 2 ≤ k && j ==k-1
             k≤length(S.ev)+1?S.ev[k-1]:S.b
         elseif j==k+1
@@ -126,7 +123,7 @@ end
 
 
 
-function Base.SymTridiagonal(S::SymTriToeplitz,kr::UnitRange,jr::UnitRange)
+function Base.SymTridiagonal(S::SymTriPertToeplitz,kr::UnitRange,jr::UnitRange)
     n=last(kr)
     @assert n==last(jr)
     dv= n>length(S.dv) ?
@@ -165,49 +162,49 @@ getindex(P::PertToeplitz,k::AbstractCount,j::AbstractCount) =
 
 for OP in (:+,:-)
     @eval begin
-        function $OP(A::SymTriToeplitz,B::SymTriToeplitz)
+        function $OP(A::SymTriPertToeplitz,B::SymTriPertToeplitz)
             n_dv = max(length(A.dv),length(B.dv))
             n_ev = max(length(A.ev),length(B.ev))
-            SymTriToeplitz($OP([A.dv;fill(A.a,n_dv-length(A.dv))],
+            SymTriPertToeplitz($OP([A.dv;fill(A.a,n_dv-length(A.dv))],
                                [B.dv;fill(B.a,n_dv-length(B.dv))]),
                                $OP([A.ev;fill(A.b,n_ev-length(A.ev))],
                                    [B.ev;fill(B.b,n_ev-length(B.ev))]),
                             $OP(A.a,B.a),$OP(A.b,B.b))
         end
         $OP(T::ToeplitzOperator,K::FiniteOperator) = PertToeplitz(T,$OP(K))
-        $OP(T::ToeplitzOperator,K::SymTriOperator) = SymTriToeplitz(T,$OP(K))
-        $OP(S::SymTriToeplitz,K::SymTriOperator) = $OP(S,SymTriToeplitz(K))
+        $OP(T::ToeplitzOperator,K::SymTriOperator) = SymTriPertToeplitz(T,$OP(K))
+        $OP(S::SymTriPertToeplitz,K::SymTriOperator) = $OP(S,SymTriPertToeplitz(K))
         $OP(K::Union{FiniteOperator,SymTriOperator},T::ToeplitzOperator) = $OP(T)+K
 
-        $OP(A::SymTriToeplitz,c::UniformScaling) =
-            SymTriToeplitz($OP(A.dv,c.λ),A.ev,$OP(A.a,c.λ),A.b)
+        $OP(A::SymTriPertToeplitz,c::UniformScaling) =
+            SymTriPertToeplitz($OP(A.dv,c.λ),A.ev,$OP(A.a,c.λ),A.b)
     end
 end
 
--(A::SymTriToeplitz) = SymTriToeplitz(-A.dv,-A.ev,-A.a,-A.b)
-+(c::UniformScaling,A::SymTriToeplitz) = SymTriToeplitz(c.λ+A.dv,A.ev,c.λ+A.a,A.b)
--(c::UniformScaling,A::SymTriToeplitz) = SymTriToeplitz(c.λ-A.dv,-A.ev,c.λ-A.a,-A.b)
+-(A::SymTriPertToeplitz) = SymTriPertToeplitz(-A.dv,-A.ev,-A.a,-A.b)
++(c::UniformScaling,A::SymTriPertToeplitz) = SymTriPertToeplitz(c.λ+A.dv,A.ev,c.λ+A.a,A.b)
+-(c::UniformScaling,A::SymTriPertToeplitz) = SymTriPertToeplitz(c.λ-A.dv,-A.ev,c.λ-A.a,-A.b)
 
-*(c::Number,A::SymTriToeplitz) = SymTriToeplitz(c*A.dv,c*A.ev,c*A.a,c*A.b)
-/(A::SymTriToeplitz,c::Number) = (1/c)*A
+*(c::Number,A::SymTriPertToeplitz) = SymTriPertToeplitz(c*A.dv,c*A.ev,c*A.a,c*A.b)
+/(A::SymTriPertToeplitz,c::Number) = (1/c)*A
 
 
 
 
 
 for OP in (:ql,:(Base.eigvals),:(Base.eig))
-    @eval $OP(A::ToeplitzOperator)=$OP(SymTriToeplitz(A))
+    @eval $OP(A::ToeplitzOperator)=$OP(SymTriPertToeplitz(A))
 end
 
 
-ql(A::SymTriToeplitz) = ql(A.dv,A.ev,A.a,A.b)
+ql(A::SymTriPertToeplitz) = ql(A.dv,A.ev,A.a,A.b)
 
-function spectralmeasure(J::SymTriToeplitz)
+function spectralmeasure(J::SymTriPertToeplitz)
   μ = spectralmeasure(.5*(J.dv-J.a)/J.b,.5*J.ev/J.b)
   2*J.b*setdomain(μ,domain(μ) + J.a)
 end
 
-Base.eigvals(A::SymTriToeplitz)=domain(spectralmeasure(A))
+Base.eigvals(A::SymTriPertToeplitz)=domain(spectralmeasure(A))
 
 
 
@@ -259,7 +256,7 @@ function *(L::PertToeplitz,Q::HessenbergUnitary{'L'})
                 t0=-Q.s∞*L.T[2,1]+Q.c∞^2*L.T[1,1]
 
                 si=Q.sign?1:-1
-                return SymTriToeplitz(si*dv,si*ev,si*t0,si*t1)
+                return SymTriPertToeplitz(si*dv,si*ev,si*t0,si*t1)
             end
         end
     end

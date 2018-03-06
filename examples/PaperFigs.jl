@@ -202,34 +202,3 @@ a = zeros(100); a[2] = 1
 a = zeros(100); a[5] = 1
   Plots.plot(spectralmeasure(a,Float64[]),title="\\alpha=[0,0,0,0,1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
   Plots.savefig("Figs/spectralmeasuredelta5.pdf")
-
-# Various attempts at double well. It doesn't look particularly interesting for the spectral measures.
-# There are big regions of zero in the measure which mean there are enormous coefficients in the
-# denominator polynomial. This is not good for numerical computation. The results are nonsense
-# if we don't use BigFloat. We might need to stress that we will be working on making
-# the computations stable for a future publication.
-# The regions of zero are determined by the height of the potential
-# First one has zero in [.5,1] and [0,.25], second one in [0,1], [0,.25] etc.
-# If you make the height of the potential bigger than 2 then it appears to break :S
-
-pts = linspace(-1,1,2000)
-
-V = zeros(BigFloat,100); V[1:10] = -.5; V[30:50]=.25
-  m = spectralmeasure(V,BigFloat[])
-  Plots.plot(pts,m(pts),ylims=(0,5))
-
-V = zeros(BigFloat,100); V[1:10] = -1.; V[30:50]=.25
-  m = spectralmeasure(V,BigFloat[])
-  Plots.plot(pts,m(pts),ylims=(0,5))
-
-V = zeros(BigFloat,100); V[1:20] = -.5; V[30:50]=.25
-  m = spectralmeasure(V,BigFloat[])
-  Plots.plot(pts,m(pts),ylims=(0,5))
-
-V = zeros(BigFloat,100); V[10:20] = -.5; V[40:50]=.25
-  m = spectralmeasure(V,BigFloat[])
-  Plots.plot(pts,m(pts),ylims=(0,5))
-
-V = zeros(BigFloat,100); V[1:50] = -.5; V[60:90]=.25
-  m = spectralmeasure(V,BigFloat[])
-  Plots.plot(pts,m(pts),ylims=(0,5))

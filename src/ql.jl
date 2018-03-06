@@ -106,10 +106,10 @@ end
 
 
 
-discreteeigs(J::SymTriToeplitz) =
+discreteeigs(J::SymTriPertToeplitz) =
     2*J.b*discreteeigs(0.5*(J.dv-J.a)/J.b,0.5*J.ev/J.b) + J.a
 
-connection_coeffs_operator(J::SymTriToeplitz) =
+connection_coeffs_operator(J::SymTriPertToeplitz) =
     connection_coeffs_operator(0.5*(J.dv-J.a)/J.b,0.5*J.ev/J.b)
 
 
@@ -155,8 +155,8 @@ function bandinds(S::SpectralMap)
     bi = bandinds(S.Q)
     bi[1],bi[2]+bandinds(S.C,2)
 end
-Base.eig(Jin::SymTriToeplitz) = eigfromguess(Jin,discreteeigs(Jin))
-function eigfromguess(Jin::SymTriToeplitz,approxeigs)
+Base.eig(Jin::SymTriPertToeplitz) = eigfromguess(Jin,discreteeigs(Jin))
+function eigfromguess(Jin::SymTriPertToeplitz,approxeigs)
     Qret=Array{HessenbergUnitary{'U',Float64}}(0)
     λapprox=sort(approxeigs)
 

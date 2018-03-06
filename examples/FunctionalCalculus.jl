@@ -112,7 +112,7 @@ Plots.savefig("fracreactdiffusion085withpot.pdf")
 
 
 
-SymTriToeplitz(V8+1.0,[.5],1.0,-.5)
+SymTriPertToeplitz(V8+1.0,[.5],1.0,-.5)
 
 
 # Discrete Schrodinger equations
