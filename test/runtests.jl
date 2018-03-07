@@ -17,7 +17,7 @@ a = [0.]; b=[1/sqrt(2),.5]
 
 
 # Legendre
-n=100;a=zeros(n); b=(1:n-1)./sqrt.(4*(1:n-1).^2-1)
+n=100; a=zeros(n); b=(1:n-1)./sqrt.(4*(1:n-1).^2-1)
 μ=spectralmeasure(a,b)
 @test μ.(-.99:.01:.99) ≈ 0.5ones(-.99:.01:.99) atol=0.001
 

@@ -104,7 +104,7 @@ function connectioncoeffsoperator(a,b)
 
   elType = eltype(a)
   ToeplitzVec = zeros(elType,N)
-  K = BandedMatrix{elType}(uninitialized, (n,N), (0,N+1))
+  K = BandedMatrix(Zeros{elType}(n,N), (0,N+1))
   K[1,1] = 1
   K[1,2] = -a[1]/b[1]
   K[2,2] = .5/b[1]
