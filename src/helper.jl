@@ -95,7 +95,7 @@ end
 
 #Finds NxN truncation of C such that C'(Q_k(s)) =  (P_k(s)),
 # where P_k has Jacobi coeffs a,b and Q_k has Jacobi coeffs c,d
-function connection_coeffs_matrix(a::AbstractVector, b::AbstractVector, c::AbstractVector, d::AbstractVector, N)
+function connectioncoeffsmatrix(a::AbstractVector, b::AbstractVector, c::AbstractVector, d::AbstractVector, N)
   if N>max(length(a),length(b)+1,length(c),length(d)+1)
     a = [a;zeros(N-length(a))]; b = [b;.5+zeros(N-length(b))]
     c = [c;zeros(N-length(c))]; d = [d;.5+zeros(N-length(d))]
@@ -117,7 +117,7 @@ end
 
 
 #Makes the matrix C which transforms the coefficients of an expansion in "right" matrix orthonormal polynomial with recurrence coeffs a,b (J) to those of an expansion in the "right" MOPs with recurrence coeffs c,d (D). So C is block-upper-triangular and CJ = DC (modulo the final column). The types of a,b,c,d must be BlockArrays which are like column vectors of length N whose entries are kxk blocks. The blocks of a and c should be symmetric.
-function connection_coeffs_matrix(a::AbstractBlockArray, b::AbstractBlockArray, c::AbstractBlockArray, d::AbstractBlockArray)
+function connectioncoeffsmatrix(a::AbstractBlockArray, b::AbstractBlockArray, c::AbstractBlockArray, d::AbstractBlockArray)
   k = blocksize(a,1,1)[1]
   N = nblocks(a,1)
   C = BlockArray(zeros(k*N,k*N),k*ones(Int64,N),k*ones(Int64,N))
@@ -135,10 +135,10 @@ function connection_coeffs_matrix(a::AbstractBlockArray, b::AbstractBlockArray, 
 end
 
 # This is for Chebyshev U
-connection_coeffs_matrix(a,b,N) = connectionCoeffsMatrix(a,b,[],[],N)
+connectioncoeffsmatrix(a,b,N) = connectioncoeffsmatrix(a,b,[],[],N)
 
 # Converts coefficients a^J to coefficients a^D using Clenshaw
-function apply_conversion(J::SymTriPertToeplitz,D::SymTriPertToeplitz,v::Vector)
+function applyconversion(J::SymTriPertToeplitz,D::SymTriPertToeplitz,v::Vector)
   N = length(v)
   T = eltype(b)
   b = zeros(T,N); b1 = zeros(T,N); b2 = zeros(T,N)

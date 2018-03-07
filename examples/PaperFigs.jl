@@ -1,5 +1,5 @@
-## These are the figures that appear in a first draft of the paper
-# "Spectra of Jacobi operators via connection coefficients" by Marcus Webb and Sheehan Olver (2017)
+## These are the figures that appear in the paper
+# "Spectra of Jacobi operators via connection coefficients" by Marcus Webb and Sheehan Olver (2018)
 
 using ApproxFun, SpectralMeasures, Plots; Plots.gr(linewidth=3,legend=false)
 using ComplexPhasePortrait, PyPlot, FileIO; pygui(false) # PyPlot is good for Wegert Plots
@@ -21,10 +21,10 @@ MyResolvent = x -> real(1 + 2*sqrt(complex(x-1.)).*sqrt(complex(x+1.))-2*x + x./
 
 # Pertrubation of the [1,1] element
 for a in [0, 0.15, 0.35, 0.5, 0.75, 1.]
-  Plots.plot(spectral_measure([a],[.5]),xlims=(-2,2),ylims=(0,2),title="\\alpha=$(a)")
-  Plots.savefig("Figs/spectral_measurealpha=$(round(Int,100*a)).pdf")
+  Plots.plot(spectralmeasure([a],[.5]),xlims=(-2,2),ylims=(0,2),title="\\alpha=$(a)")
+  Plots.savefig("Figs/spectralmeasurealpha=$(round(Int,100*a)).pdf")
 
-  R = principal_resolvent([a],[.5])
+  R = principalresolvent([a],[.5])
   save("Figs/principalresolventalpha=$(round(Int,100*a)).png", portrait(R(Z),PTstepmod))
   imshow(imread("Figs/principalresolventalpha=$(round(Int,100*a)).png"),extent=[-3,3,-3,3])
   PyPlot.plot([-1.,1.],[0.,0.],linewidth=2,color=:black)
@@ -32,7 +32,7 @@ for a in [0, 0.15, 0.35, 0.5, 0.75, 1.]
   PyPlot.savefig("Figs/principalresolventalpha=$(round(Int,100*a)).png",transparent=true,bbox_inches="tight")
   clf()
 
-  r = disc_resolvent([a],[.5])
+  r = discresolvent([a],[.5])
   save("Figs/discresolventalpha=$(round(Int,100*a)).png", portrait(r(Z),PTstepmod))
   imshow(imread("Figs/discresolventalpha=$(round(Int,100*a)).png"),extent=[-3,3,-3,3])
   PyPlot.plot(cos(linspace(0,2pi,100)),sin(linspace(0,2pi,100)),linewidth=2,color=:black)
@@ -43,10 +43,10 @@ end
 
 # Perturbation of the [1,2] element
 for b in [.5, 0.707, .85, 1, 1.2, 1.5]
-  Plots.plot(spectral_measure([0.],[b]/sqrt(2)),xlims=(-2,2),ylims=(0,2),title="\\beta=$(b)")
-  Plots.savefig("Figs/spectral_measurebeta=$(round(Int,1000*b)).pdf")
+  Plots.plot(spectralmeasure([0.],[b]/sqrt(2)),xlims=(-2,2),ylims=(0,2),title="\\beta=$(b)")
+  Plots.savefig("Figs/spectralmeasurebeta=$(round(Int,1000*b)).pdf")
 
-  R = principal_resolvent([0.],[b]/sqrt(2))
+  R = principalresolvent([0.],[b]/sqrt(2))
   save("Figs/principalresolventbeta=$(round(Int,1000*b)).png", portrait(R(Z),PTstepmod))
   imshow(imread("Figs/principalresolventbeta=$(round(Int,1000*b)).png"),extent=[-3,3,-3,3])
   PyPlot.plot([-1.,1.],[0.,0.],linewidth=2,color=:black)
@@ -54,7 +54,7 @@ for b in [.5, 0.707, .85, 1, 1.2, 1.5]
   PyPlot.savefig("Figs/principalresolventbeta=$(round(Int,1000*b)).png",transparent=true,bbox_inches="tight")
   clf()
 
-  r = disc_resolvent([0.],[b]/sqrt(2))
+  r = discresolvent([0.],[b]/sqrt(2))
   save("Figs/discresolventbeta=$(round(Int,1000*b)).png", portrait(r(Z),PTstepmod))
   imshow(imread("Figs/discresolventbeta=$(round(Int,1000*b)).png"),extent=[-3,3,-3,3])
   PyPlot.plot(cos(linspace(0,2pi,100)),sin(linspace(0,2pi,100)),linewidth=2,color=:black)
@@ -67,12 +67,12 @@ end
 
 # 3 by 3 Perturbation
 a = [3/4,-1/4,1/2]; b=[1,3/4]
-  μ = spectral_measure(a,b)
-  R = principal_resolvent(a,b)
-  r = disc_resolvent(a,b)
+  μ = spectralmeasure(a,b)
+  R = principalresolvent(a,b)
+  r = discresolvent(a,b)
 
   Plots.plot(μ,xlims=(-3,3),ylims=(0,2))
-  Plots.savefig("Figs/spectral_measure3by3pert.pdf")
+  Plots.savefig("Figs/spectralmeasure3by3pert.pdf")
 
   save("Figs/principalresolvent3by3pert.png", portrait(R(Z),PTstepmod))
   imshow(imread("Figs/principalresolvent3by3pert.png"),extent=[-3,3,-3,3])
@@ -92,10 +92,10 @@ a = [3/4,-1/4,1/2]; b=[1,3/4]
 # Legendre
 for n in [1,2,3,10,30,100]
   bLeg = (1:n-1)./sqrt(4*(1:n-1).^2-1)
-  Plots.plot(spectral_measure(zeros(n),bLeg),title="Legendre approximation, n = $(n)",xlims=(-1.5,1.5),ylims=(0,1),yticks=[0,.25,.5,.75,1])
-  Plots.savefig("Figs/spectral_measureLegn=$(n).pdf")
+  Plots.plot(spectralmeasure(zeros(n),bLeg),title="Legendre approximation, n = $(n)",xlims=(-1.5,1.5),ylims=(0,1),yticks=[0,.25,.5,.75,1])
+  Plots.savefig("Figs/spectralmeasureLegn=$(n).pdf")
 
-  R = principal_resolvent([0.],bLeg)
+  R = principalresolvent([0.],bLeg)
   save("Figs/principalresolventLegn=$(n).png", portrait(R(Z),PTstepmod))
   imshow(imread("Figs/principalresolventLegn=$(n).png"),extent=[-3,3,-3,3])
   PyPlot.plot([-1.,1.],[0.,0.],linewidth=2,color=:black)
@@ -103,7 +103,7 @@ for n in [1,2,3,10,30,100]
   PyPlot.savefig("Figs/principalresolventLegn=$(n).png",transparent=true,bbox_inches="tight")
   clf()
 
-  r = disc_resolvent([0.],bLeg)
+  r = discresolvent([0.],bLeg)
   save("Figs/discresolventLegn=$(n).png", portrait(r(Z),PTstepmod))
   imshow(imread("Figs/discresolventLegn=$(n).png"),extent=[-3,3,-3,3])
   PyPlot.plot(cos(linspace(0,2pi,100)),sin(linspace(0,2pi,100)),linewidth=2,color=:black)
@@ -116,10 +116,10 @@ end
 γ = 0.6
   for n in [1,2,3,10,30,100]
   bUlt = .5*sqrt(((1:n).*(2γ+(0:n-1)))./((γ+(0:n-1)).*(γ+(1:n))))
-  Plots.plot(spectral_measure(zeros(n),bUlt),title="Ultraspherical\\($(γ)\\), n = $(n)",xlims=(-1.5,1.5),ylims=(0,1),yticks=[0,.25,.5,.75,1])
-  Plots.savefig("Figs/spectral_measureUltra0pt6n=$(n).pdf")
+  Plots.plot(spectralmeasure(zeros(n),bUlt),title="Ultraspherical\\($(γ)\\), n = $(n)",xlims=(-1.5,1.5),ylims=(0,1),yticks=[0,.25,.5,.75,1])
+  Plots.savefig("Figs/spectralmeasureUltra0pt6n=$(n).pdf")
 
-  R = principal_resolvent([0.],bUlt)
+  R = principalresolvent([0.],bUlt)
   save("Figs/principalresolventUltra0pt6n=$(n).png", portrait(R(Z),PTstepmod))
   imshow(imread("Figs/principalresolventUltra0pt6n=$(n).png"),extent=[-3,3,-3,3])
   PyPlot.plot([-1.,1.],[0.,0.],linewidth=2,color=:black)
@@ -127,7 +127,7 @@ end
   PyPlot.savefig("Figs/principalresolventUltra0pt6n=$(n).png",transparent=true,bbox_inches="tight")
   clf()
 
-  r = disc_resolvent([0.],bUlt)
+  r = discresolvent([0.],bUlt)
   save("Figs/discresolventUltra0pt6n=$(n).png", portrait(r(Z),PTstepmod))
   imshow(imread("Figs/discresolventUltra0pt6n=$(n).png"),extent=[-3,3,-3,3])
   PyPlot.plot(cos(linspace(0,2pi,100)),sin(linspace(0,2pi,100)),linewidth=2,color=:black)
@@ -141,10 +141,10 @@ end
   for n in [1,2,3,10,30,100]
   aJac = (β.^2-α.^2)./((2.*(0:n)+α+β).*(2.*(1:n+1)+α+β))
   bJac = 2*sqrt(((1:n).*(α+(1:n)).*(β+(1:n)).*(α+β+(1:n)))./((2.*(1:n)+α+β-1).*((2.*(1:n)+α+β).^2).*(2.*(1:n)+α+β+1)))
-  Plots.plot(spectral_measure(aJac,bJac),title="Jacobi\\($(α),$(β)\\), n = $(n)",xlims=(-1.5,1.5),ylims=(0,1),yticks=[0,.25,.5,.75,1])
-  Plots.savefig("Figs/spectral_measureJacobin=$(n).pdf")
+  Plots.plot(spectralmeasure(aJac,bJac),title="Jacobi\\($(α),$(β)\\), n = $(n)",xlims=(-1.5,1.5),ylims=(0,1),yticks=[0,.25,.5,.75,1])
+  Plots.savefig("Figs/spectralmeasureJacobin=$(n).pdf")
 
-  R = principal_resolvent(aJac,bJac)
+  R = principalresolvent(aJac,bJac)
   save("Figs/principalresolventJacobin=$(n).png", portrait(R(Z),PTstepmod))
   imshow(imread("Figs/principalresolventJacobin=$(n).png"),extent=[-3,3,-3,3])
   PyPlot.plot([-1.,1.],[0.,0.],linewidth=2,color=:black)
@@ -152,7 +152,7 @@ end
   PyPlot.savefig("Figs/principalresolventJacobin=$(n).png",transparent=true,bbox_inches="tight")
   clf()
 
-  r = disc_resolvent(aJac,bJac)
+  r = discresolvent(aJac,bJac)
   save("Figs/discresolventJacobin=$(n).png", portrait(r(Z),PTstepmod))
   imshow(imread("Figs/discresolventJacobin=$(n).png"),extent=[-3,3,-3,3])
   PyPlot.plot(cos(linspace(0,2pi,100)),sin(linspace(0,2pi,100)),linewidth=2,color=:black)
@@ -170,10 +170,10 @@ srand(200)
 longaRand = 3*(2rand(100)-1)./(1:100).^2
 for n in [1,2,3,10,50,100]
   aRand = longaRand[1:n]
-  Plots.plot(spectral_measure(aRand,Float64[]),title="Random, n = $(n)",xlims=(-1.5,1.5),ylims=(0,1),yticks=[0,.25,.5,.75,1])
-  Plots.savefig("Figs/spectral_measurerandomn=$(n).pdf")
+  Plots.plot(spectralmeasure(aRand,Float64[]),title="Random, n = $(n)",xlims=(-1.5,1.5),ylims=(0,1),yticks=[0,.25,.5,.75,1])
+  Plots.savefig("Figs/spectralmeasurerandomn=$(n).pdf")
 
-  R = principal_resolvent(aRand,Float64[])
+  R = principalresolvent(aRand,Float64[])
   save("Figs/principalresolventrandomn=$(n).png", portrait(R(Z),PTstepmod))
   imshow(imread("Figs/principalresolventrandomn=$(n).png"),extent=[-3,3,-3,3])
   PyPlot.plot([-1.,1.],[0.,0.],linewidth=2,color=:black)
@@ -181,7 +181,7 @@ for n in [1,2,3,10,50,100]
   PyPlot.savefig("Figs/principalresolventrandomn=$(n).png",transparent=true,bbox_inches="tight")
   clf()
 
-  r = disc_resolvent(aRand,Float64[])
+  r = discresolvent(aRand,Float64[])
   save("Figs/discresolventrandomn=$(n).png", portrait(r(Z),PTstepmod))
   imshow(imread("Figs/discresolventrandomn=$(n).png"),extent=[-3,3,-3,3])
   PyPlot.plot(cos(linspace(0,2pi,100)),sin(linspace(0,2pi,100)),linewidth=2,color=:black)
@@ -192,13 +192,13 @@ end
 
 
 a = zeros(100); a[1] = 1
-  Plots.plot(spectral_measure(a,Float64[]),title="\\alpha=[1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
-  Plots.savefig("Figs/spectral_measuredelta1.pdf")
+  Plots.plot(spectralmeasure(a,Float64[]),title="\\alpha=[1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
+  Plots.savefig("Figs/spectralmeasuredelta1.pdf")
 
 a = zeros(100); a[2] = 1
-  Plots.plot(spectral_measure(a,Float64[]),title="\\alpha=[0,1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
-    Plots.savefig("Figs/spectral_measuredelta2.pdf")
+  Plots.plot(spectralmeasure(a,Float64[]),title="\\alpha=[0,1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
+    Plots.savefig("Figs/spectralmeasuredelta2.pdf")
 
 a = zeros(100); a[5] = 1
-  Plots.plot(spectral_measure(a,Float64[]),title="\\alpha=[0,0,0,0,1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
-  Plots.savefig("Figs/spectral_measuredelta5.pdf")
+  Plots.plot(spectralmeasure(a,Float64[]),title="\\alpha=[0,0,0,0,1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
+  Plots.savefig("Figs/spectralmeasuredelta5.pdf")
