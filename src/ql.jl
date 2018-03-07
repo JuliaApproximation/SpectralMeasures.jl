@@ -106,14 +106,13 @@ end
 
 
 
-discreteeigs(J::SymTriPertToeplitz) =
-    2*J.b*discreteeigs(0.5*(J.dv-J.a)/J.b,0.5*J.ev/J.b) + J.a
+discrete_eigs(J::SymTriPertToeplitz) =
+    2*J.b*discrete_eigs(0.5*(J.dv-J.a)/J.b,0.5*J.ev/J.b) + J.a
 
 connection_coeffs_operator(J::SymTriPertToeplitz) =
     connection_coeffs_operator(0.5*(J.dv-J.a)/J.b,0.5*J.ev/J.b)
 
-
-
+# Spectral map takes SequenceSpace to the space of the diagonal Fun
 struct SpectralMap{CC,QQ,RS,T} <: Operator{T}
     n::Int  # number of extra eigenvalues
     C::CC
@@ -155,7 +154,49 @@ function bandinds(S::SpectralMap)
     bi = bandinds(S.Q)
     bi[1],bi[2]+bandinds(S.C,2)
 end
-Base.eig(Jin::SymTriPertToeplitz) = eigfromguess(Jin,discreteeigs(Jin))
+
+# InvSpectralMap is the inverse of a Spectral map
+struct InvSpectralMap{CC,QQ,DS,T} <: Operator{T}
+    n::Int  # number of extra eigenvalues
+    C::CC
+    Q::QQ
+    domainspace::DS
+end
+
+InvSpectralMap(n::Int,C::Operator{T},Q::Operator{T},ds) where {T} =
+    InvSpectralMap{typeof(C),typeof(Q),typeof(ds),T}(n,C,Q,ds)
+
+
+domainspace(S::InvSpectralMap) = S.domainspace
+rangespace(::InvSpectralMap) = SequenceSpace()
+
+function A_mul_B_coefficients(S::InvSpectralMap,v::AbstractVector;opts...)
+    # leave first entries n alone
+    r = copy(v)
+    r[S.n+1:end] .= A_ldiv_B_coefficients(S.C,v[S.n+1:end])
+    A_ldiv_B_coefficients(S.Q,r;opts...)
+end
+
+function A_ldiv_B_coefficients(S::InvSpectralMap,v::AbstractVector;opts...)
+    r = A_mul_B_coefficients(S.Q,v;opts...)
+    # leave first entries n alone
+    r[S.n+1:end] .= A_mul_B_coefficients(S.C,r[S.n+1:end])
+    r
+end
+
+function getindex(S::InvSpectralMap,k::Integer,j::Integer)
+    v = A_mul_B_coefficients(S,[zeros(j-1);1])
+    k ≤ length(v) && return v[k]
+    zero(eltype(S))
+end
+
+isbanded(S::InvSpectralMap) = false
+bandinds(S::InvSpectralMap) = [-∞;∞]
+
+Base.inv(S::SpectralMap) = InvSpectralMap(S.n,S.C,S.Q,S.rangespace)
+Base.inv(S::InvSpectralMap) = SpectralMap(S.n,S.C,S.Q,S.domainspace)
+
+Base.eig(Jin::SymTriPertToeplitz) = eigfromguess(Jin,discrete_eigs(Jin))
 function eigfromguess(Jin::SymTriPertToeplitz,approxeigs)
     Qret=Array{HessenbergUnitary{'U',Float64}}(0)
     λapprox=sort(approxeigs)
@@ -167,10 +208,10 @@ function eigfromguess(Jin::SymTriPertToeplitz,approxeigs)
     if length(λapprox) == 0
         C=connection_coeffs_operator(J)
 
-        x=Fun(identity,Ultraspherical(1,ctsspec))
+        D=Multiplication(Fun(identity,Ultraspherical(1,ctsspec)),Ultraspherical(1,ctsspec))
 
-        U=SpaceOperator(C,ℓ⁰,space(x))
-        return x,U
+        U=SpaceOperator(C,ℓ⁰,domainspace(D))
+        return D,U
     end
 
     λ=Array{Float64}(0)
@@ -197,15 +238,15 @@ function eigfromguess(Jin::SymTriPertToeplitz,approxeigs)
     if length(λ) == 1
          Q=Qret[1]
 
-         x=Fun(identity,PointSpace(λ)⊕Ultraspherical(1,ctsspec))
+         D=Multiplication(Fun(identity,PointSpace(λ)⊕Ultraspherical(1,ctsspec)),PointSpace(λ)⊕Ultraspherical(1,ctsspec))
 
-         U=SpectralMap(length(λ),connection_coeffs_operator(J),Q,space(x))
-         return x,U
+         U=SpectralMap(length(λ),connection_coeffs_operator(J),Q,domainspace(D))
+         return D,U
     else
         Q=BandedUnitary(reverse!(Qret))
-        x=Fun(identity,PointSpace(λ)⊕Ultraspherical(1,ctsspec))
+        D=Multiplication(Fun(identity,PointSpace(λ)⊕Ultraspherical(1,ctsspec)),PointSpace(λ)⊕Ultraspherical(1,ctsspec))
 
-        U=SpectralMap(length(λ),connection_coeffs_operator(J),Q,space(x))
-        return x,U
+        U=SpectralMap(length(λ),connection_coeffs_operator(J),Q,domainspace(D))
+        return D,U
     end
 end
