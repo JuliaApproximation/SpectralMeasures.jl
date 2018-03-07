@@ -21,8 +21,8 @@ MyResolvent = x -> real(1 + 2*sqrt(complex(x-1.)).*sqrt(complex(x+1.))-2*x + x./
 
 # Pertrubation of the [1,1] element
 for a in [0, 0.15, 0.35, 0.5, 0.75, 1.]
-  Plots.plot(spectralmeasure([a],[.5]),xlims=(-2,2),ylims=(0,2),title="\\alpha=$(a)")
-  Plots.savefig("Figs/spectralmeasurealpha=$(round(Int,100*a)).pdf")
+  Plots.plot(spectral_measure([a],[.5]),xlims=(-2,2),ylims=(0,2),title="\\alpha=$(a)")
+  Plots.savefig("Figs/spectral_measurealpha=$(round(Int,100*a)).pdf")
 
   R = principal_resolvent([a],[.5])
   save("Figs/principalresolventalpha=$(round(Int,100*a)).png", portrait(R(Z),PTstepmod))
@@ -43,8 +43,8 @@ end
 
 # Perturbation of the [1,2] element
 for b in [.5, 0.707, .85, 1, 1.2, 1.5]
-  Plots.plot(spectralmeasure([0.],[b]/sqrt(2)),xlims=(-2,2),ylims=(0,2),title="\\beta=$(b)")
-  Plots.savefig("Figs/spectralmeasurebeta=$(round(Int,1000*b)).pdf")
+  Plots.plot(spectral_measure([0.],[b]/sqrt(2)),xlims=(-2,2),ylims=(0,2),title="\\beta=$(b)")
+  Plots.savefig("Figs/spectral_measurebeta=$(round(Int,1000*b)).pdf")
 
   R = principal_resolvent([0.],[b]/sqrt(2))
   save("Figs/principalresolventbeta=$(round(Int,1000*b)).png", portrait(R(Z),PTstepmod))
@@ -67,12 +67,12 @@ end
 
 # 3 by 3 Perturbation
 a = [3/4,-1/4,1/2]; b=[1,3/4]
-  μ = spectralmeasure(a,b)
+  μ = spectral_measure(a,b)
   R = principal_resolvent(a,b)
   r = disc_resolvent(a,b)
 
   Plots.plot(μ,xlims=(-3,3),ylims=(0,2))
-  Plots.savefig("Figs/spectralmeasure3by3pert.pdf")
+  Plots.savefig("Figs/spectral_measure3by3pert.pdf")
 
   save("Figs/principalresolvent3by3pert.png", portrait(R(Z),PTstepmod))
   imshow(imread("Figs/principalresolvent3by3pert.png"),extent=[-3,3,-3,3])
@@ -92,8 +92,8 @@ a = [3/4,-1/4,1/2]; b=[1,3/4]
 # Legendre
 for n in [1,2,3,10,30,100]
   bLeg = (1:n-1)./sqrt(4*(1:n-1).^2-1)
-  Plots.plot(spectralmeasure(zeros(n),bLeg),title="Legendre approximation, n = $(n)",xlims=(-1.5,1.5),ylims=(0,1),yticks=[0,.25,.5,.75,1])
-  Plots.savefig("Figs/spectralmeasureLegn=$(n).pdf")
+  Plots.plot(spectral_measure(zeros(n),bLeg),title="Legendre approximation, n = $(n)",xlims=(-1.5,1.5),ylims=(0,1),yticks=[0,.25,.5,.75,1])
+  Plots.savefig("Figs/spectral_measureLegn=$(n).pdf")
 
   R = principal_resolvent([0.],bLeg)
   save("Figs/principalresolventLegn=$(n).png", portrait(R(Z),PTstepmod))
@@ -116,8 +116,8 @@ end
 γ = 0.6
   for n in [1,2,3,10,30,100]
   bUlt = .5*sqrt(((1:n).*(2γ+(0:n-1)))./((γ+(0:n-1)).*(γ+(1:n))))
-  Plots.plot(spectralmeasure(zeros(n),bUlt),title="Ultraspherical\\($(γ)\\), n = $(n)",xlims=(-1.5,1.5),ylims=(0,1),yticks=[0,.25,.5,.75,1])
-  Plots.savefig("Figs/spectralmeasureUltra0pt6n=$(n).pdf")
+  Plots.plot(spectral_measure(zeros(n),bUlt),title="Ultraspherical\\($(γ)\\), n = $(n)",xlims=(-1.5,1.5),ylims=(0,1),yticks=[0,.25,.5,.75,1])
+  Plots.savefig("Figs/spectral_measureUltra0pt6n=$(n).pdf")
 
   R = principal_resolvent([0.],bUlt)
   save("Figs/principalresolventUltra0pt6n=$(n).png", portrait(R(Z),PTstepmod))
@@ -141,8 +141,8 @@ end
   for n in [1,2,3,10,30,100]
   aJac = (β.^2-α.^2)./((2.*(0:n)+α+β).*(2.*(1:n+1)+α+β))
   bJac = 2*sqrt(((1:n).*(α+(1:n)).*(β+(1:n)).*(α+β+(1:n)))./((2.*(1:n)+α+β-1).*((2.*(1:n)+α+β).^2).*(2.*(1:n)+α+β+1)))
-  Plots.plot(spectralmeasure(aJac,bJac),title="Jacobi\\($(α),$(β)\\), n = $(n)",xlims=(-1.5,1.5),ylims=(0,1),yticks=[0,.25,.5,.75,1])
-  Plots.savefig("Figs/spectralmeasureJacobin=$(n).pdf")
+  Plots.plot(spectral_measure(aJac,bJac),title="Jacobi\\($(α),$(β)\\), n = $(n)",xlims=(-1.5,1.5),ylims=(0,1),yticks=[0,.25,.5,.75,1])
+  Plots.savefig("Figs/spectral_measureJacobin=$(n).pdf")
 
   R = principal_resolvent(aJac,bJac)
   save("Figs/principalresolventJacobin=$(n).png", portrait(R(Z),PTstepmod))
@@ -170,8 +170,8 @@ srand(200)
 longaRand = 3*(2rand(100)-1)./(1:100).^2
 for n in [1,2,3,10,50,100]
   aRand = longaRand[1:n]
-  Plots.plot(spectralmeasure(aRand,Float64[]),title="Random, n = $(n)",xlims=(-1.5,1.5),ylims=(0,1),yticks=[0,.25,.5,.75,1])
-  Plots.savefig("Figs/spectralmeasurerandomn=$(n).pdf")
+  Plots.plot(spectral_measure(aRand,Float64[]),title="Random, n = $(n)",xlims=(-1.5,1.5),ylims=(0,1),yticks=[0,.25,.5,.75,1])
+  Plots.savefig("Figs/spectral_measurerandomn=$(n).pdf")
 
   R = principal_resolvent(aRand,Float64[])
   save("Figs/principalresolventrandomn=$(n).png", portrait(R(Z),PTstepmod))
@@ -192,13 +192,13 @@ end
 
 
 a = zeros(100); a[1] = 1
-  Plots.plot(spectralmeasure(a,Float64[]),title="\\alpha=[1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
-  Plots.savefig("Figs/spectralmeasuredelta1.pdf")
+  Plots.plot(spectral_measure(a,Float64[]),title="\\alpha=[1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
+  Plots.savefig("Figs/spectral_measuredelta1.pdf")
 
 a = zeros(100); a[2] = 1
-  Plots.plot(spectralmeasure(a,Float64[]),title="\\alpha=[0,1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
-    Plots.savefig("Figs/spectralmeasuredelta2.pdf")
+  Plots.plot(spectral_measure(a,Float64[]),title="\\alpha=[0,1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
+    Plots.savefig("Figs/spectral_measuredelta2.pdf")
 
 a = zeros(100); a[5] = 1
-  Plots.plot(spectralmeasure(a,Float64[]),title="\\alpha=[0,0,0,0,1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
-  Plots.savefig("Figs/spectralmeasuredelta5.pdf")
+  Plots.plot(spectral_measure(a,Float64[]),title="\\alpha=[0,0,0,0,1,0,...]",xlims=(-1,1.5),ylims=(0,4.2),yticks=[0,1,2,3,4])
+  Plots.savefig("Figs/spectral_measuredelta5.pdf")

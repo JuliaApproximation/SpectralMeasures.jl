@@ -2,9 +2,9 @@ using SpectralMeasures, ValidatedNumerics, ValidatedNumerics.RootFinding,
             ComplexPhasePortrait
 
 
-function tripleplot(a,b,Z=linspace(-3, 3, 300).+linspace(3,-3,300)'*im)
+function triple_plot(a,b,Z=linspace(-3, 3, 300).+linspace(3,-3,300)'*im)
   # Build the measure and resolvents
-  μ = spectralmeasure(a,b)
+  μ = spectral_measure(a,b)
   R = principal_resolvent(a,b)
   r = disc_resolvent(a,b)
 

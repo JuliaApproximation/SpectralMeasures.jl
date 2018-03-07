@@ -41,7 +41,7 @@ plot(pad(u0,100),marker=2,label="t=0",ylims=(0,1.5),xlabel="k",ylabel="u_k",titl
   plot!()
 plot!(pad(-react,100),label="Reaction potential",color=:black,ylims=(0,1.5),linewidth=2)
 Plots.savefig("reactiondiffusion.pdf")
-eigs = discreteeigs(J2)
+eigs = discrete_eigs(J2)
 plot(U2[1,1:100],marker=2,title="Stable eigenmodes of reaction-diffusion Jacobi operator",xlabel="k",ylabel="u_k",label="v_1")
   plot!(U2[2,1:100],marker=2,label="v_2")
   plot!(pad(react,100),color=:black,label="Reaction potential",yticks=-1.5:0.5:1.5)
@@ -89,7 +89,7 @@ Plots.savefig("purefracdiffusion025.pdf")
 # Fractional diffusion with reaction α = 0.85
 react = [zeros(20);1.;1.;1.]
 J7 = D + SymTriOperator(react,[0.])
-discreteeigs(J7)
+discrete_eigs(J7)
 x7,U7 = eig(J7)
 α = 0.85
 plot(pad(u0,100),ylims=(0,1.5),marker=2,label="t=0",xlabel="k",ylabel="u_k",title="Fractional diffusion with reaction on the half-line, \\alpha = 0.85")
@@ -119,7 +119,7 @@ SymTriPertToeplitz(V8+1.0,[.5],1.0,-.5)
 V8 = [zeros(40);2*ones(5)]
   J8 = -D + SymTriOperator(V8,[0.])
   x8,U8 = eig(J8)
-  λ8 = discreteeigs(J8)
+  λ8 = discrete_eigs(J8)
   n8 = length(λ8)
   Eigv8 = full(U8[1:n8,1:100])
 
@@ -130,7 +130,7 @@ n8
 V9 = [zeros(40);1*ones(3)]
   J9 = D + SymTriOperator(V9,[0.])
   x9,U9 = eig(J9)
-  λ9 = discreteeigs(J9)
+  λ9 = discrete_eigs(J9)
   n9 = length(λ9)
   Eigv9 = full(U9[1:n9,1:100])
 

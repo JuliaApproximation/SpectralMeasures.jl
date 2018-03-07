@@ -199,12 +199,12 @@ end
 
 ql(A::SymTriPertToeplitz) = ql(A.dv,A.ev,A.a,A.b)
 
-function spectralmeasure(J::SymTriPertToeplitz)
-  μ = spectralmeasure(.5*(J.dv-J.a)/J.b,.5*J.ev/J.b)
+function spectral_measure(J::SymTriPertToeplitz)
+  μ = spectral_measure(.5*(J.dv-J.a)/J.b,.5*J.ev/J.b)
   2*J.b*setdomain(μ,domain(μ) + J.a)
 end
 
-Base.eigvals(A::SymTriPertToeplitz)=domain(spectralmeasure(A))
+Base.eigvals(A::SymTriPertToeplitz)=domain(spectral_measure(A))
 
 
 

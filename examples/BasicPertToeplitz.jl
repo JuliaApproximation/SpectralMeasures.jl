@@ -17,7 +17,7 @@ using ApproxFun, SpectralMeasures, Plots; Plots.gr(legend=false,linewidth=2,xlim
 #  In LightTable, "drag" k to see how the perturbation affects the spectral measure
 
 k = 3
-  plot(spectralmeasure([k/20],[.5]),title="\\alpha = $(k/10)")
+  plot(spectral_measure([k/20],[.5]),title="\\alpha = $(k/10)")
 
 
 ## Basic 2by2 perturbation of Toeplitz
@@ -36,7 +36,7 @@ k = 3
 #  In LightTable, "drag" k to see how the perturbation affects the spectral measure
 
 k = 5
-  plot(spectralmeasure([0.],[.5+k/20]/sqrt(2)),title="\\beta=$(.5+k/20)")
+  plot(spectral_measure([0.],[.5+k/20]/sqrt(2)),title="\\beta=$(.5+k/20)")
 
 
 ####################

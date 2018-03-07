@@ -12,10 +12,10 @@ import ApproxFun: Operator, ToeplitzOperator, DiracSpace, IdentityOperator,
 
 import BlockArrays: nblocks
 
-export spectralmeasure, discreteeigs, principal_resolvent, disc_resolvent, validated_spectrum
+export spectral_measure, discrete_eigs, principal_resolvent, disc_resolvent, validated_spectrum
 export connection_coeffs_operator, apply_conversion, SymTriOperator, SymTriPertToeplitz
 export connection_coeffs_matrix
-export tripleplot
+export triple_plot
 export freejacobioperator, jacobioperator, ql
 
 include("HessenbergUnitary.jl")
@@ -23,7 +23,7 @@ include("PertToeplitz.jl")
 include("helper.jl")
 include("ql.jl")
 
-function spectralmeasure(a,b)
+function spectral_measure(a,b)
     TT = promote_type(eltype(a),eltype(b))
   # Chop the a and b down
   a = chop!(a); b = 0.5+chop!(b-0.5)
@@ -85,7 +85,7 @@ function disc_resolvent(a,b)
   x->-cmu(x)./c(x)
 end
 
-function discreteeigs(a,b)
+function discrete_eigs(a,b)
   a = chop!(a); b = .5+chop!(b-.5)
   n = max(2,length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
