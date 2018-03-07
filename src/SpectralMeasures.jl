@@ -5,7 +5,7 @@ import Base:+,-,*,/,.*,.-,./,.+,getindex
 
 import ApproxFun: Operator, ToeplitzOperator, DiracSpace, IdentityOperator,
             TridiagonalOperator, setdomain, resizedata!, bandinds, PointSpace,
-            BandedMatrix, bzeros, TimesOperator, SpaceOperator, AbstractCount, UnitCount,
+            BandedMatrix, TimesOperator, SpaceOperator, AbstractCount, UnitCount,
             MatrixSpace, ∞, ℓ⁰, domainspace, rangespace, domain, A_mul_B_coefficients,
             A_ldiv_B_coefficients, InterlaceOperator
 
@@ -104,7 +104,7 @@ function connection_coeffs_operator(a,b)
 
   elType = eltype(a)
   ToeplitzVec = zeros(elType,N)
-  K = bzeros(elType,n,N,0,N+1)
+  K = BandedMatrix{elType}(uninitialized, (n,N), (0,N+1))
   K[1,1] = 1
   K[1,2] = -a[1]/b[1]
   K[2,2] = .5/b[1]
