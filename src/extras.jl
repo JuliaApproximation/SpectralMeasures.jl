@@ -2,11 +2,11 @@ using SpectralMeasures, ValidatedNumerics, ValidatedNumerics.RootFinding,
             ComplexPhasePortrait
 
 
-function triple_plot(a,b,Z=linspace(-3, 3, 300).+linspace(3,-3,300)'*im)
+function tripleplot(a,b,Z=linspace(-3, 3, 300).+linspace(3,-3,300)'*im)
   # Build the measure and resolvents
-  μ = spectral_measure(a,b)
-  R = principal_resolvent(a,b)
-  r = disc_resolvent(a,b)
+  μ = spectralmeasure(a,b)
+  R = principalresolvent(a,b)
+  r = discresolvent(a,b)
 
   # Create the subplots
   p1 = plot(μ,xlims=(-2,2),ylims=(0,1.5))
@@ -20,14 +20,14 @@ function triple_plot(a,b,Z=linspace(-3, 3, 300).+linspace(3,-3,300)'*im)
   plot(p1,p2,p3,layout=l)
 end
 
-function validated_spectrum(a,b)
+function validatedspectrum(a,b)
   # Chop the a and b down
   a = chop!(a); b = .5+chop!(b-.5)
   n = max(2,length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
 
   # Finds C such that J*C = C*Toeplitz([0,1/2])
-  C = SpectralMeasures.connection_coeffs_operator(a,b)
+  C = SpectralMeasures.connectioncoeffsoperator(a,b)
   c = Fun(Taylor,C.T.nonnegative)
 
   rts = find_roots(x->c(x),-1,1)

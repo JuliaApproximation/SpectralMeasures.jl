@@ -12,10 +12,10 @@ import ApproxFun: Operator, ToeplitzOperator, DiracSpace, IdentityOperator,
 
 import BlockArrays: nblocks
 
-export spectral_measure, discrete_eigs, principal_resolvent, disc_resolvent, validated_spectrum
-export connection_coeffs_operator, apply_conversion, SymTriOperator, SymTriPertToeplitz
-export connection_coeffs_matrix
-export triple_plot
+export spectralmeasure, discreteeigs, principalresolvent, discresolvent, validatedspectrum
+export connectioncoeffsoperator, applyconversion, SymTriOperator, SymTriPertToeplitz
+export connectioncoeffsmatrix
+export tripleplot
 export freejacobioperator, jacobioperator, ql
 
 include("HessenbergUnitary.jl")
@@ -23,7 +23,7 @@ include("PertToeplitz.jl")
 include("helper.jl")
 include("ql.jl")
 
-function spectral_measure(a,b)
+function spectralmeasure(a,b)
     TT = promote_type(eltype(a),eltype(b))
   # Chop the a and b down
   a = chop!(a); b = 0.5+chop!(b-0.5)
@@ -31,7 +31,7 @@ function spectral_measure(a,b)
   a = [a;zeros(TT,n-length(a))]; b = [b;0.5+zeros(TT,n-length(b))]
 
   # Finds C such that J*C = C*Toeplitz([0,1/2])
-  C = SpectralMeasures.connection_coeffs_operator(a,b)
+  C = SpectralMeasures.connectioncoeffsoperator(a,b)
   c = Fun(Taylor,C.T.nonnegative)
   f = Fun(C*(C'*[1]),Ultraspherical(1))
 
@@ -39,7 +39,7 @@ function spectral_measure(a,b)
   z = sort(real(filter!(z->abs(z)<1 && abs(imag(z)) ≤ 10eps(TT)  && !isapprox(abs(z),1),
                         complexroots(c))))
   if length(z) > 0
-     Cmu = SpectralMeasures.connection_coeffs_operator(a[2:end],b[2:end]) # Technically not Cmu from the paper
+     Cmu = SpectralMeasures.connectioncoeffsoperator(a[2:end],b[2:end]) # Technically not Cmu from the paper
      cmu = Fun(Taylor,[0;Cmu.T.nonnegative]/b[1]) # this is cmu from the paper
      cprime = differentiate(c)
      eigs=real(map(joukowsky,z))
@@ -53,15 +53,15 @@ function spectral_measure(a,b)
   μ
 end
 
-function principal_resolvent(a,b)
+function principalresolvent(a,b)
   # Chop the a and b down
   a = chop!(a); b = .5+chop!(b-.5)
   n = max(2,length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
 
   # Compute the necessary polynomials
-  C = connection_coeffs_operator(a,b)
-  Cmu = connection_coeffs_operator(a[2:end],b[2:end]) # Technically not Cmu from the paper
+  C = connectioncoeffsoperator(a,b)
+  Cmu = connectioncoeffsoperator(a[2:end],b[2:end]) # Technically not Cmu from the paper
   f = Fun((C*(C'*[1])),Ultraspherical(1))
   fmu = Fun(Ultraspherical(1),coefficients(Cmu*((C'*[1]).coefficients[2:end])/b[1]))
 
@@ -69,15 +69,15 @@ function principal_resolvent(a,b)
   x->(2*sqrt(complex(x-1)).*sqrt(complex(x+1))-2*x-extrapolate(fmu,x))./extrapolate(f,x)
 end
 
-function disc_resolvent(a,b)
+function discresolvent(a,b)
   # Chop the a and b down
   a = chop!(a); b = .5+chop!(b-.5)
   n = max(2,length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
 
   # Compute the necessary polynomials
-  C = SpectralMeasures.connection_coeffs_operator(a,b)
-  Cmu = SpectralMeasures.connection_coeffs_operator(a[2:end],b[2:end]) # Technically not Cmu from the paper
+  C = SpectralMeasures.connectioncoeffsoperator(a,b)
+  Cmu = SpectralMeasures.connectioncoeffsoperator(a[2:end],b[2:end]) # Technically not Cmu from the paper
   c = Fun(Taylor,C.T.nonnegative)
   cmu = Fun(Taylor,[0;Cmu.T.nonnegative]/b[1]) # this is the cmu from the paper
 
@@ -85,19 +85,19 @@ function disc_resolvent(a,b)
   x->-cmu(x)./c(x)
 end
 
-function discrete_eigs(a,b)
+function discreteeigs(a,b)
   a = chop!(a); b = .5+chop!(b-.5)
   n = max(2,length(a),length(b)+1)
   a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
   # Finds C such that C*J = Toeplitz([0,1/2])*C
-  C = connection_coeffs_operator(a,b)
+  C = connectioncoeffsoperator(a,b)
   Tfun = Fun(Taylor,C.T.nonnegative)
   sort(real(map(joukowsky,filter!(z->abs(z)<1 && isreal(z) && !isapprox(abs(z),1),complexroots(Tfun)))))
 end
 
 #Finds C such that C'(U_k(s)) =  (P_k(s)),
 # where P_k has Jacobi coeffs a,b and U_k is Chebyshev U
-function connection_coeffs_operator(a,b)
+function connectioncoeffsoperator(a,b)
   n = max(2,length(a),length(b)+1)
   N = 2*n #This is sufficient only because we go from Chebyshev U
   a = [a;zeros(N-length(a))]; b = [b;.5+zeros(N-length(b))]

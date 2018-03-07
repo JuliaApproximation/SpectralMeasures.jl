@@ -106,11 +106,11 @@ end
 
 
 
-discrete_eigs(J::SymTriPertToeplitz) =
-    2*J.b*discrete_eigs(0.5*(J.dv-J.a)/J.b,0.5*J.ev/J.b) + J.a
+discreteeigs(J::SymTriPertToeplitz) =
+    2*J.b*discreteeigs(0.5*(J.dv-J.a)/J.b,0.5*J.ev/J.b) + J.a
 
-connection_coeffs_operator(J::SymTriPertToeplitz) =
-    connection_coeffs_operator(0.5*(J.dv-J.a)/J.b,0.5*J.ev/J.b)
+connectioncoeffsoperator(J::SymTriPertToeplitz) =
+    connectioncoeffsoperator(0.5*(J.dv-J.a)/J.b,0.5*J.ev/J.b)
 
 # Spectral map takes SequenceSpace to the space of the diagonal Fun
 struct SpectralMap{CC,QQ,RS,T} <: Operator{T}
@@ -196,7 +196,7 @@ bandinds(S::InvSpectralMap) = [-∞;∞]
 Base.inv(S::SpectralMap) = InvSpectralMap(S.n,S.C,S.Q,S.rangespace)
 Base.inv(S::InvSpectralMap) = SpectralMap(S.n,S.C,S.Q,S.domainspace)
 
-Base.eig(Jin::SymTriPertToeplitz) = eigfromguess(Jin,discrete_eigs(Jin))
+Base.eig(Jin::SymTriPertToeplitz) = eigfromguess(Jin,discreteeigs(Jin))
 function eigfromguess(Jin::SymTriPertToeplitz,approxeigs)
     Qret=Array{HessenbergUnitary{'U',Float64}}(0)
     λapprox=sort(approxeigs)
@@ -206,7 +206,7 @@ function eigfromguess(Jin::SymTriPertToeplitz,approxeigs)
     J=Jin
 
     if length(λapprox) == 0
-        C=connection_coeffs_operator(J)
+        C=connectioncoeffsoperator(J)
 
         D=Multiplication(Fun(identity,Ultraspherical(1,ctsspec)),Ultraspherical(1,ctsspec))
 
@@ -240,13 +240,13 @@ function eigfromguess(Jin::SymTriPertToeplitz,approxeigs)
 
          D=Multiplication(Fun(identity,PointSpace(λ)⊕Ultraspherical(1,ctsspec)),PointSpace(λ)⊕Ultraspherical(1,ctsspec))
 
-         U=SpectralMap(length(λ),connection_coeffs_operator(J),Q,domainspace(D))
+         U=SpectralMap(length(λ),connectioncoeffsoperator(J),Q,domainspace(D))
          return D,U
     else
         Q=BandedUnitary(reverse!(Qret))
         D=Multiplication(Fun(identity,PointSpace(λ)⊕Ultraspherical(1,ctsspec)),PointSpace(λ)⊕Ultraspherical(1,ctsspec))
 
-        U=SpectralMap(length(λ),connection_coeffs_operator(J),Q,domainspace(D))
+        U=SpectralMap(length(λ),connectioncoeffsoperator(J),Q,domainspace(D))
         return D,U
     end
 end

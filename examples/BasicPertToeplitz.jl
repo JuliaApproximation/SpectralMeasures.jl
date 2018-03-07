@@ -17,7 +17,7 @@ using ApproxFun, SpectralMeasures, Plots; Plots.gr(legend=false,linewidth=2,xlim
 #  In LightTable, "drag" k to see how the perturbation affects the spectral measure
 
 k = 3
-  plot(spectral_measure([k/20],[.5]),title="\\alpha = $(k/10)")
+  plot(spectralmeasure([k/20],[.5]),title="\\alpha = $(k/10)")
 
 
 ## Basic 2by2 perturbation of Toeplitz
@@ -36,17 +36,17 @@ k = 3
 #  In LightTable, "drag" k to see how the perturbation affects the spectral measure
 
 k = 5
-  plot(spectral_measure([0.],[.5+k/20]/sqrt(2)),title="\\beta=$(.5+k/20)")
+  plot(spectralmeasure([0.],[.5+k/20]/sqrt(2)),title="\\beta=$(.5+k/20)")
 
 
 ####################
 ## Use the following for a closer look at what is going on with these operators
 
-Δ = DiscreteLaplacian()
+Δ = freejacobioperator()
 
 a = 1.0
 J1 = SymTriPertToeplitz([a],[.5],0.0,0.5)
-C1 = connection_coeffs_operator(J1)
+C1 = connectioncoeffsoperator(J1)
 Δ*C1-C1*J1
 10.0*I
 Q,L = ql(J1-10.0*I)
@@ -58,5 +58,5 @@ d,U = eig(J1)
 b = .5 + 0.1
 J2 = SymTriPertToeplitz([0.],[b],0.0,0.5)
 
-C2 = connection_coeffs_operator(J2)
+C2 = connectioncoeffsoperator(J2)
 Δ*C2-C2*J2
