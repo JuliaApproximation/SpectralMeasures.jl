@@ -66,7 +66,7 @@ function principalresolvent(a,b)
   fmu = Fun(Ultraspherical(1),coefficients(Cmu*((C'*[1]).coefficients[2:end])/b[1]))
 
   # Return the resolvent
-  x->(2*sqrt(complex(x-1)).*sqrt(complex(x+1))-2*x-extrapolate(fmu,x))./extrapolate(f,x)
+  λ->(2*sqrt(complex(λ-1)).*sqrt(complex(λ+1))-2*λ-extrapolate(fmu,λ))./extrapolate(f,λ)
 end
 
 function discresolvent(a,b)
@@ -82,7 +82,7 @@ function discresolvent(a,b)
   cmu = Fun(Taylor,[0;Cmu.T.nonnegative]/b[1]) # this is the cmu from the paper
 
   # Return the rational function
-  x->-cmu(x)./c(x)
+  z->-cmu(z)./c(z)
 end
 
 function discreteeigs(a,b)

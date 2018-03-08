@@ -200,8 +200,13 @@ end
 ql(A::SymTriPertToeplitz) = ql(A.dv,A.ev,A.a,A.b)
 
 function spectralmeasure(J::SymTriPertToeplitz)
-  μ = spectralmeasure(.5*(J.dv-J.a)/J.b,.5*J.ev/J.b)
-  2*J.b*setdomain(μ,domain(μ) + J.a)
+    μ = spectralmeasure(.5*(J.dv-J.a)/J.b,.5*J.ev/J.b)
+    2*J.b*setdomain(μ,domain(μ) + J.a)
+end
+
+function principalresolvent(J::SymTriPertToeplitz)
+    r = principalresolvent(.5*(J.dv-J.a)/J.b,.5*J.ev/J.b)
+    λ -> (.5/J.b)*r(.5*(λ-J.a)/J.b)
 end
 
 Base.eigvals(A::SymTriPertToeplitz)=domain(spectralmeasure(A))
