@@ -89,7 +89,7 @@ function ql!(a,b,t₀,t₁)
 
     Q = HessenbergUnitary(Val{'L'},true,c,s,c∞,s∞)
 
-    L = BandedMatrix(eltype(c∞),n+1,n,2,0)
+    L = BandedMatrix{eltype(c∞)}(uninitialized, (n+1,n), (2,0))
 
     L[1,1] = abs(γ⁰[1]) - l⁰
     @views L[band(0)][2:end] .=  (-).(b./s) .- l⁰
@@ -101,7 +101,7 @@ function ql!(a,b,t₀,t₁)
         view(L,band(-2))[end] .= -s∞*b[end] - l²
     end
 
-    Q,ToeplitzOperator([l¹,l²],[l⁰])+FiniteOperator(L,ℓ⁰,ℓ⁰)
+    Q, ToeplitzOperator([l¹,l²],[l⁰]) + FiniteOperator(L,ℓ⁰,ℓ⁰)
 end
 
 
