@@ -58,7 +58,7 @@ eigvals(A)
 ```
 returns a `Domain` type,
 ```
-Point(-1.7082248431502554)∪Point(2.2839756035160352)∪【-1.0,1.0】
+Point(-1.7082248431502554) ∪ Point(2.2839756035160352) ∪ 【-1.0,1.0】
 ```
 The spectrum of this particular operator consists of two discrete eigenvalues and continuous spectrum on the interval [-1,1].
 
@@ -68,7 +68,7 @@ You can use familiar syntax to compute an eigendecomposition:
 D,U = eig(A)
 ```
 
-The first output, `D`, is a multiplication operator, which multiplies `Fun`s with space `PointSpace([-1.70822…,2.28398…])∪Ultraspherical(1)`. It has matrix representation,
+The first output, `D`, is a multiplication operator, which multiplies `Fun`s with space `PointSpace([-1.70822…,2.28398…]) ∪ Ultraspherical(1)`. It has matrix representation,
 ```
 D = [ -1.70822  0.0      0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  ⋯
        0.0      2.28398  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  ⋱
@@ -105,7 +105,7 @@ Functions of `A` applied to a vector can be computed as follows.
 ```
 f = x -> exp(1.4im*x)
 v = randn(100)
-fAv = U\ f(D) * U * v
+fAv = U \ f(D) * U * v
 ```
 The key point to note is that no finite-dimensional truncation has occurred; the entire structured operators have been used at each stage of the computation.
 
@@ -126,8 +126,8 @@ We can also plot the resolvent of the operator (which is the Cauchy transform of
 ```
 r = principalresolvent(A)
 using ComplexPhasePortrait
-Z=linspace(-3, 3, 600)'.+linspace(3,-3,600)*im
-plot(portrait(r(Z),PTstepmod),xlims=(-3,3),ylims=(-3,3),aspect_ratio=1)
+Z = linspace(-3, 3, 600)' .+ linspace(3,-3,600)*im
+plot(portrait(r(Z),PTstepmod); xlims=(-3,3), ylims=(-3,3), aspect_ratio=1)
 ```
 <img src=images/principalresolvent.png width=400px>
 
