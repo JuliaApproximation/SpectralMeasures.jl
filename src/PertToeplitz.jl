@@ -210,7 +210,7 @@ function principalresolvent(J::SymTriPertToeplitz)
 end
 
 Base.eigvals(A::SymTriPertToeplitz)=domain(spectralmeasure(A))
-
+spectrum(A::Operator) = eigvals(A)
 
 
 function *(L::PertToeplitz,Q::HessenbergUnitary{'L'})

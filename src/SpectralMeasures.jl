@@ -12,7 +12,7 @@ import ApproxFun: Operator, ToeplitzOperator, DiracSpace, IdentityOperator,
 
 import BlockArrays: nblocks
 
-export spectralmeasure, discreteeigs, principalresolvent, discresolvent, validatedspectrum
+export spectralmeasure, discreteeigs, principalresolvent, discresolvent, validatedspectrum, spectrum
 export connectioncoeffsoperator, applyconversion, SymTriOperator, SymTriPertToeplitz
 export connectioncoeffsmatrix
 export tripleplot
