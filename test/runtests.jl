@@ -133,3 +133,16 @@ Q,L = ql(J)
     Q,L = ql(J)
     @test (Q*L)[1:10,1:10] ≈ J[1:10,1:10]
 end
+
+
+
+
+@testset "Diagonal operator functions" begin
+    Δ = freejacobioperator()
+    K=SymTriOperator(-2ones(3),zeros(4))
+    J = Δ + K
+    D,U = eig(J)
+
+    v = randn(10)
+    @test pad((U\(exp(D)*U*v)).coefficients,100) ≈ expm(Matrix(J[1:100,1:100]))*pad(v,100)
+end
