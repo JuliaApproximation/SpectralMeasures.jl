@@ -42,7 +42,23 @@ function HessenbergUnitary(::Type{Val{uplo}},sign,c,s,c∞,s∞,band) where {upl
                                            typeof(c∞),typeof(s∞))}(sign,c,s,c∞,s∞,band)
 end
 
-function HessenbergUnitary(::Type{Val{uplo}},sign,c,s,c∞,s∞) where {uplo}
+# we choose colstop based on s for simplicity
+function hessenberg_colstop(s, s∞, j)
+    n = length(s)
+    tol = eps()
+
+    # Compute the bandwidth of the matrix
+    k=j
+    cur = one(eltype(s))
+    while abs(cur) > tol
+        cur *= k ≤ n ? s[k] : s∞
+        k += 1
+    end
+    k
+end
+
+
+function HessenbergUnitary(::Type{Val{uplo}},sign, c, s, c∞, s∞) where {uplo}
     @assert isapprox(s∞^2+c∞^2,1)
     @assert length(c)==length(s)+1
 
@@ -52,50 +68,7 @@ function HessenbergUnitary(::Type{Val{uplo}},sign,c,s,c∞,s∞) where {uplo}
         @assert -100eps() ≤ c[k]^2+s[k-1]^2-1 ≤ 100eps()
     end
 
-    band=0
-    n = length(s)
-
-    if n ≥ 1
-        cur=c[1]*c[2]
-    else
-        cur=c[1]*c∞
-    end
-
-    tol=eps()
-
-
-    # Compute the bandwidth of the matrix
-    k=1
-    @inbounds for j=1:n+2
-        while abs(cur) > tol
-            cur*=k≤n ? s[k] : s∞
-            k+=1
-            band+=1
-        end
-        # increase column and row by one
-        if band==0
-            # we don't need to divide or multiply by s
-            if j≤n-1
-                cur=c[j+1]*c[j+2]
-            elseif j==n
-                cur=c[j+1]*c∞
-            else
-                cur=c∞^2
-            end
-        else
-            if j≤n-1
-                cur *= (k≤n ? s[k] : s∞)*c[j+2]/(c[j]*s[j])
-            elseif j==n
-                cur *= (k≤n ? s[k] : s∞)*c∞/(c[j]*s[j])
-            elseif j==n+1
-                cur *= (k≤n ? s[k] : s∞)*c∞/(c[j]*s∞)
-            else
-                cur *= s∞*c∞/(c∞*s∞)
-            end
-        end
-        k+=1
-    end
-
+    band = mapreduce(j -> hessenberg_colstop(s, s∞, j)-j, max, 1:length(c))
 
     HessenbergUnitary(Val{uplo},sign,c,s,c∞,s∞,band)
 end

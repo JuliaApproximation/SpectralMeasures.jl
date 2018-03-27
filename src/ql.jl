@@ -61,6 +61,7 @@ function ql!(a,b,t₀,t₁)
 
     # ranges from 0 to N
     γ⁰ = Array{eltype(c∞)}(n)
+    nrms = Array{eltype(c∞)}(n-1)
 
     γ⁰[n] = c∞*a[n] + s∞*γ¹∞  # k = N
 
@@ -69,30 +70,30 @@ function ql!(a,b,t₀,t₁)
 
 
         k=n-1
-        nrm = 1/sqrt(γ⁰[k+1]^2+b[k]^2)
-        c[k+1] = γ⁰[k+1]*nrm  # K = N-1
-        s[k] = -b[k]*nrm # K = N-1
+        nrms[k] = 1/sqrt(γ⁰[k+1]^2+b[k]^2)
+        c[k+1] = γ⁰[k+1]*nrms[k]  # K = N-1
+        s[k] = -b[k]*nrms[k] # K = N-1
 
         @inbounds for k=n-2:-1:1
             γ¹[k] = c[k+2]*b[k]  # k = N-1
             γ⁰[k+1] = c[k+2]*a[k+1] + s[k+1]*γ¹[k+1]  # k = N
-            nrm = 1/sqrt(γ⁰[k+1]^2+b[k]^2)
-            c[k+1] = γ⁰[k+1]*nrm  # K = N-1
-            s[k] = -b[k]*nrm # K = N-1
+            nrms[k] = 1/sqrt(γ⁰[k+1]^2+b[k]^2)
+            c[k+1] = γ⁰[k+1]*nrms[k]  # K = N-1
+            s[k] = -b[k]*nrms[k] # K = N-1
         end
 
         γ⁰[1] = c[2]*a[1] + s[1]*γ¹[1]  # k = 0
     end
 
 
-    c[1] = sign(γ⁰[1])  # k = -1
+    c[1] = γ⁰[1] ≥ 0 ? 1 : -1  # k = -1, can't use sign because of 0 case
 
     Q = HessenbergUnitary(Val{'L'},true,c,s,c∞,s∞)
 
     L = BandedMatrix{eltype(c∞)}(uninitialized, (n+1,n), (2,0))
 
     L[1,1] = abs(γ⁰[1]) - l⁰
-    @views L[band(0)][2:end] .=  (-).(b./s) .- l⁰
+    @views L[band(0)][2:end] .=  1./nrms .- l⁰
     @views L[band(-1)][1:end-1] .=  c[2:end].*γ¹ .- s.*a[1:end-1] .- l¹
     view(L,band(-1))[end] .= c∞*γ¹∞ - s∞*a[end] - l¹
     @views L[band(-2)][1:end-1] .= (-).(s[2:end].*b[1:end-1]) .- l²
