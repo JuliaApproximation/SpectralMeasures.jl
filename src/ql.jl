@@ -129,22 +129,22 @@ domainspace(::SpectralMap) = SequenceSpace()
 rangespace(S::SpectralMap) = S.rangespace
 
 
-function A_ldiv_B_coefficients(S::SpectralMap,v::AbstractVector;opts...)
+function ldiv_coefficients(S::SpectralMap,v::AbstractVector;opts...)
     # leave first entries n alone
     r = copy(v)
-    r[S.n+1:end] .= A_ldiv_B_coefficients(S.C,v[S.n+1:end])
-    A_ldiv_B_coefficients(S.Q,r;opts...)
+    r[S.n+1:end] .= ldiv_coefficients(S.C,v[S.n+1:end])
+    ldiv_coefficients(S.Q,r;opts...)
 end
 
-function A_mul_B_coefficients(S::SpectralMap,v::AbstractVector;opts...)
-    r = A_mul_B_coefficients(S.Q,v;opts...)
+function mul_coefficients(S::SpectralMap,v::AbstractVector;opts...)
+    r = mul_coefficients(S.Q,v;opts...)
     # leave first entries n alone
-    r[S.n+1:end] .= A_mul_B_coefficients(S.C,r[S.n+1:end])
+    r[S.n+1:end] .= mul_coefficients(S.C,r[S.n+1:end])
     r
 end
 
 function getindex(S::SpectralMap,k::Integer,j::Integer)
-    v = A_mul_B_coefficients(S,[zeros(j-1);1])
+    v = mul_coefficients(S,[zeros(j-1);1])
     k ≤ length(v) && return v[k]
     zero(eltype(S))
 end
@@ -171,22 +171,22 @@ InvSpectralMap(n::Int,C::Operator{T},Q::Operator{T},ds) where {T} =
 domainspace(S::InvSpectralMap) = S.domainspace
 rangespace(::InvSpectralMap) = SequenceSpace()
 
-function A_mul_B_coefficients(S::InvSpectralMap,v::AbstractVector;opts...)
+function mul_coefficients(S::InvSpectralMap,v::AbstractVector;opts...)
     # leave first entries n alone
     r = copy(v)
-    r[S.n+1:end] .= A_ldiv_B_coefficients(S.C,v[S.n+1:end])
-    A_ldiv_B_coefficients(S.Q,r;opts...)
+    r[S.n+1:end] .= ldiv_coefficients(S.C,v[S.n+1:end])
+    ldiv_coefficients(S.Q,r;opts...)
 end
 
-function A_ldiv_B_coefficients(S::InvSpectralMap,v::AbstractVector;opts...)
-    r = A_mul_B_coefficients(S.Q,v;opts...)
+function ldiv_coefficients(S::InvSpectralMap,v::AbstractVector;opts...)
+    r = mul_coefficients(S.Q,v;opts...)
     # leave first entries n alone
-    r[S.n+1:end] .= A_mul_B_coefficients(S.C,r[S.n+1:end])
+    r[S.n+1:end] .= mul_coefficients(S.C,r[S.n+1:end])
     r
 end
 
 function getindex(S::InvSpectralMap,k::Integer,j::Integer)
-    v = A_mul_B_coefficients(S,[zeros(j-1);1])
+    v = mul_coefficients(S,[zeros(j-1);1])
     k ≤ length(v) && return v[k]
     zero(eltype(S))
 end

@@ -1,5 +1,5 @@
-using Plots, ApproxFun, SpectralMeasures, Base.Test
-    import ApproxFun: A_ldiv_B_coefficients
+using ApproxFun, SpectralMeasures, Test
+    import ApproxFun: ldiv_coefficients
 ############
 ### Tests
 ############
@@ -92,7 +92,7 @@ ApproxFun.blockbandinds(D.op.ops[1])
 import ApproxFun: Block
 min(Block(3), Block(4))
 typeof(D.op)
-r = A_ldiv_B_coefficients(Q,A_mul_B_coefficients(Q,[1.0]))
+r = A_ldiv_B_coefficients(Q,mul_coefficients(Q,[1.0]))
 @test r ≈ [1;zeros(length(r)-1)]
 @test coefficients(Q\(Q*[1.0])) ≈ [1;zeros(length(r)-1)]
 

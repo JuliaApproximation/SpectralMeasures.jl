@@ -1,16 +1,18 @@
 module SpectralMeasures
-using Base, Compat, ApproxFun, RecipesBase, RatFun, BandedMatrices, BlockArrays
+using Base, LinearAlgebra, ApproxFun, RecipesBase, RatFun, BandedMatrices, BlockArrays
 
-import Base:+,-,*,/,.*,.-,./,.+,getindex
+import Base: +,-,*,/, getindex
+import LinearAlgebra: adjoint, transpose
 
 import ApproxFun: Operator, ToeplitzOperator, DiracSpace, IdentityOperator,
             TridiagonalOperator, setdomain, resizedata!, bandinds, PointSpace,
             BandedMatrix, TimesOperator, SpaceOperator, AbstractCount, UnitCount,
-            MatrixSpace, ∞, ℓ⁰, domainspace, rangespace, domain, A_mul_B_coefficients,
-            A_ldiv_B_coefficients, InterlaceOperator
+            MatrixSpace, ∞, ℓ⁰, domainspace, rangespace, domain, mul_coefficients,
+            ldiv_coefficients, InterlaceOperator
 
 
 import BlockArrays: nblocks
+
 
 export spectralmeasure, discreteeigs, principalresolvent, discresolvent, validatedspectrum, spectrum
 export connectioncoeffsoperator, applyconversion, SymTriOperator, SymTriPertToeplitz
@@ -43,7 +45,7 @@ function spectralmeasure(a,b)
      cmu = Fun(Taylor,[0;Cmu.T.nonnegative]/b[1]) # this is cmu from the paper
      cprime = differentiate(c)
      eigs=real(map(joukowsky,z))
-     weights = 0.5*(1-1./z.^2).*(real(cmu(z))./real(cprime(z)))
+     weights = (1 .- 1 ./ z.^2).*(real.(cmu.(z))./(2 .* real.(cprime.(z))))
      p = Fun(DiracSpace(eigs),weights) + Fun(JacobiWeight(0.5,0.5,Ultraspherical(1)),[2/TT(pi)])
      q = Fun(PointSpace(eigs),ones(TT,length(eigs))) + f
      μ = RationalFun(p,q)

@@ -1,15 +1,10 @@
 abstract type UnitaryOperator{T} <: Operator{T} end
 
-Base.inv(Q::UnitaryOperator) = Q'
-Base.transpose(Q::UnitaryOperator{T}) where {T<:Real} = Q'
+inv(Q::UnitaryOperator) = Q'
+transpose(Q::UnitaryOperator{T}) where {T<:Real} = Q'
 
-
-Ac_mul_B_coefficients(Q::UnitaryOperator,v::AbstractVector;opts...) =
-    A_mul_B_coefficients(Q',v;opts...)
-
-
-A_ldiv_B_coefficients(Q::UnitaryOperator,v::AbstractVector;opts...) =
-    Ac_mul_B_coefficients(Q,v;opts...)
+ldiv_coefficients(Q::UnitaryOperator,v::AbstractVector;opts...) =
+    mul_coefficients(Q',v;opts...)
 
 
 
@@ -74,15 +69,15 @@ function HessenbergUnitary(::Type{Val{uplo}},sign, c, s, c∞, s∞) where {uplo
 end
 
 
-Base.ctranspose(Q::HessenbergUnitary{'L',T}) where {T<:Real} =
+adjoint(Q::HessenbergUnitary{'L',T}) where {T<:Real} =
     HessenbergUnitary(Val{'U'},Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
-Base.ctranspose(Q::HessenbergUnitary{'U',T}) where {T<:Real} =
+adjoint(Q::HessenbergUnitary{'U',T}) where {T<:Real} =
     HessenbergUnitary(Val{'L'},Q.sign,Q.c,Q.s,Q.c∞,Q.s∞,Q.band)
 
 
 
-bandinds(Q::HessenbergUnitary{'L'}) = -Q.band,1
-bandinds(Q::HessenbergUnitary{'U'}) = -1,Q.band
+bandwidths(Q::HessenbergUnitary{'L'}) = Q.band,1
+bandwidths(Q::HessenbergUnitary{'U'}) = 1,Q.band
 
 domainspace(::HessenbergUnitary) = ℓ⁰
 rangespace(::HessenbergUnitary) = ℓ⁰
@@ -90,8 +85,8 @@ rangespace(::HessenbergUnitary) = ℓ⁰
 
 
 
-hc(c,c∞,k) = k≤length(c)?c[k]:c∞
-hs(s,s∞,k) = k≤length(s)?s[k]:s∞
+hc(c,c∞,k) = k≤length(c) ? c[k] : c∞
+hs(s,s∞,k) = k≤length(s) ? s[k] : s∞
 
 
 hc(Q::HessenbergUnitary,k) = hc(Q.c,Q.c∞,k)
@@ -107,7 +102,7 @@ getindex(Q::HessenbergUnitary{'U'},k::Integer,j::Integer) =
 function hessuni_getindex(sgn::Bool,c::AbstractVector{T},s::AbstractVector{T},
                              c∞::T,s∞::T,
                              k::Integer,j::Integer) where T
-    si=sgn?1:-1
+    si = sgn ? 1 : -1
 
     if k>j+1
         zero(T)
@@ -123,7 +118,7 @@ function hessuni_getindex(sgn::Bool,c::AbstractVector{T},s::AbstractVector{T},
     end
 end
 
-function A_mul_B_coefficients(Q::HessenbergUnitary{'U'},v::Vector;opts...)
+function mul_coefficients(Q::HessenbergUnitary{'U'},v::Vector;opts...)
     si=Q.sign?1:-1
 
     ret = pad!(si*v,length(v)+1)
@@ -138,7 +133,7 @@ function A_mul_B_coefficients(Q::HessenbergUnitary{'U'},v::Vector;opts...)
 end
 
 
-function A_mul_B_coefficients(Q::HessenbergUnitary{'L'},v::Vector;tolerance=eps())
+function mul_coefficients(Q::HessenbergUnitary{'L'},v::Vector;tolerance=eps())
     N =  max(length(v),length(Q.s))+1
     si=Q.sign?1:-1
     ret = pad!(si*v,N)
@@ -181,20 +176,20 @@ struct BandedUnitary{uplo,T} <: UnitaryOperator{T}
 end
 
 
-Base.ctranspose(Q::BandedUnitary) = BandedUnitary(reverse!(map(ctranspose,Q.ops)))
+adjoint(Q::BandedUnitary) = BandedUnitary(reverse!(map(adjoint,Q.ops)))
 
 getindex(Q::BandedUnitary,k::Integer,j::Integer) = TimesOperator(Q.ops)[k,j]
-bandinds(Q::BandedUnitary) = bandinds(TimesOperator(Q.ops))
+bandwidths(Q::BandedUnitary) = bandwidths(TimesOperator(Q.ops))
 
 
 domainspace(::BandedUnitary) = ℓ⁰
 rangespace(::BandedUnitary) = ℓ⁰
 
 
-function A_mul_B_coefficients(Q::BandedUnitary,v::Vector)
+function mul_coefficients(Q::BandedUnitary,v::Vector)
     ret=v
     for k=length(Q.ops):-1:1
-        ret=A_mul_B_coefficients(Q.ops[k],ret)
+        ret=mul_coefficients(Q.ops[k],ret)
     end
     ret
 end
