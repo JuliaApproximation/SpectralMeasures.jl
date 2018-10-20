@@ -3,3 +3,5 @@ ApproxFun
 BandedMatrices 0.3
 RecipesBase
 RatFun
+BlockArrays
+InfiniteArrays

@@ -1,17 +1,20 @@
 module SpectralMeasures
-using Base, LinearAlgebra, ApproxFun, RecipesBase, RatFun, BandedMatrices, BlockArrays
+using Base, LinearAlgebra, ApproxFun, RecipesBase, RatFun, BandedMatrices, BlockArrays,
+        InfiniteArrays
 
-import Base: +,-,*,/, getindex
-import LinearAlgebra: adjoint, transpose
+import Base: +, -, *, /, getindex, inv
+import LinearAlgebra: adjoint, transpose, issymmetric, SymTridiagonal, eigvals, eigen
 
 import ApproxFun: Operator, ToeplitzOperator, DiracSpace, IdentityOperator,
-            TridiagonalOperator, setdomain, resizedata!, bandinds, PointSpace,
-            BandedMatrix, TimesOperator, SpaceOperator, AbstractCount, UnitCount,
+            TridiagonalOperator, setdomain, resizedata!, bandwidths, PointSpace,
+            BandedMatrix, TimesOperator, SpaceOperator,
             MatrixSpace, ∞, ℓ⁰, domainspace, rangespace, domain, mul_coefficients,
             ldiv_coefficients, InterlaceOperator
 
 
 import BlockArrays: nblocks
+
+import InfiniteArrays: AbstractInfUnitRange
 
 
 export spectralmeasure, discreteeigs, principalresolvent, discresolvent, validatedspectrum, spectrum
@@ -28,9 +31,9 @@ include("ql.jl")
 function spectralmeasure(a,b)
     TT = promote_type(eltype(a),eltype(b))
   # Chop the a and b down
-  a = chop!(a); b = 0.5+chop!(b-0.5)
+  a = chop!(a); b = 0.5 .+ chop!(b .- 0.5)
   n = max(2,length(a),length(b)+1)
-  a = [a;zeros(TT,n-length(a))]; b = [b;0.5+zeros(TT,n-length(b))]
+  a = [a;zeros(TT,n-length(a))]; b = [b; 0.5 .+ zeros(TT,n-length(b))]
 
   # Finds C such that J*C = C*Toeplitz([0,1/2])
   C = SpectralMeasures.connectioncoeffsoperator(a,b)
@@ -88,9 +91,9 @@ function discresolvent(a,b)
 end
 
 function discreteeigs(a,b)
-  a = chop!(a); b = .5+chop!(b-.5)
+  a = chop!(a); b = 0.5 .+ chop!(b .- 0.5)
   n = max(2,length(a),length(b)+1)
-  a = [a;zeros(n-length(a))]; b = [b;.5+zeros(n-length(b))]
+  a = [a;zeros(n-length(a))]; b = [b;.5 .+ zeros(n-length(b))]
   # Finds C such that C*J = Toeplitz([0,1/2])*C
   C = connectioncoeffsoperator(a,b)
   Tfun = Fun(Taylor,C.T.nonnegative)
@@ -102,7 +105,7 @@ end
 function connectioncoeffsoperator(a,b)
   n = max(2,length(a),length(b)+1)
   N = 2*n #This is sufficient only because we go from Chebyshev U
-  a = [a;zeros(N-length(a))]; b = [b;.5+zeros(N-length(b))]
+  a = [a;zeros(N-length(a))]; b = [b;.5 .+ zeros(N-length(b))]
 
   elType = eltype(a)
   ToeplitzVec = zeros(elType,N)

@@ -53,15 +53,15 @@ function ql!(a,b,t₀,t₁)
     c∞,s∞,l⁰,l¹,l²,γ¹∞,γ⁰∞ = givenstail(t₀,t₁)
     # use recurrence for c. If we have a_0,…,a_N,t0,t0…, then
     # we only need c_-1,c_0,c_1,…,c_{N-1}.
-    c=Array{eltype(c∞)}(n)
-    s=Array{eltype(c∞)}(n-1)
+    c=Array{eltype(c∞)}(undef,n)
+    s=Array{eltype(c∞)}(undef,n-1)
 
     # ranges from 1 to N
-    γ¹ = Array{eltype(c∞)}(n-1)
+    γ¹ = Array{eltype(c∞)}(undef,n-1)
 
     # ranges from 0 to N
-    γ⁰ = Array{eltype(c∞)}(n)
-    nrms = Array{eltype(c∞)}(n-1)
+    γ⁰ = Array{eltype(c∞)}(undef,n)
+    nrms = Array{eltype(c∞)}(undef,n-1)
 
     γ⁰[n] = c∞*a[n] + s∞*γ¹∞  # k = N
 
@@ -90,16 +90,16 @@ function ql!(a,b,t₀,t₁)
 
     Q = HessenbergUnitary(Val{'L'},true,c,s,c∞,s∞)
 
-    L = BandedMatrix{eltype(c∞)}(uninitialized, (n+1,n), (2,0))
+    L = BandedMatrix{eltype(c∞)}(undef, (n+1,n), (2,0))
 
     L[1,1] = abs(γ⁰[1]) - l⁰
-    @views L[band(0)][2:end] .=  1./nrms .- l⁰
+    @views L[band(0)][2:end] .=  1 ./nrms .- l⁰
     @views L[band(-1)][1:end-1] .=  c[2:end].*γ¹ .- s.*a[1:end-1] .- l¹
-    view(L,band(-1))[end] .= c∞*γ¹∞ - s∞*a[end] - l¹
+    view(L,band(-1))[end] = c∞*γ¹∞ - s∞*a[end] - l¹
     @views L[band(-2)][1:end-1] .= (-).(s[2:end].*b[1:end-1]) .- l²
 
     if n ≠ 1
-        view(L,band(-2))[end] .= -s∞*b[end] - l²
+        view(L,band(-2))[end] = -s∞*b[end] - l²
     end
 
     Q, ToeplitzOperator([l¹,l²],[l⁰]) + FiniteOperator(L,ℓ⁰,ℓ⁰)
@@ -108,10 +108,10 @@ end
 
 
 discreteeigs(J::SymTriPertToeplitz) =
-    2*J.b*discreteeigs(0.5*(J.dv-J.a)/J.b,0.5*J.ev/J.b) + J.a
+    2*J.b*discreteeigs(0.5*(J.dv .- J.a)/J.b,0.5*J.ev/J.b) .+ J.a
 
 connectioncoeffsoperator(J::SymTriPertToeplitz) =
-    connectioncoeffsoperator(0.5*(J.dv-J.a)/J.b,0.5*J.ev/J.b)
+    connectioncoeffsoperator(0.5*(J.dv .- J.a)/J.b,0.5*J.ev/J.b)
 
 # Spectral map takes SequenceSpace to the space of the diagonal Fun
 struct SpectralMap{CC,QQ,RS,T} <: Operator{T}
@@ -151,9 +151,9 @@ end
 
 
 isbanded(S::SpectralMap) = true
-function bandinds(S::SpectralMap)
-    bi = bandinds(S.Q)
-    bi[1],bi[2]+bandinds(S.C,2)
+function bandwidths(S::SpectralMap)
+    bi = bandwidths(S.Q)
+    bi[1],bi[2]+bandwidth(S.C,2)
 end
 
 # InvSpectralMap is the inverse of a Spectral map
@@ -192,14 +192,14 @@ function getindex(S::InvSpectralMap,k::Integer,j::Integer)
 end
 
 isbanded(S::InvSpectralMap) = false
-bandinds(S::InvSpectralMap) = [-∞;∞]
+bandwidths(S::InvSpectralMap) = (∞,∞)
 
-Base.inv(S::SpectralMap) = InvSpectralMap(S.n,S.C,S.Q,S.rangespace)
-Base.inv(S::InvSpectralMap) = SpectralMap(S.n,S.C,S.Q,S.domainspace)
+inv(S::SpectralMap) = InvSpectralMap(S.n,S.C,S.Q,S.rangespace)
+inv(S::InvSpectralMap) = SpectralMap(S.n,S.C,S.Q,S.domainspace)
 
-Base.eig(Jin::SymTriPertToeplitz) = eigfromguess(Jin,discreteeigs(Jin))
+eigen(Jin::SymTriPertToeplitz) = eigfromguess(Jin,discreteeigs(Jin))
 function eigfromguess(Jin::SymTriPertToeplitz,approxeigs)
-    Qret=Array{HessenbergUnitary{'U',Float64}}(0)
+    Qret=Array{HessenbergUnitary{'U',Float64}}(undef, 0)
     λapprox=sort(approxeigs)
 
     ctsspec = ApproxFun.Segment(Jin.a-2Jin.b,Jin.a+2Jin.b)
@@ -215,7 +215,7 @@ function eigfromguess(Jin::SymTriPertToeplitz,approxeigs)
         return D,U
     end
 
-    λ=Array{Float64}(0)
+    λ=Vector{Float64}()
 
     tol=1E-14
     for k=1:length(λapprox)

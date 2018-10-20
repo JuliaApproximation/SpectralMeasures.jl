@@ -3,7 +3,7 @@
 
 ToeplitzOperator(L::UniformScaling) = ToeplitzOperator(eltype(L)[],[L.λ])
 
-Base.issymmetric(T::ToeplitzOperator) =
+issymmetric(T::ToeplitzOperator) =
     length(T.negative)==length(T.nonnegative)-1&&T.negative==T.nonnegative[2:end]
 
 
@@ -53,7 +53,7 @@ end
 *(c::Number,A::SymTriOperator) = SymTriOperator(c*A.dv,c*A.ev)
 *(A::SymTriOperator,c::Number) = SymTriOperator(c*A.dv,c*A.ev)
 
-function Base.SymTridiagonal(S::SymTriOperator,kr::UnitRange,jr::UnitRange)
+function SymTridiagonal(S::SymTriOperator,kr::UnitRange,jr::UnitRange)
     n=last(kr)
     @assert n==last(jr)
     SymTridiagonal(pad(S.dv,n),pad(S.ev,n-1))
@@ -76,7 +76,7 @@ SymTriPertToeplitz(dv::Vector,ev::Vector,a,b) =
     SymTriPertToeplitz{promote_type(eltype(dv),eltype(dv),typeof(a),typeof(b))}(dv,ev,a,b)
 
 function SymTriPertToeplitz(T::ToeplitzOperator,K::SymTriOperator)
-    @assert bandinds(T)==(-1,1) && issym(T)
+    @assert bandwidths(T) == (1,1) && issym(T)
     SymTriPertToeplitz(K.dv+T.nonnegative[1],K.ev+T.nonnegative[2],T.nonnegative...)
 end
 
@@ -90,7 +90,7 @@ function SymTriPertToeplitz(T::ToeplitzOperator)
 
     if isdiag(T)
         SymTriPertToeplitz(eltype(T)[],eltype(T)[],T.nonnegative[1],zero(eltype(T)))
-    elseif bandinds(T)==(-1,1)
+    elseif bandwidths(T) == (1,1)
         SymTriPertToeplitz(eltype(T)[],eltype(T)[],T.nonnegative...)
     else
         error("Not a tridiagonal operator")
@@ -102,7 +102,7 @@ for OP in (:domainspace,:rangespace)
     @eval $OP(::SymTriPertToeplitz) = ℓ⁰
 end
 
-function Base.getindex(S::SymTriPertToeplitz,kr::UnitCount{Int},jr::UnitCount{Int})
+function getindex(S::SymTriPertToeplitz, kr::AbstractInfUnitRange, jr::AbstractInfUnitRange)
     k=first(kr)
     @assert k==first(jr)
 
@@ -111,11 +111,11 @@ end
 
 function getindex(S::SymTriPertToeplitz,k::Integer,j::Integer)
         if 2 ≤ k && j ==k-1
-            k≤length(S.ev)+1?S.ev[k-1]:S.b
+            k ≤ length(S.ev)+1 ? S.ev[k-1] : S.b
         elseif j==k+1
-            k≤length(S.ev)?S.ev[k]:S.b
+            k ≤ length(S.ev) ? S.ev[k] : S.b
         elseif j==k
-            k≤length(S.dv)?S.dv[k]:S.a
+            k ≤ length(S.dv) ? S.dv[k] : S.a
         else
             zero(eltype(S))
         end
@@ -123,7 +123,7 @@ end
 
 
 
-function Base.SymTridiagonal(S::SymTriPertToeplitz,kr::UnitRange,jr::UnitRange)
+function SymTridiagonal(S::SymTriPertToeplitz,kr::UnitRange,jr::UnitRange)
     n=last(kr)
     @assert n==last(jr)
     dv= n>length(S.dv) ?
@@ -143,20 +143,20 @@ end
 ## represents T + K where T is Toeplitz and K is finite-dimensional
 struct PertToeplitz{S} <: Operator{S}
     T::ToeplitzOperator{S}
-    K::FiniteOperator{BandedMatrix{S},S}
+    K::FiniteOperator{BandedMatrix{S,Matrix{S}},S}
 end
 
 for OP in (:domainspace,:rangespace)
     @eval $OP(::PertToeplitz) = ℓ⁰
 end
 
-bandinds(P::PertToeplitz) =
-    min(bandinds(P.T,1),bandinds(P.K,1)),max(bandinds(P.T,2),bandinds(P.K,2))
+bandwidths(P::PertToeplitz) =
+    max(bandwidth(P.T,1),bandwidth(P.K,1)),max(bandwidth(P.T,2),bandwidth(P.K,2))
 
 getindex(P::PertToeplitz,k::Integer,j::Integer) =
     P.T[k,j]+P.K[k,j]
 
-getindex(P::PertToeplitz,k::AbstractCount,j::AbstractCount) =
+getindex(P::PertToeplitz,k::AbstractInfUnitRange, j::AbstractInfUnitRange) =
     P.T[k,j]+P.K[k,j]
 
 
@@ -177,7 +177,7 @@ for OP in (:+,:-)
         $OP(K::Union{FiniteOperator,SymTriOperator},T::ToeplitzOperator) = $OP(T)+K
 
         $OP(A::SymTriPertToeplitz,c::UniformScaling) =
-            SymTriPertToeplitz($OP(A.dv,c.λ),A.ev,$OP(A.a,c.λ),A.b)
+            SymTriPertToeplitz(broadcast($OP,A.dv,c.λ),A.ev,broadcast($OP,A.a,c.λ),A.b)
     end
 end
 
@@ -192,7 +192,7 @@ end
 
 
 
-for OP in (:ql,:(Base.eigvals),:(Base.eig))
+for OP in (:ql,:(eigvals),:(eig))
     @eval $OP(A::ToeplitzOperator)=$OP(SymTriPertToeplitz(A))
 end
 
@@ -209,14 +209,14 @@ function principalresolvent(J::SymTriPertToeplitz)
     λ -> (.5/J.b)*r(.5*(λ-J.a)/J.b)
 end
 
-Base.eigvals(A::SymTriPertToeplitz)=domain(spectralmeasure(A))
+eigvals(A::SymTriPertToeplitz) = domain(spectralmeasure(A))
 spectrum(A::Operator) = eigvals(A)
 
 
 function *(L::PertToeplitz,Q::HessenbergUnitary{'L'})
     n=max(size(L.K.matrix,1),length(Q.s)+3)
 
-    if bandinds(L)==(-2,0)
+    if bandwidths(L) == (2,0)
          # We check if L*Q is tridiagin al
         tol=1E-14*(maximum(L.T)+maximum(L.K))
         istri=true
@@ -245,13 +245,13 @@ function *(L::PertToeplitz,Q::HessenbergUnitary{'L'})
             if issym
                # result is SymTriToeplitxz
 
-                ev=Array{Float64}(max(min(size(L.K.matrix,1),size(L.K.matrix,2)),
+                ev=Array{Float64}(undef, max(min(size(L.K.matrix,1),size(L.K.matrix,2)),
                                      length(Q.s)))
                 for k=1:length(ev)
                     ev[k]=-L[k,k]*hs(Q,k)
                 end
 
-                dv=Array{Float64}(max(length(Q.s)+1,size(L.K.matrix,1)))
+                dv=Array{Float64}(undef, max(length(Q.s)+1,size(L.K.matrix,1)))
                 dv[1]=hc(Q,1)*hc(Q,2)*L[1,1]
                 for k=2:length(dv)
                     dv[k]=-hs(Q,k-1)*L[k,k-1]+hc(Q,k)*hc(Q,k+1)*L[k,k]
@@ -260,7 +260,7 @@ function *(L::PertToeplitz,Q::HessenbergUnitary{'L'})
                 t1=-L.T[1,1]*Q.s∞
                 t0=-Q.s∞*L.T[2,1]+Q.c∞^2*L.T[1,1]
 
-                si=Q.sign?1:-1
+                si=Q.sign ? 1 : -1
                 return SymTriPertToeplitz(si*dv,si*ev,si*t0,si*t1)
             end
         end

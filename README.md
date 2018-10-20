@@ -7,7 +7,7 @@ SpectralMeasures.jl is a Julia package for computing spectra and spectral measur
 Syntactically, the familiar function for matrices, `eig`, will be implemented for as many operators as we can. It returns a multiplication operator, `D`, which acts on `Fun`s whose domain is the spectrum of the operator, and "spectral map", `U`, which takes vectors to `Fun`s in the same `Space` as the that associated with `D`. In Julia code, this means that if you have an operator `A`, and type
 
 ```
-D,U = eig(A)
+D,U = eigen(A)
 ```
 
 then the following identity holds (to machine precision):
@@ -65,7 +65,7 @@ The spectrum of this particular operator consists of two discrete eigenvalues an
 You can use familiar syntax to compute an eigendecomposition:
 
 ```
-D,U = eig(A)
+D,U = eigen(A)
 ```
 
 The first output, `D`, is a multiplication operator, which multiplies `Fun`s with space `PointSpace([-1.70822…,2.28398…]) ∪ Ultraspherical(1)`. It has matrix representation,

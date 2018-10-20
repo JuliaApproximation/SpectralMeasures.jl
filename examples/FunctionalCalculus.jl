@@ -8,7 +8,7 @@ u0 = [zeros(20);ones(5);zeros(20);1.2*ones(3)]
 
 # J1 = D
 J1 = D
-x1,U1 = eig(J1)
+x1,U1 = eigen(J1)
 plot(pad(u0,100),ylims=(0,1.5),marker=2,label="t=0",xlabel="k",ylabel="u_k",title="Pure diffusion on the half-line")
   for t in [1,10,100,1000]
     ut1 = U1\(exp(x1*t)*(U1*u0))
@@ -32,7 +32,7 @@ Plots.savefig("purediffusion1finitesection.pdf")
 # J2 = D + diag(v) where v is a reaction term
 react = [zeros(35);-1.;-1.;-1]
 J2 = D + SymTriOperator(react,[0.])
-x2,U2 = eig(J2)
+x2,U2 = eigen(J2)
 plot(pad(u0,100),marker=2,label="t=0",ylims=(0,1.5),xlabel="k",ylabel="u_k",title="Diffusion plus reaction on the half-line")
   for t in [1,10,100,1000]
     ut2 = U2\(exp(x2*t)*(U2*u0))
@@ -49,7 +49,7 @@ Plots.savefig("stableeigenmodes.pdf")
 
 # Pure fractional diffusion α = 0.65
 J4 = D
-x4,U4 = eig(J4)
+x4,U4 = eigen(J4)
 α = 0.65
 plot(pad(u0,100),ylims=(0,1.5),marker=2,label="t=0",xlabel="k",ylabel="u_k",title="Pure fractional diffusion on the half-line, \\alpha = 0.65")
   for t in [1,10,100,1000]
@@ -62,7 +62,7 @@ Plots.savefig("purefracdiffusion1.pdf")
 
 # Pure fractional diffusion α = 0.85
 J5 = D
-x5,U5 = eig(J5)
+x5,U5 = eigen(J5)
 α = 0.85
 plot(pad(u0,100),ylims=(0,1.5),marker=2,label="t=0",xlabel="k",ylabel="u_k",title="Pure fractional diffusion on the half-line, \\alpha = 0.85")
   for t in [1,10,100,1000]
@@ -75,7 +75,7 @@ Plots.savefig("purefracdiffusion085.pdf")
 
 # Pure fractional diffusion α = .25
 J6 = D
-x6,U6 = eig(J6)
+x6,U6 = eigen(J6)
 α = .25
 plot(pad(u0,100),ylims=(0,1.5),marker=2,label="t=0",xlabel="k",ylabel="u_k",title="Pure fractional diffusion on the half-line, \\alpha = 0.25")
   for t in [1,10,100,1000]
@@ -90,7 +90,7 @@ Plots.savefig("purefracdiffusion025.pdf")
 react = [zeros(20);1.;1.;1.]
 J7 = D + SymTriOperator(react,[0.])
 discreteeigs(J7)
-x7,U7 = eig(J7)
+x7,U7 = eigen(J7)
 α = 0.85
 plot(pad(u0,100),ylims=(0,1.5),marker=2,label="t=0",xlabel="k",ylabel="u_k",title="Fractional diffusion with reaction on the half-line, \\alpha = 0.85")
 #for t in [1;10;100;1000]
@@ -118,7 +118,7 @@ SymTriPertToeplitz(V8+1.0,[.5],1.0,-.5)
 # Discrete Schrodinger equations
 V8 = [zeros(40);2*ones(5)]
   J8 = -D + SymTriOperator(V8,[0.])
-  x8,U8 = eig(J8)
+  x8,U8 = eigen(J8)
   λ8 = discreteeigs(J8)
   n8 = length(λ8)
   Eigv8 = full(U8[1:n8,1:100])
@@ -129,7 +129,7 @@ n8
 
 V9 = [zeros(40);1*ones(3)]
   J9 = D + SymTriOperator(V9,[0.])
-  x9,U9 = eig(J9)
+  x9,U9 = eigen(J9)
   λ9 = discreteeigs(J9)
   n9 = length(λ9)
   Eigv9 = full(U9[1:n9,1:100])
@@ -166,7 +166,7 @@ t = 20
   plot(abs(ut8[1:100]),ylims=(-.5,1.5),marker=2,label="t=$(t) (abs)")
   plot!(pad(V8,100),ylims=(-.5,1.5),color=:black,label="Potential",xlabel="k",ylabel="u_k",title="No quantum tunneling on the half-line")
 
-d,Q = eig(Jn)
+d,Q = eigen(Jn)
 
 
 

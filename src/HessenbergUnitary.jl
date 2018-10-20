@@ -85,8 +85,8 @@ rangespace(::HessenbergUnitary) = ℓ⁰
 
 
 
-hc(c,c∞,k) = k≤length(c) ? c[k] : c∞
-hs(s,s∞,k) = k≤length(s) ? s[k] : s∞
+hc(c,c∞,k) = k ≤ length(c) ? c[k] : c∞
+hs(s,s∞,k) = k ≤ length(s) ? s[k] : s∞
 
 
 hc(Q::HessenbergUnitary,k) = hc(Q.c,Q.c∞,k)
@@ -119,7 +119,7 @@ function hessuni_getindex(sgn::Bool,c::AbstractVector{T},s::AbstractVector{T},
 end
 
 function mul_coefficients(Q::HessenbergUnitary{'U'},v::Vector;opts...)
-    si=Q.sign?1:-1
+    si=Q.sign ? 1 : -1
 
     ret = pad!(si*v,length(v)+1)
     # Compute each Givens rotation starting from the right
@@ -135,7 +135,7 @@ end
 
 function mul_coefficients(Q::HessenbergUnitary{'L'},v::Vector;tolerance=eps())
     N =  max(length(v),length(Q.s))+1
-    si=Q.sign?1:-1
+    si = Q.sign ? 1 : -1
     ret = pad!(si*v,N)
 
     # This part does the computation we are certain we have to do
@@ -165,10 +165,10 @@ end
 
 
 deflate(Q::HessenbergUnitary{uplo}) where {uplo}=HessenbergUnitary(Val{uplo},Q.sign,
-                                                                  [(Q.sign?1:(-1))*sign(Q.c[1]);Q.c],
+                                                                  [(Q.sign ? 1 : -1)*sign(Q.c[1]);Q.c],
                                                                   [0;Q.s],Q.c∞,Q.s∞,Q.band)
 
-deflate(Q::HessenbergUnitary,k::Integer)=k==0?Q:deflate(deflate(Q),k-1)
+deflate(Q::HessenbergUnitary,k::Integer) = k == 0 ? Q : deflate(deflate(Q),k-1)
 
 
 struct BandedUnitary{uplo,T} <: UnitaryOperator{T}

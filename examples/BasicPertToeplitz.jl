@@ -51,7 +51,7 @@ C1 = connectioncoeffsoperator(J1)
 10.0*I
 Q,L = ql(J1-10.0*I)
 
-d,U = eig(J1)
+d,U = eigen(J1)
 
 
 

@@ -4,7 +4,7 @@ function ql(A::Matrix)
     Q[end:-1:1,end:-1:1],R[end:-1:1,end:-1:1]
 end
 
-joukowsky(z)=.5*(z+1./z)
+joukowsky(z) = 0.5*(z+1/z)
 
 function jacobimatrix(a,b,t0,t1,N)
     J = BandedMatrix(Float64,N,N,1,1)
