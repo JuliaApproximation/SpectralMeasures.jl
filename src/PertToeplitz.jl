@@ -143,7 +143,7 @@ end
 ## represents T + K where T is Toeplitz and K is finite-dimensional
 struct PertToeplitz{S} <: Operator{S}
     T::ToeplitzOperator{S}
-    K::FiniteOperator{BandedMatrix{S,Matrix{S}},S}
+    K::FiniteOperator{BandedMatrix{S,Matrix{S},Base.OneTo{Int}},S}
 end
 
 for OP in (:domainspace,:rangespace)
